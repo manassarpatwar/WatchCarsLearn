@@ -5,12 +5,12 @@ var w = 0;
 var h = 0;
 
 function resizeCanvas() {
-    canvas.width = window.innerWidth * 2;
-    canvas.height = window.innerHeight * 2;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     w = canvas.width;
     h = canvas.height;
-    canvas.style.width = w / 2 + "px";
-    canvas.style.height = h / 2 + "px";
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
     context.translate(w / 2, h / 2);
 };
 
@@ -103,8 +103,8 @@ function rayTrace(x, y) {
     let event_y;
     
     if(x && y){
-        event_x = (x - w / 4)*2;
-        event_y = (y - h / 4)*2;
+        event_x = (x - w / 2);
+        event_y = (y - h / 2);
     }else{
         event_x = Math.random() * w - w / 2;
         event_y= Math.random() * h - h / 2;
@@ -116,7 +116,7 @@ function rayTrace(x, y) {
     }
 
     context.beginPath();
-    context.arc(event_x, event_y, 40, 0, Math.PI * 2);
+    context.arc(event_x, event_y, 10, 0, Math.PI * 2);
     context.fillStyle = "white";
     context.fill();
 
