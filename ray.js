@@ -62,14 +62,14 @@ function Boundary(x1, y1, x2, y2) {
 }
 
 Boundary.prototype.drawBoundary = function () {
-    drawLine(this.x1, this.y1, this.x2, this.y2, 1);
+    drawLine(this.x1, this.y1, this.x2, this.y2, 1, 1);
 }
 
-function drawLine(x1, y1, x2, y2, opacity) {
+function drawLine(x1, y1, x2, y2, opacity, linewidth) {
     context.beginPath();
     context.moveTo(x1, y1);
     context.lineTo(x2, y2);
-    context.lineWidth = 3;
+    context.lineWidth = linewidth;
     context.strokeStyle = "rgba(255, 255, 255, " + opacity + ")";
     context.stroke();
     context.moveTo(0, 0);
@@ -135,7 +135,7 @@ function rayTrace(x, y) {
             }
         }
         if (closestBoundary) {
-            drawLine(ray.x, ray.y, closestBoundary.x, closestBoundary.y, 0.3)
+            drawLine(ray.x, ray.y, closestBoundary.x, closestBoundary.y, 0.3, 3)
         }
 
     }
