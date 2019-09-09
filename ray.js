@@ -69,7 +69,7 @@ function drawLine(x1, y1, x2, y2, opacity) {
     context.beginPath();
     context.moveTo(x1, y1);
     context.lineTo(x2, y2);
-    context.lineWidth = 5;
+    context.lineWidth = 3;
     context.strokeStyle = "rgba(255, 255, 255, " + opacity + ")";
     context.stroke();
     context.moveTo(0, 0);
@@ -95,16 +95,16 @@ function is_touch_device() {
 let touch_device = is_touch_device();
 
 rayTrace()
-function rayTrace(e) {
+function rayTrace(x, y) {
     context.clearRect(-w / 2, -h / 2, w, h);
     let rays = [];
 
     let event_x;
     let event_y;
     
-    if(e){
-        event_x = (e.clientX - w / 4) * 2;
-        event_y = (e.clientY - h / 4) * 2;
+    if(x && y){
+        event_x = (x - w / 4)*2;
+        event_y = (y - h / 4)*2;
     }else{
         event_x = Math.random() * w - w / 2;
         event_y= Math.random() * h - h / 2;
@@ -141,14 +141,21 @@ function rayTrace(e) {
     }
 }
 
-ontouchstart = function (e) {
-    rayTrace(e);
-}
+//window.addEventListener("touchstart", function (e) {
+//    console.log("started");
+//    rayTrace(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+//});
 
-ontouchmove = function (e) {
-    rayTrace(e);
-}
+window.addEventListener("touchmove", function (e){
+//    console.log("moving");
+    rayTrace(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+});
 
-onmousemove = function (e) {
-    rayTrace(e);
+//window.addEventListener("touchend", function (e){
+////    console.log("end");
+//    rayTrace(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+//});
+
+window.onmousemove = function (e) {
+    rayTrace(e.clientX, e.clientY);
 }
