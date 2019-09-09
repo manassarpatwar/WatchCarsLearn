@@ -111,8 +111,8 @@ function rayTrace(x, y) {
     }
 
     let angle = Math.atan2(event_y, event_x);
-    for (let i = 0; i < 360; i += 1) {
-        rays.push(new Ray(event_x, event_y, angle + Math.PI * i / 180));
+    for (let i = 0; i < 720; i += 1) {
+        rays.push(new Ray(event_x, event_y, angle + Math.PI * i / 360));
     }
 
     context.beginPath();
