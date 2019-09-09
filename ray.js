@@ -84,29 +84,39 @@ const boundaries = [];
 for (let i = 0; i < 5; i++) {
     boundaries.push(new Boundary(Math.random() * w - w / 2, Math.random() * h - h / 2, Math.random() * w - w / 2, Math.random() * h - h / 2));
 }
-boundaries.push(new Boundary(-w/2, -h/2, -w/2, h/2));
-boundaries.push(new Boundary(-w/2, -h/2, w/2, -h/2));
-boundaries.push(new Boundary(w/2, -h/2, w/2, h/2));
-boundaries.push(new Boundary(-w/2, h/2, w/2, h/2));
+boundaries.push(new Boundary(-w / 2, -h / 2, -w / 2, h / 2));
+boundaries.push(new Boundary(-w / 2, -h / 2, w / 2, -h / 2));
+boundaries.push(new Boundary(w / 2, -h / 2, w / 2, h / 2));
+boundaries.push(new Boundary(-w / 2, h / 2, w / 2, h / 2));
 
-onmousemove = function (e) {
+function is_touch_device() {
+    return 'ontouchstart' in window;
+}
+let touch_device = is_touch_device();
+
+rayTrace()
+function rayTrace(e) {
     context.clearRect(-w / 2, -h / 2, w, h);
     let rays = [];
-    let mouse_x = (e.clientX - w / 4) * 2;
-    let mouse_y = (e.clientY - h / 4) * 2;
-    let angle = Math.atan2(mouse_y, mouse_x);
-    //    rays.push(new Ray(0, 0, angle))
-    for (let i = 0; i < 360; i += 1) {
-        rays.push(new Ray(mouse_x, mouse_y, angle + Math.PI * i / 180));
-    }
-    //    console.log(Math.atan2(mouse_y, mouse_x));
-    //        console.log("mouse location:", mouse_x, mouse_y)
 
-    //    for (let ray of rays) {
-    //        drawLine(ray.x, ray.y, ray.x + 50 * Math.cos(ray.angle), ray.y + 50 * Math.sin(ray.angle));
-    //    }
+    let event_x;
+    let event_y;
+    
+    if(e){
+        event_x = (e.clientX - w / 4) * 2;
+        event_y = (e.clientY - h / 4) * 2;
+    }else{
+        event_x = Math.random() * w - w / 2;
+        event_y= Math.random() * h - h / 2;
+    }
+
+    let angle = Math.atan2(event_y, event_x);
+    for (let i = 0; i < 360; i += 1) {
+        rays.push(new Ray(event_x, event_y, angle + Math.PI * i / 180));
+    }
+
     context.beginPath();
-    context.arc(mouse_x, mouse_y, 40, 0, Math.PI * 2);
+    context.arc(event_x, event_y, 40, 0, Math.PI * 2);
     context.fillStyle = "white";
     context.fill();
 
@@ -129,5 +139,16 @@ onmousemove = function (e) {
         }
 
     }
+}
 
+ontouchstart = function (e) {
+    rayTrace(e);
+}
+
+ontouchmove = function (e) {
+    rayTrace(e);
+}
+
+onmousemove = function (e) {
+    rayTrace(e);
 }
