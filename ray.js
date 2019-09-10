@@ -14,12 +14,12 @@ function resizeCanvas() {
     context.translate(w / 2, h / 2);
 };
 
-
 function Ray(x, y, angle) {
     this.x = x;
     this.y = y;
     this.angle = angle;
     this.vector = new Vector(this.x + Math.cos(this.angle), this.y + Math.sin(this.angle));
+    this.distance = 0;
 }
 
 function Vector(x, y) {
@@ -72,7 +72,6 @@ function drawLine(x1, y1, x2, y2, opacity, linewidth) {
     context.lineWidth = linewidth;
     context.strokeStyle = "rgba(255, 255, 255, " + opacity + ")";
     context.stroke();
-    context.moveTo(0, 0);
 }
 
 function getDist(x1, y1, x2, y2) {
@@ -81,81 +80,171 @@ function getDist(x1, y1, x2, y2) {
 
 resizeCanvas();
 const boundaries = [];
-for (let i = 0; i < 5; i++) {
-    boundaries.push(new Boundary(Math.random() * w - w / 2, Math.random() * h - h / 2, Math.random() * w - w / 2, Math.random() * h - h / 2));
+
+function drawBoundaries() {
+    for (let boundary of boundaries)
+        boundary.drawBoundary();
 }
-boundaries.push(new Boundary(-w / 2, -h / 2, -w / 2, h / 2));
-boundaries.push(new Boundary(-w / 2, -h / 2, w / 2, -h / 2));
-boundaries.push(new Boundary(w / 2, -h / 2, w / 2, h / 2));
-boundaries.push(new Boundary(-w / 2, h / 2, w / 2, h / 2));
+
+function createBoundaries() {
+    for (let i = 0; i < 5; i++) {
+        boundaries.push(new Boundary(Math.random() * w - w / 2, Math.random() * h - h / 2, Math.random() * w - w / 2, Math.random() * h - h / 2));
+    }
+
+}
+
+function createWalls() {
+    boundaries.push(new Boundary(-w / 2, -h / 2, -w / 2, h / 2));
+    boundaries.push(new Boundary(-w / 2, -h / 2, w / 2, -h / 2));
+    boundaries.push(new Boundary(w / 2, -h / 2, w / 2, h / 2));
+    boundaries.push(new Boundary(-w / 2, h / 2, w / 2, h / 2));
+}
+
+createBoundaries();
+createWalls();
 
 function is_touch_device() {
     return 'ontouchstart' in window;
 }
 let touch_device = is_touch_device();
 
-rayTrace()
-function rayTrace(x, y) {
-    context.clearRect(-w / 2, -h / 2, w, h);
-    let rays = [];
+let offset = 0;
+let moveOffsetX = 0;
+let moveOffsetY = 0;
+let lastMX, lastMY;
 
-    let event_x;
-    let event_y;
-    
-    if(x && y){
-        event_x = (x - w / 2);
-        event_y = (y - h / 2);
-    }else{
-        event_x = Math.random() * w - w / 2;
-        event_y= Math.random() * h - h / 2;
+function Car(x, y, alpha, vision) {
+    this.x = x;
+    this.y = y;
+    this.alpha = alpha;
+    this.rays = [];
+    this.vision = vision;
+}
+
+Car.prototype.rayTrace = function () {
+    this.rays = [];
+    let angle = Math.atan2(this.y, this.x);
+    for (let i = -20; i < 30; i += 10) {
+        this.rays.push(new Ray(this.x, this.y, Math.PI * i / 180 + this.alpha));
     }
 
-    let angle = Math.atan2(event_y, event_x);
-    for (let i = 0; i < 720; i += 1) {
-        rays.push(new Ray(event_x, event_y, angle + Math.PI * i / 360));
-    }
-
-    context.beginPath();
-    context.arc(event_x, event_y, 10, 0, Math.PI * 2);
-    context.fillStyle = "white";
-    context.fill();
-
-    for (let ray of rays) {
+    let out = ""
+    for (let ray of this.rays) {
         let dist = Infinity;
         let closestBoundary = null;
+        let ray_dist;
         for (let boundary of boundaries) {
-            boundary.drawBoundary();
             let hit = ray.isHitting(boundary);
             if (hit) {
-                let ray_dist = getDist(ray.x, ray.y, hit.x, hit.y);
+                ray_dist = getDist(ray.x, ray.y, hit.x, hit.y);
                 if (ray_dist < dist) {
                     closestBoundary = hit;
                     dist = ray_dist;
                 }
             }
         }
+        ray.distance = getDist(ray.x, ray.y, closestBoundary.x, closestBoundary.y);
+        out += Math.round(ray.distance) + " ";
+
         if (closestBoundary) {
-            drawLine(ray.x, ray.y, closestBoundary.x, closestBoundary.y, 0.3, 3)
+            if (ray.distance < this.vision)
+                drawLine(ray.x, ray.y, closestBoundary.x, closestBoundary.y, 0.3, 3)
+            else {
+                drawLine(ray.x, ray.y, ray.x + this.vision * Math.cos(ray.angle), ray.y + this.vision * Math.sin(ray.angle), 0.3, 3)
+            }
         }
 
     }
+    //    console.log(out);
+    this.drawCar();
 }
 
-//window.addEventListener("touchstart", function (e) {
-//    console.log("started");
-//    rayTrace(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
-//});
+Car.prototype.moveCar = function (key) {
+    if (key == '38') {
+        // up arrow
+        let newX = this.x + 10 * Math.cos(this.alpha);
+        let newY = this.y + 10 * Math.sin(this.alpha);
+        let close = false;
+        let out = ""
+        for (let ray of this.rays) {
+            if (ray.distance < 50)
+                close = true;
+            out += Math.round(ray.distance) + " ";
+        }
+        //        console.log(out);
+        if (!close) {
+            this.x = newX;
+            this.y = newY;
+        }
+    } else if (key == '40') {
+        // down arrow
+        let newX = this.x - 10 * Math.cos(this.alpha);
+        let newY = this.y - 10 * Math.sin(this.alpha);
+        if (newX < w / 2 - 40 && newX > -w / 2 + 40 && newY < h / 2 - 40 && newY > -h / 2 + 40) {
+            this.x = newX;
+            this.y = newY;
+        }
+    } else if (key == '37') {
+        // left arrow
+        this.alpha -= Math.PI / 45;
+    } else if (key == '39') {
+        // right arrow
+        this.alpha += Math.PI / 45;
+    }
+    this.rayTrace();
+}
 
-window.addEventListener("touchmove", function (e){
-//    console.log("moving");
-    rayTrace(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
+Car.prototype.drawCar = function () {
+    context.beginPath();
+    context.translate(this.x, this.y);
+    context.rotate(this.alpha);
+    context.rect(-20, -10, 40, 20);
+    //            context.arc(0, 0, 10, 0, Math.PI * 2);
+    context.fillStyle = "red";
+    context.fill();
+    context.rotate(-this.alpha);
+    context.translate(-this.x, -this.y);
+}
+
+cars = [];
+
+function createCars() {
+    for (let i = 0; i < 1; i++)
+        cars.push(new Car(Math.random() * w - w / 2, Math.random() * h - h / 2, 0, 200));
+}
+createCars();
+
+function drawCars() {
+    for (let car of cars) {
+        car.drawCar();
+        car.rayTrace();
+    }
+
+}
+
+
+context.clearRect(-w / 2, -h / 2, w, h);
+drawBoundaries();
+drawCars();
+
+document.addEventListener("keydown", function (e) {
+    e = e || window.event;
+    context.clearRect(-w / 2, -h / 2, w, h);
+    drawBoundaries();
+    for (let car of cars)
+        car.moveCar(e.keyCode);
 });
 
-//window.addEventListener("touchend", function (e){
-////    console.log("end");
-//    rayTrace(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
-//});
 
-window.onmousemove = function (e) {
-    rayTrace(e.clientX, e.clientY);
+
+const rand_keys = ["37","38","39"];
+function random() {
+    var key = rand_keys[Math.floor(Math.random()*rand_keys.length)];
+    context.clearRect(-w / 2, -h / 2, w, h);
+    drawBoundaries();
+    for (let car of cars)
+        car.moveCar(key);
+    requestAnimationFrame(random);
 }
+
+//random();
