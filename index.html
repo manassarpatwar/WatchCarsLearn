@@ -6,11 +6,19 @@
     <link rel="stylesheet" href="main.css">
     <meta name="viewport" content="width=device-width, 
     initial-scale=1, maximum-scale=1" />
+    <!--     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>-->
 </head>
 
 <body>
     <canvas id="canvas"></canvas>
     <main>
+        <button onclick="initBounds()">Draw bounds</button>
+        <button onclick="clearBounds()">Clear bounds</button>
+        <p id="pos"></p>
+        <img id="car" src="car.png" style="display: none;">
     </main>
+    <script src="car.js"></script>
     <script src="ray.js"></script>
+    <script src="boundary.js"></script>
+    <script src="setup.js"></script>
 </body></html>

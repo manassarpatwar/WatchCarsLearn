@@ -5,3 +5,12 @@ canvas {
     z-index: -1;
     background: black;
 }
+
+body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: #444444;
+}
+
+main {
+    color: white;
+}
