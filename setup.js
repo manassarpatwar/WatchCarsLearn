@@ -49,21 +49,11 @@ function createWalls() {
 
 createWalls();
 
-function is_touch_device() {
-    return 'ontouchstart' in window;
-}
-let touch_device = is_touch_device();
-
-let offset = 0;
-let moveOffsetX = 0;
-let moveOffsetY = 0;
-let lastMX, lastMY;
-
 cars = [];
 allCars = [];
 
 function createCars() {
-    for (var j = 0; j < 1000; j++)
+    for (var j = 0; j < 100; j++)
         cars.push(new Car());
 }
 createCars();
@@ -152,6 +142,10 @@ let gen = 0;
 let genText = document.getElementById("genText");
 genText.innerHTML = "";
 genText.insertAdjacentHTML('beforeend', gen);
+var genSpeed = 1;
+document.getElementById("slider").oninput = function () {
+    genSpeed = this.value //gets the oninput value
+}
 
 var maxScore = 0;
 
@@ -159,36 +153,46 @@ function update() {
 
     context.clearRect(-w / 2, -h / 2, w, h);
     drawBoundaries();
-
-    for (let i = 0; i < cars.length; i++) {
-        car = cars[i];
-        //        car.keyboardCar(keyDown, keyUp)
-        let alive = true;
-        let inputs = [];
-        for (let ray of car.rays) {
-            inputs.push(ray.distance);
-            if (ray.distance < car.height / 2)
-                alive = false;
+    for (let j = 0; j < genSpeed; j++) {
+        for (let i = 0; i < cars.length; i++) {
+            maxScore = Math.max.apply(Math, cars.map(function (o) {
+                return o.score;
+            }))
+            car = cars[i];
+            //            car.keyboardCar(keyDown, keyUp)
+            let alive = true;
+            let inputs = [];
+            for (let ray of car.rays) {
+                inputs.push(ray.distance);
+                if (ray.distance < car.height / 2)
+                    alive = false;
+            }
+            if (alive) {
+                let predicts = car.brain.predict(inputs);
+                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+                //            console.log(MOVES[indexOfMaxValue]);
+                car.moveCar(MOVES[Math.floor(Math.random() * MOVES.length)]);
+                car.rayTrace();
+            } else {
+                allCars.push(cars[i]);
+                cars.splice(i, 1);
+            }
         }
-        if (alive) {
-            let predicts = car.brain.predict(inputs);
-            let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-            //            console.log(MOVES[indexOfMaxValue]);
-            car.moveCar(MOVES[Math.floor(Math.random() * MOVES.length)]);
-            car.rayTrace();
-        } else {
-            allCars.push(cars[i]);
-            cars.splice(i, 1);
+        pos.innerHTML = "";
+        pos.insertAdjacentHTML('beforeend', maxScore);
+        console.log(cars.length);
+        if (cars.length == 0) {
+            maxScore = 0;
+            gen++;
+            genText.innerHTML = "";
+            genText.insertAdjacentHTML('beforeend', gen);
+            nextGeneration();
+            console.log(allCars.length);
         }
     }
-    //    console.log(cars.length);
-    if (cars.length == 0) {
-        maxScore = 0;
-        gen++;
-        genText.innerHTML = "";
-        genText.insertAdjacentHTML('beforeend', gen);
-        nextGeneration();
-        console.log(allCars.length);
+
+    for (let car of cars) {
+        car.drawCar();
     }
     requestAnimationFrame(update);
 
@@ -219,10 +223,10 @@ function nextGeneration() {
 
 // Normalize the fitness of all cars
 function normalizeFitness(cars) {
-    //    // Make score exponentially better?
-    //    for (let i = 0; i < cars.length; i++) {
-    //        cars[i].score = Math.pow(cars[i].score, 2);
-    //    }
+    // Make score exponentially better?
+    for (let i = 0; i < cars.length; i++) {
+        cars[i].score = Math.pow(cars[i].score, 2);
+    }
 
     // Add up all the scores
     let sum = 0;
@@ -269,6 +273,5 @@ function poolSelection(cars) {
 
     // Make sure it's a copy!
     // (this includes mutation)
-    console.log(cars[index].calculateScore());
     return cars[index].copyCar();
 }
