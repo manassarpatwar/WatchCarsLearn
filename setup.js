@@ -60,10 +60,11 @@ let moveOffsetY = 0;
 let lastMX, lastMY;
 
 cars = [];
+allCars = [];
 
 function createCars() {
-    for (let i = 0; i < 1; i++)
-        cars.push(new Car(i, Infinity, 40, 20, 4));
+    for (var j = 0; j < 1000; j++)
+        cars.push(new Car());
 }
 createCars();
 
@@ -83,38 +84,44 @@ function setup() {
 
 setup();
 
-let start = false;
+let startDraw = false;
 let initX = 0;
 let initY = 0;
 
 function initBounds() {
+    setup();
     canvas.addEventListener("click", function (e) {
-        start = true;
+        startDraw = true;
         initX = e.clientX - w / 2;
         initY = e.clientY - h / 2;
+        this.removeEventListener('click', arguments.callee, false);
     });
 }
 
 function clearBounds() {
-    console.log("henlo")
     localStorage.removeItem("boundaries");
 }
 
+canvas.addEventListener("mouseenter", function () {
+    setup();
+})
+
 window.addEventListener("mousemove", function (e) {
-    if (start) {
-        console.log(e.clientX - w / 2, e.clientY - h / 2);
+    if (startDraw) {
+        //        console.log(e.clientX - w / 2, e.clientY - h / 2);
         boundaries.push(new Boundary(initX, initY, e.clientX - w / 2, e.clientY - h / 2));
         initX = e.clientX - w / 2;
         initY = e.clientY - h / 2;
         context.clearRect(-w / 2, -h / 2, w, h);
         drawBoundaries();
+        setup();
     }
 })
 
 window.addEventListener("dblclick", function (e) {
-    start = false;
+    startDraw = false;
+    setup();
     localStorage.setItem("boundaries", JSON.stringify(boundaries));
-    window.removeEventListener("click", function () {});
 })
 
 let keyDown;
@@ -122,7 +129,7 @@ let keyUp;
 document.addEventListener("keydown", function (e) {
     e = e || window.event;
     keyDown = e.keyCode;
-    console.log(keyDown)
+    //    console.log(keyDown)
     if (keyDown == '38' || keyDown == '40')
         keyUp = null;
     if (keyDown == '37' || keyDown == '39')
@@ -139,20 +146,129 @@ document.addEventListener("keyup", function (e) {
 
 });
 
-const MOVES = ["F", "B", "L", "R", ""];
+const MOVES = ["F", "L", "R"];
 
-function random() {
+let gen = 0;
+let genText = document.getElementById("genText");
+genText.innerHTML = "";
+genText.insertAdjacentHTML('beforeend', gen);
+
+var maxScore = 0;
+
+function update() {
 
     context.clearRect(-w / 2, -h / 2, w, h);
     drawBoundaries();
 
-    for (let car of cars) {
-        car.keyboardCar(keyDown, keyUp)
-        //        car.moveCar(MOVES[Math.floor(Math.random() * MOVES.length)]);
-        car.rayTrace();
-        car.drawCar();
+    for (let i = 0; i < cars.length; i++) {
+        car = cars[i];
+        //        car.keyboardCar(keyDown, keyUp)
+        let alive = true;
+        let inputs = [];
+        for (let ray of car.rays) {
+            inputs.push(ray.distance);
+            if (ray.distance < car.height / 2)
+                alive = false;
+        }
+        if (alive) {
+            let predicts = car.brain.predict(inputs);
+            let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+            //            console.log(MOVES[indexOfMaxValue]);
+            car.moveCar(MOVES[Math.floor(Math.random() * MOVES.length)]);
+            car.rayTrace();
+        } else {
+            allCars.push(cars[i]);
+            cars.splice(i, 1);
+        }
     }
-    requestAnimationFrame(random);
+    //    console.log(cars.length);
+    if (cars.length == 0) {
+        maxScore = 0;
+        gen++;
+        genText.innerHTML = "";
+        genText.insertAdjacentHTML('beforeend', gen);
+        nextGeneration();
+        console.log(allCars.length);
+    }
+    requestAnimationFrame(update);
+
 }
 
-random();
+
+let startAnim = false;
+
+function start() {
+    if (!startAnim) {
+        startAnim = true;
+        update();
+    }
+}
+
+
+function nextGeneration() {
+    // Normalize the fitness values 0-1
+    normalizeFitness(allCars);
+    //    console.log(allCars[0].copyCar());
+    // Generate a new set of birds
+    activeCars = generate(allCars);
+    // Copy those birds to another array
+    cars = activeCars.slice();
+    allCars = [];
+    setup();
+}
+
+// Normalize the fitness of all cars
+function normalizeFitness(cars) {
+    //    // Make score exponentially better?
+    //    for (let i = 0; i < cars.length; i++) {
+    //        cars[i].score = Math.pow(cars[i].score, 2);
+    //    }
+
+    // Add up all the scores
+    let sum = 0;
+    for (let i = 0; i < cars.length; i++) {
+        sum += cars[i].score;
+    }
+    console.log(sum);
+    // Divide by the sum
+    for (let i = 0; i < cars.length; i++) {
+        cars[i].fitness = cars[i].score / sum;
+    }
+}
+
+function generate(oldCars) {
+    let newCars = [];
+    for (let i = 0; i < oldCars.length; i++) {
+        // Select a bird based on fitness
+        let car = poolSelection(oldCars);
+        newCars[i] = car;
+    }
+    return newCars;
+}
+
+// An algorithm for picking one bird from an array
+// based on fitness
+function poolSelection(cars) {
+    // Start at 0
+    let index = 0;
+
+    // Pick a random number between 0 and 1
+    let r = Math.random();
+
+    // Keep subtracting probabilities until you get less than zero
+    // Higher probabilities will be more likely to be fixed since they will
+    // subtract a larger number towards zero
+    while (r > 0) {
+        r -= cars[index].fitness;
+        // And move on to the next
+        index += 1;
+    }
+
+    // Go back one
+    index -= 1;
+
+    // Make sure it's a copy!
+    // (this includes mutation)
+    console.log(cars[index].calculateScore());
+    return cars[index].copyCar();
+}

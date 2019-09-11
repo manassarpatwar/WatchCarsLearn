@@ -14,9 +14,15 @@
     <main>
         <button onclick="initBounds()">Draw bounds</button>
         <button onclick="clearBounds()">Clear bounds</button>
+        <button onclick="start()">Start</button>
+        <p>Gen</p><p id="genText"></p>
+        <br>
+        <p>Score</p>
         <p id="pos"></p>
         <img id="car" src="car.png" style="display: none;">
     </main>
+    <script src="lib/nn.js"></script>
+    <script src="lib/matrix.js"></script>
     <script src="car.js"></script>
     <script src="ray.js"></script>
     <script src="boundary.js"></script>

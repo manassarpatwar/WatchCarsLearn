@@ -1,27 +1,55 @@
-const CAR = document.getElementById("car");
+var CAR = new Image;
+CAR.src = "car.png";
+
+function randn_bm() {
+    var u = 0,
+        v = 0;
+    while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function mutate(x) {
+    if (Math.random(1) < 0.1) {
+        let offset = randn_bm() * 0.5;
+        let newx = x + offset;
+        return newx;
+    } else {
+        return x;
+    }
+}
 
 class Car {
-    x = -w / 2 + 150;
-    y = 0;
-    alpha = -Math.PI / 2;
-    rays = [];
-    direction = 0;
-    turn = 0;
-    rays = [];
-    score = 0;
-    prevAngle;
+    constructor(brain) {
+        this.x = -w / 3;
+        this.y = 0;
+        this.alpha = -Math.PI / 2;
+        this.rays = [];
+        this.direction = 0;
+        this.turn = 0;
+        this.score = 0;
+        this.fitness = 0;
+        this.prevAngle;
+        this.vision = Infinity;
+        this.width = 40;
+        this.height = 20;
+        this.speed = 4;
 
-    constructor(index, vision, width, height, speed) {
-        this.index = index;
-        this.vision = vision;
-        this.alive = true;
-        this.width = width;
-        this.height = height;
-        this.speed = speed;
-        console.log(this.speed)
+
+        if (brain instanceof NeuralNetwork) {
+            this.brain = brain.copy();
+            this.brain.mutate(mutate);
+        } else {
+            this.brain = new NeuralNetwork(8, 8, 3);
+        }
+
         for (let i = -180; i < 180; i += 45) {
             this.rays.push(new Ray(this.x, this.y, Math.PI * i / 180 + this.alpha));
         }
+    }
+
+    copyCar() {
+        return new Car(this.brain);
     }
 
     rayTrace() {
@@ -53,15 +81,16 @@ class Car {
             else
                 ray.distance = getDist(ray.x, ray.y, closestBoundary.x, closestBoundary.y);
 
-            if (closestBoundary) {
-                drawLine(ray.x, ray.y, closestBoundary.x, closestBoundary.y, 0.3, 3)
-                context.beginPath();
-                context.arc(closestBoundary.x, closestBoundary.y, 4, 0, Math.PI * 2);
-                context.fillStyle = "white";
-                context.fill();
-            }
+//            if (closestBoundary) {
+//                drawLine(ray.x, ray.y, closestBoundary.x, closestBoundary.y, 0.3, 3)
+//                context.beginPath();
+//                context.arc(closestBoundary.x, closestBoundary.y, 4, 0, Math.PI * 2);
+//                context.fillStyle = "white";
+//                context.fill();
+//            }
 
         }
+        this.drawCar();
     }
 
     goForward() {
@@ -78,14 +107,12 @@ class Car {
         this.y = newY;
     }
 
-    calculateFitness() {
+    calculateScore() {
         let angle = Math.atan2(this.y, this.x);
         if (this.prevAngle != angle) {
             this.score += Math.abs(angle);
             this.prevAngle = angle;
         }
-        pos.innerHTML = "";
-        pos.insertAdjacentHTML('beforeend', this.score);
     }
 
 
@@ -124,17 +151,11 @@ class Car {
                 this.alpha = 0;
             }
         }
-
-        for (let ray of this.rays) {
-            if (ray.distance < this.height / 2)
-                this.alive = false;
-        }
-        if (!this.alive)
-            cars.splice(cars[this.index], 1);
-
-        let out = Math.atan2(this.y, this.x);
+        this.calculateScore();
         pos.innerHTML = "";
-        pos.insertAdjacentHTML('beforeend', out);
+        pos.insertAdjacentHTML('beforeend', this.score);
+
+
 
     }
 
@@ -142,9 +163,13 @@ class Car {
         context.beginPath();
         context.translate(this.x, this.y);
         context.rotate(this.alpha);
-//        context.rect(-this.width / 2, -this.height / 2, this.width, this.height);
-        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
-        context.fillStyle = "red";
+        context.rect(-this.width / 2, -this.height / 2, this.width, this.height);
+        //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
+        if (this.score > maxScore) {
+            maxScore = this.score;
+            context.fillStyle = "green";
+        } else
+            context.fillStyle = "rgba(255, 0, 0, 0.1";
         context.fill();
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
@@ -219,11 +244,7 @@ class Car {
             if (ray.distance < this.height / 2)
                 this.alive = false;
         }
-        if (!this.alive)
-            cars.splice(this);
-        this.calculateFitness();
+        this.calculateScore();
     }
 
-
 }
-
