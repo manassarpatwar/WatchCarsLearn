@@ -29,11 +29,12 @@ class Car {
         this.turn = 0;
         this.score = 0;
         this.fitness = 0;
-        this.prevAngle;
+        this.prevAngle = -1;
         this.vision = Infinity;
         this.width = 40;
         this.height = 20;
         this.speed = 2;
+        this.checkpoint = 0;
 
 
         if (brain instanceof NeuralNetwork) {
@@ -108,11 +109,20 @@ class Car {
     }
 
     calculateScore() {
-        let angle = Math.PI + Math.atan2(this.y, this.x);
-        if (this.prevAngle != angle) {
-            this.score = angle;
+        let tmp = Math.atan2(-this.y, -this.x);
+        let crossed = false;
+        let angle = tmp;
+        if (this.prevAngle - angle >= Math.PI) {
+            angle = angle + 2 * Math.PI;
+            crossed = true;
+        }
+        if (this.prevAngle < angle) {
+            this.score += angle - this.prevAngle+this.checkpoint;
             this.prevAngle = angle;
         }
+        this.checkpoint = Math.floor(angle/(Math.PI/16));
+        pos.innerHTML = "";
+        pos.insertAdjacentHTML('beforeend', this.score + " " + this.checkpoint);
     }
 
 
@@ -151,7 +161,7 @@ class Car {
                 this.alpha = 0;
             }
         }
-        this.calculateScore();
+        //        this.calculateScore();
     }
 
     drawCar() {
@@ -167,9 +177,7 @@ class Car {
         context.fill();
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
-        //        this.calculateScore();
-        //        pos.innerHTML = "";
-        //        pos.insertAdjacentHTML('beforeend', this.score);
+        this.calculateScore();
     }
 
     keyboardCar(keyDown, keyUp) {
@@ -241,7 +249,7 @@ class Car {
             if (ray.distance < this.height / 2)
                 this.alive = false;
         }
-        this.calculateScore();
+        //        this.calculateScore();
     }
 
 }

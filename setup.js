@@ -53,7 +53,7 @@ cars = [];
 allCars = [];
 
 function createCars() {
-    for (var j = 0; j < 100; j++)
+    for (var j = 0; j < 500; j++)
         cars.push(new Car());
 }
 createCars();
@@ -136,7 +136,7 @@ document.addEventListener("keyup", function (e) {
 
 });
 
-const MOVES = ["F", "L", "R"];
+const MOVES = ["F", "L", "R", "B"];
 
 let gen = 0;
 let genText = document.getElementById("genText");
@@ -155,11 +155,8 @@ function update() {
     drawBoundaries();
     for (let j = 0; j < genSpeed; j++) {
         for (let i = 0; i < cars.length; i++) {
-            maxScore = Math.max.apply(Math, cars.map(function (o) {
-                return o.score;
-            }))
             car = cars[i];
-            //            car.keyboardCar(keyDown, keyUp)
+            //                        car.keyboardCar(keyDown, keyUp)
             let alive = true;
             let inputs = [];
             for (let ray of car.rays) {
@@ -178,22 +175,20 @@ function update() {
                 cars.splice(i, 1);
             }
         }
+        maxScore = Math.max.apply(Math, cars.map(function (o) {
+            return o.score;
+        }))
         pos.innerHTML = "";
         pos.insertAdjacentHTML('beforeend', maxScore);
         console.log(cars.length);
         if (cars.length == 0) {
-            maxScore = 0;
-            gen++;
-            genText.innerHTML = "";
-            genText.insertAdjacentHTML('beforeend', gen);
             nextGeneration();
-            console.log(allCars.length);
         }
     }
+        for (let car of cars) {
+            car.drawCar();
+        }
 
-    for (let car of cars) {
-        car.drawCar();
-    }
     requestAnimationFrame(update);
 
 }
@@ -210,7 +205,11 @@ function start() {
 
 
 function nextGeneration() {
-    // Normalize the fitness values 0-1
+    maxScore = 0;
+    gen++;
+    genText.innerHTML = "";
+    genText.insertAdjacentHTML('beforeend', gen);
+    //    Normalize the fitness values 0 - 1
     normalizeFitness(allCars);
     //    console.log(allCars[0].copyCar());
     // Generate a new set of birds
@@ -224,9 +223,9 @@ function nextGeneration() {
 // Normalize the fitness of all cars
 function normalizeFitness(cars) {
     // Make score exponentially better?
-    for (let i = 0; i < cars.length; i++) {
-        cars[i].score = Math.pow(cars[i].score, 2);
-    }
+    //    for (let i = 0; i < cars.length; i++) {
+    //        cars[i].score = Math.pow(cars[i].score, 2);
+    //    }
 
     // Add up all the scores
     let sum = 0;
@@ -236,14 +235,14 @@ function normalizeFitness(cars) {
     console.log(sum);
     // Divide by the sum
     for (let i = 0; i < cars.length; i++) {
-        cars[i].fitness = cars[i].score / sum;
+        cars[i].fitness = cars[i].score / sum * 10;
     }
 }
 
 function generate(oldCars) {
     let newCars = [];
     for (let i = 0; i < oldCars.length; i++) {
-        // Select a bird based on fitness
+        // Select a car based on fitness
         let car = poolSelection(oldCars);
         newCars[i] = car;
     }
