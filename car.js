@@ -102,8 +102,8 @@ class Car {
     }
 
     goBackward() {
-        let newX = this.x - this.speed * Math.cos(this.alpha) / 3;
-        let newY = this.y - this.speed * Math.sin(this.alpha) / 3;
+        let newX = this.x - this.speed * Math.cos(this.alpha);
+        let newY = this.y - this.speed * Math.sin(this.alpha);
         this.x = newX;
         this.y = newY;
     }
