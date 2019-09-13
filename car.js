@@ -1,24 +1,6 @@
 var CAR = new Image;
 CAR.src = "car.png";
 
-function randn_bm() {
-    var u = 0,
-        v = 0;
-    while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
-    while (v === 0) v = Math.random();
-    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-}
-
-function mutate(x) {
-    if (Math.random() < 0.05) {
-        let offset = randn_bm() * 0.5;
-        let newx = x + offset;
-        return newx;
-    } else {
-        return x;
-    }
-}
-
 class Car {
     constructor(brain) {
         this.x = -w / 3;
@@ -33,16 +15,14 @@ class Car {
         this.vision = Infinity;
         this.width = 40;
         this.height = 20;
-        this.speed = 2;
-        this.checkpoint = 0;
-
+        this.speed = 4;
 
         if (brain instanceof NeuralNetwork) {
             this.brain = brain.copy();
             console.log("mutating");
-            this.brain.mutate(mutate);
+            this.brain.mutate(x => x * 0.1);
         } else {
-            this.brain = new NeuralNetwork(8, 8, 3);
+            this.brain = new NeuralNetwork([8, 4, 4]);
         }
 
         for (let i = -180; i < 180; i += 45) {
@@ -97,32 +77,31 @@ class Car {
     goForward() {
         let newX = this.x + this.speed * Math.cos(this.alpha);
         let newY = this.y + this.speed * Math.sin(this.alpha);
-        this.x = newX;
-        this.y = newY;
+        if (newX < w / 2-this.width/2 && newY < h / 2-this.height/2 && newX > -w / 2+this.width/2 && newY > -h / 2+this.height/2) {
+            this.x = newX;
+            this.y = newY;
+        }
     }
 
     goBackward() {
         let newX = this.x - this.speed * Math.cos(this.alpha);
         let newY = this.y - this.speed * Math.sin(this.alpha);
-        this.x = newX;
-        this.y = newY;
+        if (newX < w / 2-this.width/2 && newY < h / 2-this.height/2 && newX > -w / 2+this.width/2 && newY > -h / 2+this.height/2) {
+            this.x = newX;
+            this.y = newY;
+        }
     }
 
     calculateScore() {
-        let tmp = Math.atan2(-this.y, -this.x);
+        let tmp = Math.atan2(this.y, this.x) - Math.PI;
         let crossed = false;
         let angle = tmp;
         if (this.prevAngle - angle >= Math.PI) {
             angle = angle + 2 * Math.PI;
             crossed = true;
         }
-        if (this.prevAngle < angle) {
-            this.score += angle - this.prevAngle+this.checkpoint;
-            this.prevAngle = angle;
-        }
-        this.checkpoint = Math.floor(angle/(Math.PI/16));
-        pos.innerHTML = "";
-        pos.insertAdjacentHTML('beforeend', this.score + " " + this.checkpoint);
+        this.score = angle;
+        this.prevAngle = angle;
     }
 
 
@@ -170,15 +149,42 @@ class Car {
         context.rotate(this.alpha);
         context.rect(-this.width / 2, -this.height / 2, this.width, this.height);
         //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
-        if (this.score == maxScore) {
-            context.fillStyle = "green";
-        } else
-            context.fillStyle = "rgba(255, 0, 0, 0.4";
+        context.fillStyle = "green";
         context.fill();
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
         this.calculateScore();
     }
+    //
+    //    drawFrontWheels() {
+    //        context.beginPath();
+    //        context.translate(this.x + this.width / 4, this.y - this.height / 2);
+    //        context.rotate(this.alpha);
+    //        //        context.arc(0,0,5,0,Math.PI*2);
+    //        context.rect(-20 + 10, -10 + 5, 20, 10);
+    //        //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
+    //        context.fillStyle = "blue";
+    //        context.fill();
+    //        context.rotate(-this.alpha);
+    //        context.translate(-(this.x + this.width / 4), -(this.y - this.height / 2));
+    //
+    //        context.beginPath();
+    //        context.translate(this.x + this.width / 4, this.y + this.height / 2);
+    //        context.rotate(this.alpha);
+    //        //        context.arc(0,0,5,0,Math.PI*2);
+    //        context.rect(-20 + 10, -10 + 5, 20, 10);
+    //        //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
+    //        context.fillStyle = "blue";
+    //        context.fill();
+    //        context.rotate(-this.alpha);
+    //        context.translate(-(this.x + this.width / 4), -(this.y + this.height / 2));
+    //
+    //    }
+
+    drawBackWheels() {
+
+    }
+
 
     keyboardCar(keyDown, keyUp) {
 
@@ -223,10 +229,6 @@ class Car {
             this.direction = 0;
         }
 
-        if (keyDown == 'stopTurn') {
-            this.turn = 0;
-        }
-
         if (this.direction == 1) {
             this.goForward();
         } else if (this.direction == -1) {
@@ -234,12 +236,12 @@ class Car {
         }
 
         if (this.turn == 1) {
-            this.alpha += this.direction * Math.PI / 45;
+            this.alpha += this.direction * Math.PI / 90+Math.PI/45;
             if (this.alpha > Math.PI * 2) {
                 this.alpha = 0;
             }
         } else if (this.turn == -1) {
-            this.alpha -= this.direction * Math.PI / 45;
+            this.alpha -= this.direction * Math.PI / 90+Math.PI/45;
             if (this.alpha < -Math.PI * 2) {
                 this.alpha = 0;
             }

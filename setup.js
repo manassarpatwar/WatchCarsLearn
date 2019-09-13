@@ -53,8 +53,10 @@ cars = [];
 allCars = [];
 
 function createCars() {
-    for (var j = 0; j < 500; j++)
-        cars.push(new Car());
+    for (var j = 0; j < 1; j++) {
+        let car = new Car();
+        cars[j] = car;
+    }
 }
 createCars();
 
@@ -136,7 +138,7 @@ document.addEventListener("keyup", function (e) {
 
 });
 
-const MOVES = ["F", "L", "R", "B"];
+const MOVES = ["F", ,"L", "R"];
 
 let gen = 0;
 let genText = document.getElementById("genText");
@@ -154,40 +156,42 @@ function update() {
     context.clearRect(-w / 2, -h / 2, w, h);
     drawBoundaries();
     for (let j = 0; j < genSpeed; j++) {
+        maxScore = 0;
         for (let i = 0; i < cars.length; i++) {
             car = cars[i];
-            //                        car.keyboardCar(keyDown, keyUp)
+            car.keyboardCar(keyDown, keyUp)
             let alive = true;
             let inputs = [];
             for (let ray of car.rays) {
                 inputs.push(ray.distance);
-                if (ray.distance < car.height / 2)
+                if (ray.distance < car.height / 2) {
                     alive = false;
+                    break;
+                }
             }
             if (alive) {
-                let predicts = car.brain.predict(inputs);
-                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-                //            console.log(MOVES[indexOfMaxValue]);
-                car.moveCar(MOVES[Math.floor(Math.random() * MOVES.length)]);
+//                let predicts = car.brain.query(inputs);
+//                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+//                console.log(MOVES[indexOfMaxValue]);
+//                car.moveCar(MOVES[Math.floor(Math.random() * MOVES.length)]);
                 car.rayTrace();
             } else {
-                allCars.push(cars[i]);
+                allCars.push(car);
                 cars.splice(i, 1);
             }
+            if (car.score > maxScore) {
+                maxScore = car.score;
+            }
         }
-        maxScore = Math.max.apply(Math, cars.map(function (o) {
-            return o.score;
-        }))
-        pos.innerHTML = "";
-        pos.insertAdjacentHTML('beforeend', maxScore);
-        console.log(cars.length);
+//        pos.innerHTML = "";
+//        pos.insertAdjacentHTML('beforeend', maxScore);
         if (cars.length == 0) {
             nextGeneration();
         }
     }
-        for (let car of cars) {
-            car.drawCar();
-        }
+    for (let car of cars) {
+        car.drawCar();
+    }
 
     requestAnimationFrame(update);
 
@@ -201,76 +205,4 @@ function start() {
         startAnim = true;
         update();
     }
-}
-
-
-function nextGeneration() {
-    maxScore = 0;
-    gen++;
-    genText.innerHTML = "";
-    genText.insertAdjacentHTML('beforeend', gen);
-    //    Normalize the fitness values 0 - 1
-    normalizeFitness(allCars);
-    //    console.log(allCars[0].copyCar());
-    // Generate a new set of birds
-    activeCars = generate(allCars);
-    // Copy those birds to another array
-    cars = activeCars.slice();
-    allCars = [];
-    setup();
-}
-
-// Normalize the fitness of all cars
-function normalizeFitness(cars) {
-    // Make score exponentially better?
-    //    for (let i = 0; i < cars.length; i++) {
-    //        cars[i].score = Math.pow(cars[i].score, 2);
-    //    }
-
-    // Add up all the scores
-    let sum = 0;
-    for (let i = 0; i < cars.length; i++) {
-        sum += cars[i].score;
-    }
-    console.log(sum);
-    // Divide by the sum
-    for (let i = 0; i < cars.length; i++) {
-        cars[i].fitness = cars[i].score / sum * 10;
-    }
-}
-
-function generate(oldCars) {
-    let newCars = [];
-    for (let i = 0; i < oldCars.length; i++) {
-        // Select a car based on fitness
-        let car = poolSelection(oldCars);
-        newCars[i] = car;
-    }
-    return newCars;
-}
-
-// An algorithm for picking one bird from an array
-// based on fitness
-function poolSelection(cars) {
-    // Start at 0
-    let index = 0;
-
-    // Pick a random number between 0 and 1
-    let r = Math.random();
-
-    // Keep subtracting probabilities until you get less than zero
-    // Higher probabilities will be more likely to be fixed since they will
-    // subtract a larger number towards zero
-    while (r > 0) {
-        r -= cars[index].fitness;
-        // And move on to the next
-        index += 1;
-    }
-
-    // Go back one
-    index -= 1;
-
-    // Make sure it's a copy!
-    // (this includes mutation)
-    return cars[index].copyCar();
 }
