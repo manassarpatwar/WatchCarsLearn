@@ -1,66 +1,57 @@
+// Daniel Shiffman
+// Nature of Code: Intelligence and Learning
+// https://github.com/shiffman/NOC-S17-2-Intelligence-Learning
+
+// This flappy bird implementation is adapted from:
+// https://youtu.be/cXgA1d_E-jY&
+
+
+// This file includes functions for creating a new generation
+// of Cars.
+
+
+// Create the next generation
 function nextGeneration() {
-    maxScore = 0;
     gen++;
     genText.innerHTML = "";
-    genText.insertAdjacentHTML('beforeend', gen);
-    //    Normalize the fitness values 0 - 1
+genText.insertAdjacentHTML('beforeend', gen);
+    // Normalize the fitness values 0-1
     normalizeFitness(allCars);
-
-    // Generate a new set of birds
-    cars = generate(allCars);
-    allCars = [];
-    setup();
+    // Generate a new set of Cars
+    activeCars = generate(allCars);
+    // Copy those Cars to another array
+    allCars = activeCars.slice(0);
 }
 
-
-// Normalize the fitness of all cars
-function normalizeFitness(c) {
-    // Add up all the scores
-    let sum = 0;
-    for (let i = 0; i < c.length; i++) {
-        sum += c[i].score;
-    }
-
-    // Divide by the sum
-    for (let i = 0; i < c.length; i++) {
-        c[i].fitness = c[i].score / sum;
-        console.log(c[i].fitness);
-    }
-}
-
-// Generate a new population of car
+// Generate a new population of Cars
 function generate(oldCars) {
     let newCars = [];
-
-    for (let i = 0; i < 20; i++) {
-        newCars.push(poolSelection(oldCars));
+    for (let i = 0; i < oldCars.length; i++) {
+        // Select a car based on fitness
+        let car = poolSelection(oldCars);
+        newCars[i] = car;
     }
-
-    for (let z = 0; z < 4; z++) {
-
-        let top1 = oldCars.reduce(function (prev, current) {
-            return (prev.fitness > current.fitness) ? prev : current
-        })
-
-        for (let j = 0; j < oldCars.length; j++)
-            if (oldCars[j] == top1)
-                oldCars.splice(j, 1);
-        let top2 = oldCars.reduce(function (prev, current) {
-            return (prev.fitness > current.fitness) ? prev : current
-        })
-
-        for (let j = 0; j < oldCars.length; j++)
-            if (oldCars[j] == top2)
-                oldCars.splice(j, 1);
-        
-        for (let i = 0; i < 20; i++) {
-            let car = new Car(top1.brain.merge(top2.brain));
-            newCars.push(car);
-        }
-    }
-
     return newCars;
 }
+
+// Normalize the fitness of all Cars
+function normalizeFitness(cars) {
+    // Make score exponentially better?
+    for (let i = 0; i < cars.length; i++) {
+        cars[i].score = Math.pow(cars[i].score, 2);
+    }
+
+    // Add up all the scores
+    let sum = 0;
+    for (let i = 0; i < cars.length; i++) {
+        sum += cars[i].score;
+    }
+    // Divide by the sum
+    for (let i = 0; i < cars.length; i++) {
+        cars[i].fitness = cars[i].score / sum;
+    }
+}
+
 
 // An algorithm for picking one car from an array
 // based on fitness
@@ -69,7 +60,7 @@ function poolSelection(cars) {
     let index = 0;
 
     // Pick a random number between 0 and 1
-    let r = Math.random();
+    let r = Math.random(1);
 
     // Keep subtracting probabilities until you get less than zero
     // Higher probabilities will be more likely to be fixed since they will
@@ -82,7 +73,7 @@ function poolSelection(cars) {
 
     // Go back one
     index -= 1;
-
+//    pos.insertAdjacentHTML('beforeend', cars[index].fitness + " ");
     // Make sure it's a copy!
     // (this includes mutation)
     return cars[index].copyCar();

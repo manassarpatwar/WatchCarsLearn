@@ -49,19 +49,21 @@ function createWalls() {
 
 createWalls();
 
-cars = [];
-allCars = [];
+var activeCars = [];
+var allCars = [];
 
+var totalCars = 100;
 function createCars() {
-    for (var j = 0; j < 1; j++) {
+    for (var j = 0; j < totalCars; j++) {
         let car = new Car();
-        cars[j] = car;
+        activeCars[j] = car;
+        allCars[j] = car;
     }
 }
 createCars();
 
 function drawCars() {
-    for (let car of cars) {
+    for (let car of activeCars) {
         car.drawCar();
         car.rayTrace();
     }
@@ -71,11 +73,10 @@ function drawCars() {
 function setup() {
     context.clearRect(-w / 2, -h / 2, w, h);
     drawBoundaries();
-    drawCars();
 }
 
 setup();
-
+drawCars();
 let startDraw = false;
 let initX = 0;
 let initY = 0;
@@ -96,6 +97,7 @@ function clearBounds() {
 
 canvas.addEventListener("mouseenter", function () {
     setup();
+    drawCars();
 })
 
 window.addEventListener("mousemove", function (e) {
@@ -104,41 +106,58 @@ window.addEventListener("mousemove", function (e) {
         boundaries.push(new Boundary(initX, initY, e.clientX - w / 2, e.clientY - h / 2));
         initX = e.clientX - w / 2;
         initY = e.clientY - h / 2;
-        context.clearRect(-w / 2, -h / 2, w, h);
-        drawBoundaries();
         setup();
+        drawCars();
     }
 })
 
 window.addEventListener("dblclick", function (e) {
     startDraw = false;
     setup();
+    drawCars();
     localStorage.setItem("boundaries", JSON.stringify(boundaries));
 })
 
 let keyDown;
 let keyUp;
-document.addEventListener("keydown", function (e) {
-    e = e || window.event;
-    keyDown = e.keyCode;
-    //    console.log(keyDown)
-    if (keyDown == '38' || keyDown == '40')
-        keyUp = null;
-    if (keyDown == '37' || keyDown == '39')
-        keyUp = null;
-});
 
-document.addEventListener("keyup", function (e) {
-    e = e || window.event;
-    keyUp = e.keyCode;
-    if (keyUp == '38' || keyUp == '40')
-        keyDown = 'stopFB';
-    if (keyUp == '37' || keyUp == '39')
-        keyDown = 'stopTurn';
+//
+//document.addEventListener("keyup", function (e) {
+//    e = e || window.event;
+//    keyUp = e.keyCode;
+//    if (keyUp == '38' || keyUp == '40')
+//        keyDown = 'stopFB';
+//    if (keyUp == '37' || keyUp == '39')
+//        keyDown = 'stopTurn';
+//
+//});
+//let move = "";
+//document.addEventListener("keydown", function (e) {
+//    e = e || window.event;
+//    console.log(e.keyCode)
+//    switch (e.keyCode) {
+//        case 38:
+//            move = "F";
+//            break;
+//        case 40:
+//            move = "B";
+//            break;
+//        case 37:
+//            move = "L";
+//            break;
+//        case 39:
+//            move = "R";
+//            break;
+//    }
+//});
+//
+//document.addEventListener("keyup", function (e) {
+//    e = e || window.event;
+//    move = "";
+//});
 
-});
 
-const MOVES = ["F", ,"L", "R"];
+const MOVES = ["L", "R", ""];
 
 let gen = 0;
 let genText = document.getElementById("genText");
@@ -155,44 +174,40 @@ function update() {
 
     context.clearRect(-w / 2, -h / 2, w, h);
     drawBoundaries();
-    for (let j = 0; j < genSpeed; j++) {
+    for(let j = 0; j < genSpeed; j++){
         maxScore = 0;
-        for (let i = 0; i < cars.length; i++) {
-            car = cars[i];
-            car.keyboardCar(keyDown, keyUp)
+        
+        for (let i = activeCars.length - 1; i >= 0; i--) {
+            car = activeCars[i];
+            car.moveCar("F");
+            //            car.moveCar(move);
             let alive = true;
             let inputs = [];
             for (let ray of car.rays) {
                 inputs.push(ray.distance);
                 if (ray.distance < car.height / 2) {
                     alive = false;
+                    activeCars.splice(i, 1);
                     break;
                 }
             }
             if (alive) {
-//                let predicts = car.brain.query(inputs);
-//                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-//                console.log(MOVES[indexOfMaxValue]);
-//                car.moveCar(MOVES[Math.floor(Math.random() * MOVES.length)]);
+                let predicts = car.brain.query(inputs);
+                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+                //                console.log(MOVES[indexOfMaxValue]);
+                car.moveCar(MOVES[indexOfMaxValue]);
                 car.rayTrace();
-            } else {
-                allCars.push(car);
-                cars.splice(i, 1);
             }
             if (car.score > maxScore) {
                 maxScore = car.score;
             }
         }
-//        pos.innerHTML = "";
-//        pos.insertAdjacentHTML('beforeend', maxScore);
-        if (cars.length == 0) {
-            nextGeneration();
+        if (activeCars.length == 0) {
+           nextGeneration();
         }
     }
-    for (let car of cars) {
-        car.drawCar();
-    }
 
+    drawCars();
     requestAnimationFrame(update);
 
 }

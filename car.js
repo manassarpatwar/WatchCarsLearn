@@ -2,30 +2,30 @@ var CAR = new Image;
 CAR.src = "car.png";
 
 class Car {
-    constructor(brain) {
+    constructor(brain, score = 0) {
         this.x = -w / 3;
         this.y = 0;
         this.alpha = -Math.PI / 2;
         this.rays = [];
         this.direction = 0;
         this.turn = 0;
-        this.score = 0;
+        this.score = score;
         this.fitness = 0;
         this.prevAngle = -1;
-        this.vision = Infinity;
+        this.vision = 100;
         this.width = 40;
         this.height = 20;
-        this.speed = 4;
+        this.speed = 2;
 
         if (brain instanceof NeuralNetwork) {
             this.brain = brain.copy();
-            console.log("mutating");
+//            console.log("mutating");
             this.brain.mutate(x => x * 0.1);
         } else {
-            this.brain = new NeuralNetwork([8, 4, 4]);
+            this.brain = new NeuralNetwork([3, 50, 30, 3]);
         }
 
-        for (let i = -180; i < 180; i += 45) {
+        for (let i = -45; i <= 45; i += 45) {
             this.rays.push(new Ray(this.x, this.y, Math.PI * i / 180 + this.alpha));
         }
     }
@@ -35,7 +35,7 @@ class Car {
     }
 
     rayTrace() {
-        let i = -180;
+        let i = -45;
         for (let ray of this.rays) {
             ray.x = this.x;
             ray.y = this.y;
@@ -58,18 +58,17 @@ class Car {
                 }
             }
             let tmp = getDist(ray.x, ray.y, closestBoundary.x, closestBoundary.y);
-            if (tmp > this.vision)
-                ray.distance = Infinity;
-            else
+            if (tmp > this.vision) {
+                ray.distance = this.vision;
+            } else {
                 ray.distance = getDist(ray.x, ray.y, closestBoundary.x, closestBoundary.y);
+            }
 
-            //            if (closestBoundary) {
-            //                drawLine(ray.x, ray.y, closestBoundary.x, closestBoundary.y, 0.3, 3)
-            //                context.beginPath();
-            //                context.arc(closestBoundary.x, closestBoundary.y, 4, 0, Math.PI * 2);
-            //                context.fillStyle = "white";
-            //                context.fill();
-            //            }
+            //            drawLine(ray.x, ray.y, ray.x + ray.distance * Math.cos(ray.angle), ray.y + ray.distance * Math.sin(ray.angle), 0.3, 3)
+            //            context.beginPath();
+            //            context.arc(ray.x + ray.distance * Math.cos(ray.angle), ray.y + ray.distance * Math.sin(ray.angle), 4, 0, Math.PI * 2);
+            //            context.fillStyle = "violet";
+            //            context.fill();
 
         }
     }
@@ -77,7 +76,7 @@ class Car {
     goForward() {
         let newX = this.x + this.speed * Math.cos(this.alpha);
         let newY = this.y + this.speed * Math.sin(this.alpha);
-        if (newX < w / 2-this.width/2 && newY < h / 2-this.height/2 && newX > -w / 2+this.width/2 && newY > -h / 2+this.height/2) {
+        if (newX < w / 2 - this.width / 2 && newY < h / 2 - this.height / 2 && newX > -w / 2 + this.width / 2 && newY > -h / 2 + this.height / 2) {
             this.x = newX;
             this.y = newY;
         }
@@ -86,61 +85,44 @@ class Car {
     goBackward() {
         let newX = this.x - this.speed * Math.cos(this.alpha);
         let newY = this.y - this.speed * Math.sin(this.alpha);
-        if (newX < w / 2-this.width/2 && newY < h / 2-this.height/2 && newX > -w / 2+this.width/2 && newY > -h / 2+this.height/2) {
+        if (newX < w / 2 - this.width / 2 && newY < h / 2 - this.height / 2 && newX > -w / 2 + this.width / 2 && newY > -h / 2 + this.height / 2) {
             this.x = newX;
             this.y = newY;
         }
     }
 
-    calculateScore() {
-        let tmp = Math.atan2(this.y, this.x) - Math.PI;
-        let crossed = false;
-        let angle = tmp;
-        if (this.prevAngle - angle >= Math.PI) {
-            angle = angle + 2 * Math.PI;
-            crossed = true;
-        }
-        this.score = angle;
-        this.prevAngle = angle;
-    }
+//    calculateScore() {
+//        let tmp = Math.atan2(this.y, this.x) - Math.PI;
+//        let crossed = false;
+//        let angle = tmp;
+//        if (this.prevAngle - angle >= Math.PI) {
+//            angle = angle + 2 * Math.PI;
+//            crossed = true;
+//        }
+//        this.score = angle;
+//        this.prevAngle = angle;
+//    }
 
 
     moveCar(move) {
         switch (move) {
             case "F":
-                this.direction = 1;
+                this.goForward();
                 break;
             case "B":
-                this.direction = -1;
+                this.goBackward();
                 break;
             case "R":
-                this.turn = 1;
+                this.alpha += Math.PI / 90;
                 break;
             case "L":
-                this.turn = -1;
+                this.alpha -= Math.PI / 90;
                 break;
-            default:
-                this.direction = 0;
-                this.turn = 0;
+            case "":
+                break;
+                
         }
-        if (this.direction == 1) {
-            this.goForward();
-        } else if (this.direction == -1) {
-            this.goBackward();
-        }
-
-        if (this.turn == 1) {
-            this.alpha += this.direction * Math.PI / 90;
-            if (this.alpha > Math.PI * 2) {
-                this.alpha = 0;
-            }
-        } else if (this.turn == -1) {
-            this.alpha -= this.direction * Math.PI / 90;
-            if (this.alpha < -Math.PI * 2) {
-                this.alpha = 0;
-            }
-        }
-        //        this.calculateScore();
+//        this.calculateScore();
     }
 
     drawCar() {
@@ -149,12 +131,15 @@ class Car {
         context.rotate(this.alpha);
         context.rect(-this.width / 2, -this.height / 2, this.width, this.height);
         //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
-        context.fillStyle = "green";
+        if (this.score == maxScore) {
+            context.fillStyle = "green";
+        } else
+            context.fillStyle = "rgba(255, 0, 0, 0.4";
         context.fill();
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
-        this.calculateScore();
     }
+
     //
     //    drawFrontWheels() {
     //        context.beginPath();
@@ -236,12 +221,12 @@ class Car {
         }
 
         if (this.turn == 1) {
-            this.alpha += this.direction * Math.PI / 90+Math.PI/45;
+            this.alpha += this.direction * Math.PI / 30;
             if (this.alpha > Math.PI * 2) {
                 this.alpha = 0;
             }
         } else if (this.turn == -1) {
-            this.alpha -= this.direction * Math.PI / 90+Math.PI/45;
+            this.alpha -= this.direction * Math.PI / 30;
             if (this.alpha < -Math.PI * 2) {
                 this.alpha = 0;
             }
@@ -251,7 +236,6 @@ class Car {
             if (ray.distance < this.height / 2)
                 this.alive = false;
         }
-        //        this.calculateScore();
     }
 
 }
