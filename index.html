@@ -13,16 +13,17 @@
     <canvas id="canvas"></canvas>
 
     <main>
-        <button onclick="initBounds()">Draw bounds</button>
-        <button onclick="clearBounds()">Clear bounds</button>
+        <button onclick="initBounds()">Draw track</button>
+        <button onclick="clearBounds()">Clear track</button>
+         <button onclick="setCarPos()">Set Car Position</button>
         <button onclick="start()">Start</button>
-        <button onclick="nextGeneration()">Next gen</button>
-        <input id="slider" type="range" min="1" max="10" step="1" value="1">
+        <button onclick="startNextGen()">Next gen</button>
+        <input id="genslider" type="range" min="1" max="100" step="1" value="1">
         <p>Gen</p>
         <p id="genText"></p>
         <br>
         <p>Score</p>
-        <p id="pos"></p>
+        <p id="score"></p>
         <img id="car" src="car.png" style="display: none;">
     </main>
     <script src="lib/nn.js"></script>

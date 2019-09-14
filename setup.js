@@ -1,5 +1,5 @@
 var canvas = document.getElementById("canvas");
-var pos = document.getElementById("pos");
+var score = document.getElementById("score");
 var context = canvas.getContext("2d");
 var w = 0;
 var h = 0;
@@ -40,56 +40,72 @@ function drawBoundaries() {
         boundary.drawBoundary();
 }
 
-function createWalls() {
-    boundaries.push(new Boundary(-w / 2, -h / 2, -w / 2, h / 2));
-    boundaries.push(new Boundary(-w / 2, -h / 2, w / 2, -h / 2));
-    boundaries.push(new Boundary(w / 2, -h / 2, w / 2, h / 2));
-    boundaries.push(new Boundary(-w / 2, h / 2, w / 2, h / 2));
-}
-
-createWalls();
-
 var activeCars = [];
 var allCars = [];
 
-var totalCars = 30;
+var totalCars = 10;
 
-function createCars() {
-    for (var j = 0; j < totalCars; j++) {
+let carCreation = false;
+
+function createCars(numCars) {
+    carCreation = true;
+    activeCars = [];
+    allCars = [];
+    for (var j = 0; j < numCars; j++) {
         let car = new Car();
         activeCars[j] = car;
-        //        allCars[j] = car;
     }
 }
-createCars();
+
+let carStartCoords = [];
+let carStartX;
+let carStartY;
+
+let storedCoords = JSON.parse(localStorage.getItem("storedCarStartCoords"));
+if (storedCoords) {
+    carStartX = storedCoords[0];
+    carStartY = storedCoords[1];
+}
+
+createCars(totalCars);
 
 function drawCars() {
     for (let car of activeCars) {
-        car.drawCar();
+        if (car.score == maxScore) {
+            car.drawCar("green");
+            car.drawRays();
+        } else
+            car.drawCar();
         car.rayTrace();
     }
 
 }
 
-function setup() {
+function clearCanvas() {
     context.clearRect(-w / 2, -h / 2, w, h);
+}
+
+function setup() {
     drawBoundaries();
 }
 
 setup();
 drawCars();
 let startDraw = false;
+let setCarPosition = false;
 let initX = 0;
 let initY = 0;
 
 function initBounds() {
     setup();
-    canvas.addEventListener("click", function (e) {
-        startDraw = true;
-        initX = e.clientX - w / 2;
-        initY = e.clientY - h / 2;
-        this.removeEventListener('click', arguments.callee, false);
-    });
+    if (!setCarPosition) {
+        canvas.addEventListener("click", function (e) {
+            startDraw = true;
+            initX = (e.clientX - w / 2);
+            initY = (e.clientY - h / 2);
+            this.removeEventListener('click', arguments.callee, false);
+        });
+    }
 }
 
 function clearBounds() {
@@ -102,15 +118,39 @@ canvas.addEventListener("mouseenter", function () {
 })
 
 window.addEventListener("mousemove", function (e) {
-    if (startDraw) {
-        //        console.log(e.clientX - w / 2, e.clientY - h / 2);
-        boundaries.push(new Boundary(initX, initY, e.clientX - w / 2, e.clientY - h / 2));
-        initX = e.clientX - w / 2;
-        initY = e.clientY - h / 2;
+    if (startDraw && !setCarPosition) {
+        boundaries.push(new Boundary(initX, initY, (e.clientX - w / 2), (e.clientY - h / 2)));
+        initX = (e.clientX - w / 2);
+        initY = (e.clientY - h / 2);
+        clearCanvas();
         setup();
         drawCars();
     }
 })
+
+
+function setCarPos() {
+    if (!startDraw) {
+        setCarPosition = true;
+        canvas.addEventListener("click", function (e) {
+            carStartX = (e.clientX - w / 2);
+            carStartY = (e.clientY - h / 2);
+            this.removeEventListener('click', arguments.callee, false);
+            carStartCoords.push(carStartX);
+            carStartCoords.push(carStartY);
+            localStorage.setItem("storedCarStartCoords", JSON.stringify(carStartCoords));
+            clearCanvas();
+            drawBoundaries();
+            for (let car of activeCars) {
+                car.x = carStartX;
+                car.y = carStartY;
+                car.drawCar();
+            }
+            setCarPosition = false;
+        });
+    }
+
+}
 
 window.addEventListener("dblclick", function (e) {
     startDraw = false;
@@ -122,41 +162,31 @@ window.addEventListener("dblclick", function (e) {
 let keyDown;
 let keyUp;
 
-//
-//document.addEventListener("keyup", function (e) {
-//    e = e || window.event;
-//    keyUp = e.keyCode;
-//    if (keyUp == '38' || keyUp == '40')
-//        keyDown = 'stopFB';
-//    if (keyUp == '37' || keyUp == '39')
-//        keyDown = 'stopTurn';
-//
-//});
-//let move = "";
-//document.addEventListener("keydown", function (e) {
-//    e = e || window.event;
-//    console.log(e.keyCode)
-//    switch (e.keyCode) {
-//        case 38:
-//            move = "F";
-//            break;
-//        case 40:
-//            move = "B";
-//            break;
-//        case 37:
-//            move = "L";
-//            break;
-//        case 39:
-//            move = "R";
-//            break;
-//    }
-//});
-//
-//document.addEventListener("keyup", function (e) {
-//    e = e || window.event;
-//    move = "";
-//});
+let move = "";
+document.addEventListener("keydown", function (e) {
+    e = e || window.event;
+    switch (e.keyCode) {
+        case 38:
+            move = "F";
+            break;
+        case 40:
+            move = "B";
+            break;
+        case 37:
+            move = "L";
+            break;
+        case 39:
+            move = "R";
+            break;
+    }
+});
 
+document.addEventListener("keyup", function (e) {
+    e = e || window.event;
+    keyUp = e.keyCode;
+    move = ""
+
+});
 
 const MOVES = ["L", "R", ""];
 
@@ -165,16 +195,21 @@ let genText = document.getElementById("genText");
 genText.innerHTML = "";
 genText.insertAdjacentHTML('beforeend', gen);
 var genSpeed = 1;
-document.getElementById("slider").oninput = function () {
+let nextGen = false;
+document.getElementById("genslider").oninput = function () {
     genSpeed = this.value //gets the oninput value
 }
 
-var maxScore = 0;
+var maxScore = -1;
+
+function startNextGen() {
+    nextGen = true;
+}
 
 function update() {
-
-    context.clearRect(-w / 2, -h / 2, w, h);
+    clearCanvas();
     drawBoundaries();
+    console.log(activeCars.length)
     for (let j = 0; j < genSpeed; j++) {
         maxScore = 0;
 
@@ -197,22 +232,26 @@ function update() {
                 let predicts = car.brain.query(inputs);
                 let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
                 //                console.log(MOVES[indexOfMaxValue]);
+                let carMove = MOVES[indexOfMaxValue];
                 car.moveCar(MOVES[indexOfMaxValue]);
                 car.rayTrace();
+
             }
             if (car.score > maxScore) {
                 maxScore = car.score;
             }
+            score.innerHTML = "";
+            score.insertAdjacentHTML('beforeend', maxScore);
         }
     }
-    if (activeCars.length == 0) {
-            nextGeneration();
+    if (activeCars.length == 0 || nextGen == true) {
+        nextGeneration();
+        nextGen = false;
     }
     drawCars();
     requestAnimationFrame(update);
 
 }
-
 
 let startAnim = false;
 

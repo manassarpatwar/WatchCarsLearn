@@ -12,7 +12,7 @@ function randn_bm() {
 
 function mutate(x) {
     if (Math.random() < 0.1) {
-        let offset = randn_bm()*0.5;
+        let offset = randn_bm() * 0.5;
         let newx = x + offset;
         return newx;
     } else {
@@ -22,8 +22,8 @@ function mutate(x) {
 
 class Car {
     constructor(brain) {
-        this.x = -w / 3;
-        this.y = 0;
+        this.x = carStartX;
+        this.y = carStartY;
         this.alpha = -Math.PI / 2;
         this.rays = [];
         this.direction = 0;
@@ -34,7 +34,8 @@ class Car {
         this.vision = 100;
         this.width = 40;
         this.height = 20;
-        this.speed = 1;
+        this.speed = 4;
+        this.laps = 0;
 
         if (brain instanceof NeuralNetwork) {
             this.brain = brain.copy();
@@ -76,18 +77,16 @@ class Car {
                     }
                 }
             }
-            let tmp = getDist(ray.x, ray.y, closestBoundary.x, closestBoundary.y);
-            if (tmp > this.vision) {
-                ray.distance = this.vision;
+            if (closestBoundary) {
+                let tmp = getDist(ray.x, ray.y, closestBoundary.x, closestBoundary.y);
+                if (tmp > this.vision) {
+                    ray.distance = this.vision;
+                } else {
+                    ray.distance = getDist(ray.x, ray.y, closestBoundary.x, closestBoundary.y);
+                }
             } else {
-                ray.distance = getDist(ray.x, ray.y, closestBoundary.x, closestBoundary.y);
+                ray.distance = this.vision;
             }
-
-            //            drawLine(ray.x, ray.y, ray.x + ray.distance * Math.cos(ray.angle), ray.y + ray.distance * Math.sin(ray.angle), 0.3, 3)
-            //            context.beginPath();
-            //            context.arc(ray.x + ray.distance * Math.cos(ray.angle), ray.y + ray.distance * Math.sin(ray.angle), 4, 0, Math.PI * 2);
-            //            context.fillStyle = "violet";
-            //            context.fill();
 
         }
     }
@@ -116,10 +115,12 @@ class Car {
         let angle = tmp;
         if (this.prevAngle - angle >= Math.PI) {
             angle = angle + 2 * Math.PI;
-            crossed = true;
         }
-        this.score = angle;
-        this.prevAngle = angle;
+        if (angle >= Math.PI * 2 - 0.01) {
+            this.laps++;
+        }
+        this.score = angle + Math.PI * 2 * this.laps;
+        this.prevAngle = angle - 1 / 720;
     }
 
 
@@ -141,120 +142,28 @@ class Car {
                 break;
 
         }
+        this.calculateScore();
     }
 
-    drawCar() {
+    drawCar(style = "rgba(255, 0, 0, 0.4") {
         context.beginPath();
         context.translate(this.x, this.y);
         context.rotate(this.alpha);
         context.rect(-this.width / 2, -this.height / 2, this.width, this.height);
         //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
-        if (this.score == maxScore) {
-            context.fillStyle = "green";
-        } else
-            context.fillStyle = "rgba(255, 0, 0, 0.4";
+        context.fillStyle = style;
         context.fill();
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
-        this.calculateScore();
     }
 
-    //
-    //    drawFrontWheels() {
-    //        context.beginPath();
-    //        context.translate(this.x + this.width / 4, this.y - this.height / 2);
-    //        context.rotate(this.alpha);
-    //        //        context.arc(0,0,5,0,Math.PI*2);
-    //        context.rect(-20 + 10, -10 + 5, 20, 10);
-    //        //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
-    //        context.fillStyle = "blue";
-    //        context.fill();
-    //        context.rotate(-this.alpha);
-    //        context.translate(-(this.x + this.width / 4), -(this.y - this.height / 2));
-    //
-    //        context.beginPath();
-    //        context.translate(this.x + this.width / 4, this.y + this.height / 2);
-    //        context.rotate(this.alpha);
-    //        //        context.arc(0,0,5,0,Math.PI*2);
-    //        context.rect(-20 + 10, -10 + 5, 20, 10);
-    //        //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
-    //        context.fillStyle = "blue";
-    //        context.fill();
-    //        context.rotate(-this.alpha);
-    //        context.translate(-(this.x + this.width / 4), -(this.y + this.height / 2));
-    //
-    //    }
-
-    drawBackWheels() {
-
-    }
-
-
-    keyboardCar(keyDown, keyUp) {
-
-        if (keyDown == '38') {
-            // up arrow
-            this.direction = 1;
-        }
-
-        if (keyUp == '38') {
-            this.direction = 0;
-        }
-
-
-        if (keyDown == '40') {
-            // down arrow
-            this.direction = -1;
-        }
-
-        if (keyUp == '40') {
-            this.direction = 0;
-        }
-
-        if (keyDown == '37') {
-            // left arrow
-            this.turn = -1;
-        }
-
-        if (keyUp == '37') {
-            this.turn = 0;
-        }
-
-        if (keyDown == '39') {
-            // right arrow
-            this.turn = 1;
-        }
-
-        if (keyUp == '39') {
-            this.turn = 0;
-        }
-
-        if (keyDown == 'stopFB') {
-            this.direction = 0;
-        }
-
-        if (this.direction == 1) {
-            this.goForward();
-        } else if (this.direction == -1) {
-            this.goBackward();
-        }
-
-        if (this.turn == 1) {
-            this.alpha += this.direction * Math.PI / 30;
-            if (this.alpha > Math.PI * 2) {
-                this.alpha = 0;
-            }
-        } else if (this.turn == -1) {
-            this.alpha -= this.direction * Math.PI / 30;
-            if (this.alpha < -Math.PI * 2) {
-                this.alpha = 0;
-            }
-        }
-
+    drawRays() {
         for (let ray of this.rays) {
-            if (ray.distance < this.height / 2)
-                this.alive = false;
+            drawLine(ray.x, ray.y, ray.x + ray.distance * Math.cos(ray.angle), ray.y + ray.distance * Math.sin(ray.angle), 0.3, 3)
+            context.beginPath();
+            context.arc(ray.x + ray.distance * Math.cos(ray.angle), ray.y + ray.distance * Math.sin(ray.angle), 4, 0, Math.PI * 2);
+            context.fillStyle = "lightblue";
+            context.fill();
         }
     }
-
 }

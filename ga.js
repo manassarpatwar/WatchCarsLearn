@@ -9,6 +9,9 @@
 // This file includes functions for creating a new generation
 // of Cars.
 
+//                                   ^
+//                                   |
+//Insipired from Dan Shiffman's code |
 
 // Create the next generation
 function nextGeneration() {
@@ -22,23 +25,27 @@ function nextGeneration() {
     normalizeFitness(allCars);
     // Generate a new set of Cars
     activeCars = generate(allCars);
-    // Copy those Cars to another array
+    // Empty the allcars array
     allCars = [];
 }
 
 // Generate a new population of Cars
 function generate(oldCars) {
     let newCars = [];
-    for (let i = 0; i < oldCars.length-5; i++) {
+    for (let i = 0; i < oldCars.length-oldCars.length/20; i++) {
         // Select a car based on fitness
         let car = poolSelection(oldCars);
         newCars[i] = car;
     }
-    let top1 = allCars.pop();
-    let top2 = allCars.pop();
-    for(let i = 0; i < 5; i++){
-        let babyBrain = top1.brain.merge(top2.brain);
-        newCars.push(new Car(babyBrain));
+    let numChildren = 0;
+    for(let j = 0; j < oldCars.length/10; j++){
+        let top1 = allCars.pop();
+        let top2 = allCars.pop();
+        while(numChildren < oldCars.length/20){
+            let babyBrain = top1.brain.merge(top2.brain);
+            newCars.push(new Car(babyBrain));
+            numChildren++;
+        }
     }
     return newCars;
 }
