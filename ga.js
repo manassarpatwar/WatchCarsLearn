@@ -29,10 +29,16 @@ function nextGeneration() {
 // Generate a new population of Cars
 function generate(oldCars) {
     let newCars = [];
-    for (let i = 0; i < oldCars.length; i++) {
+    for (let i = 0; i < oldCars.length-5; i++) {
         // Select a car based on fitness
         let car = poolSelection(oldCars);
         newCars[i] = car;
+    }
+    let top1 = allCars.pop();
+    let top2 = allCars.pop();
+    for(let i = 0; i < 5; i++){
+        let babyBrain = top1.brain.merge(top2.brain);
+        newCars.push(new Car(babyBrain));
     }
     return newCars;
 }
