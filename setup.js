@@ -52,12 +52,13 @@ createWalls();
 var activeCars = [];
 var allCars = [];
 
-var totalCars = 100;
+var totalCars = 30;
+
 function createCars() {
     for (var j = 0; j < totalCars; j++) {
         let car = new Car();
         activeCars[j] = car;
-        allCars[j] = car;
+        //        allCars[j] = car;
     }
 }
 createCars();
@@ -174,9 +175,9 @@ function update() {
 
     context.clearRect(-w / 2, -h / 2, w, h);
     drawBoundaries();
-    for(let j = 0; j < genSpeed; j++){
+    for (let j = 0; j < genSpeed; j++) {
         maxScore = 0;
-        
+
         for (let i = activeCars.length - 1; i >= 0; i--) {
             car = activeCars[i];
             car.moveCar("F");
@@ -187,6 +188,7 @@ function update() {
                 inputs.push(ray.distance);
                 if (ray.distance < car.height / 2) {
                     alive = false;
+                    allCars.push(car);
                     activeCars.splice(i, 1);
                     break;
                 }
@@ -202,11 +204,10 @@ function update() {
                 maxScore = car.score;
             }
         }
-        if (activeCars.length == 0) {
-           nextGeneration();
-        }
     }
-
+    if (activeCars.length == 0) {
+            nextGeneration();
+    }
     drawCars();
     requestAnimationFrame(update);
 

@@ -1,28 +1,47 @@
 var CAR = new Image;
 CAR.src = "car.png";
 
+function randn_bm() {
+    var u = 0,
+        v = 0;
+    while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+
+function mutate(x) {
+    if (Math.random() < 0.1) {
+        let offset = randn_bm()*0.5;
+        let newx = x + offset;
+        return newx;
+    } else {
+        return x;
+    }
+}
+
 class Car {
-    constructor(brain, score = 0) {
+    constructor(brain) {
         this.x = -w / 3;
         this.y = 0;
         this.alpha = -Math.PI / 2;
         this.rays = [];
         this.direction = 0;
         this.turn = 0;
-        this.score = score;
+        this.score = 0;
         this.fitness = 0;
         this.prevAngle = -1;
         this.vision = 100;
         this.width = 40;
         this.height = 20;
-        this.speed = 2;
+        this.speed = 1;
 
         if (brain instanceof NeuralNetwork) {
             this.brain = brain.copy();
-//            console.log("mutating");
-            this.brain.mutate(x => x * 0.1);
+            //            console.log("mutating");
+            this.brain.mutate(mutate);
         } else {
-            this.brain = new NeuralNetwork([3, 50, 30, 3]);
+            this.brain = new NeuralNetwork([3, 4, 3, 3]);
         }
 
         for (let i = -45; i <= 45; i += 45) {
@@ -91,17 +110,17 @@ class Car {
         }
     }
 
-//    calculateScore() {
-//        let tmp = Math.atan2(this.y, this.x) - Math.PI;
-//        let crossed = false;
-//        let angle = tmp;
-//        if (this.prevAngle - angle >= Math.PI) {
-//            angle = angle + 2 * Math.PI;
-//            crossed = true;
-//        }
-//        this.score = angle;
-//        this.prevAngle = angle;
-//    }
+    calculateScore() {
+        let tmp = Math.atan2(this.y, this.x) - Math.PI;
+        let crossed = false;
+        let angle = tmp;
+        if (this.prevAngle - angle >= Math.PI) {
+            angle = angle + 2 * Math.PI;
+            crossed = true;
+        }
+        this.score = angle;
+        this.prevAngle = angle;
+    }
 
 
     moveCar(move) {
@@ -113,16 +132,15 @@ class Car {
                 this.goBackward();
                 break;
             case "R":
-                this.alpha += Math.PI / 90;
+                this.alpha += Math.PI / 45;
                 break;
             case "L":
-                this.alpha -= Math.PI / 90;
+                this.alpha -= Math.PI / 45;
                 break;
             case "":
                 break;
-                
+
         }
-//        this.calculateScore();
     }
 
     drawCar() {
@@ -138,6 +156,7 @@ class Car {
         context.fill();
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
+        this.calculateScore();
     }
 
     //

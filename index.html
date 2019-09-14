@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="main.css">
     <meta name="viewport" content="width=device-width, 
     initial-scale=1, maximum-scale=1" />
-    <!--     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>-->
+<!--    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>-->
 </head>
 
 <body>
@@ -16,8 +16,10 @@
         <button onclick="initBounds()">Draw bounds</button>
         <button onclick="clearBounds()">Clear bounds</button>
         <button onclick="start()">Start</button>
-         <input id="slider" type="range" min="1" max="200" step="1"  value="1">
-        <p>Gen</p><p id="genText"></p>
+        <button onclick="nextGeneration()">Next gen</button>
+        <input id="slider" type="range" min="1" max="10" step="1" value="1">
+        <p>Gen</p>
+        <p id="genText"></p>
         <br>
         <p>Score</p>
         <p id="pos"></p>
@@ -26,7 +28,7 @@
     <script src="lib/nn.js"></script>
     <script src="lib/matrix.js"></script>
     <script src="car.js"></script>
-     <script src="ga.js"></script>
+    <script src="ga.js"></script>
     <script src="ray.js"></script>
     <script src="boundary.js"></script>
     <script src="setup.js"></script>

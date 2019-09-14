@@ -12,15 +12,18 @@
 
 // Create the next generation
 function nextGeneration() {
+    for(let c of activeCars){
+        allCars.unshift(c);
+    }
     gen++;
     genText.innerHTML = "";
-genText.insertAdjacentHTML('beforeend', gen);
+    genText.insertAdjacentHTML('beforeend', gen);
     // Normalize the fitness values 0-1
     normalizeFitness(allCars);
     // Generate a new set of Cars
     activeCars = generate(allCars);
     // Copy those Cars to another array
-    allCars = activeCars.slice(0);
+    allCars = [];
 }
 
 // Generate a new population of Cars
@@ -37,9 +40,6 @@ function generate(oldCars) {
 // Normalize the fitness of all Cars
 function normalizeFitness(cars) {
     // Make score exponentially better?
-    for (let i = 0; i < cars.length; i++) {
-        cars[i].score = Math.pow(cars[i].score, 2);
-    }
 
     // Add up all the scores
     let sum = 0;
@@ -73,7 +73,7 @@ function poolSelection(cars) {
 
     // Go back one
     index -= 1;
-//    pos.insertAdjacentHTML('beforeend', cars[index].fitness + " ");
+    //    pos.insertAdjacentHTML('beforeend', cars[index].fitness + " ");
     // Make sure it's a copy!
     // (this includes mutation)
     return cars[index].copyCar();
