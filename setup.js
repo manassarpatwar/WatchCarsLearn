@@ -43,14 +43,10 @@ function drawBoundaries() {
 var activeCars = [];
 var allCars = [];
 
-var totalCars = 10;
+var totalCars = 1;
 
-let carCreation = false;
 
 function createCars(numCars) {
-    carCreation = true;
-    activeCars = [];
-    allCars = [];
     for (var j = 0; j < numCars; j++) {
         let car = new Car();
         activeCars[j] = car;
@@ -71,10 +67,10 @@ createCars(totalCars);
 
 function drawCars() {
     for (let car of activeCars) {
-        if (car.score == maxScore) {
-            car.drawCar("green");
-            car.drawRays();
-        } else
+//        if (car.score == maxScore) {
+//            car.drawCar("green");
+//            car.drawRays();
+//        } else
             car.drawCar();
         car.rayTrace();
     }
@@ -209,14 +205,13 @@ function startNextGen() {
 function update() {
     clearCanvas();
     drawBoundaries();
-    console.log(activeCars.length)
     for (let j = 0; j < genSpeed; j++) {
         maxScore = 0;
 
         for (let i = activeCars.length - 1; i >= 0; i--) {
             car = activeCars[i];
-            car.moveCar("F");
-            //            car.moveCar(move);
+//            car.moveCar("F");
+                        car.moveCar(move);
             let alive = true;
             let inputs = [];
             for (let ray of car.rays) {
@@ -229,11 +224,11 @@ function update() {
                 }
             }
             if (alive) {
-                let predicts = car.brain.query(inputs);
-                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-                //                console.log(MOVES[indexOfMaxValue]);
-                let carMove = MOVES[indexOfMaxValue];
-                car.moveCar(MOVES[indexOfMaxValue]);
+//                let predicts = car.brain.query(inputs);
+//                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+//                //                console.log(MOVES[indexOfMaxValue]);
+//                let carMove = MOVES[indexOfMaxValue];
+//                car.moveCar(MOVES[indexOfMaxValue]);
                 car.rayTrace();
 
             }
