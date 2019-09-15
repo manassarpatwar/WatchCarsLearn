@@ -42,9 +42,13 @@ function drawBoundaries() {
 
 var activeCars = [];
 var allCars = [];
+var numRays = 3;
+var totalCars = 20;
 
-var totalCars = 1;
 
+function setNumRays(nrays){
+    numRays = nrays;
+}
 
 function createCars(numCars) {
     for (var j = 0; j < numCars; j++) {
@@ -54,8 +58,8 @@ function createCars(numCars) {
 }
 
 let carStartCoords = [];
-let carStartX;
-let carStartY;
+let carStartX = 0;
+let carStartY = 0;
 
 let storedCoords = JSON.parse(localStorage.getItem("storedCarStartCoords"));
 if (storedCoords) {
@@ -65,28 +69,18 @@ if (storedCoords) {
 
 createCars(totalCars);
 
-function drawCars() {
-    for (let car of activeCars) {
-//        if (car.score == maxScore) {
-//            car.drawCar("green");
-//            car.drawRays();
-//        } else
-            car.drawCar();
-        car.rayTrace();
-    }
-
-}
-
 function clearCanvas() {
     context.clearRect(-w / 2, -h / 2, w, h);
 }
 
 function setup() {
+    clearCanvas();
     drawBoundaries();
+    drawCars();
 }
 
 setup();
-drawCars();
+
 let startDraw = false;
 let setCarPosition = false;
 let initX = 0;
@@ -94,33 +88,30 @@ let initY = 0;
 
 function initBounds() {
     setup();
-    if (!setCarPosition) {
-        canvas.addEventListener("click", function (e) {
-            startDraw = true;
-            initX = (e.clientX - w / 2);
-            initY = (e.clientY - h / 2);
-            this.removeEventListener('click', arguments.callee, false);
-        });
-    }
+    canvas.addEventListener("click", function (e) {
+        startDraw = true;
+        initX = (e.clientX - w / 2);
+        initY = (e.clientY - h / 2);
+        this.removeEventListener('click', arguments.callee, false);
+    });
 }
 
 function clearBounds() {
     localStorage.removeItem("boundaries");
+    boundaries = [];
+    setup();
 }
 
 canvas.addEventListener("mouseenter", function () {
     setup();
-    drawCars();
 })
 
 window.addEventListener("mousemove", function (e) {
-    if (startDraw && !setCarPosition) {
+    if (startDraw) {
         boundaries.push(new Boundary(initX, initY, (e.clientX - w / 2), (e.clientY - h / 2)));
         initX = (e.clientX - w / 2);
         initY = (e.clientY - h / 2);
-        clearCanvas();
         setup();
-        drawCars();
     }
 })
 
@@ -135,15 +126,13 @@ function setCarPos() {
             carStartCoords.push(carStartX);
             carStartCoords.push(carStartY);
             localStorage.setItem("storedCarStartCoords", JSON.stringify(carStartCoords));
-            clearCanvas();
-            drawBoundaries();
             for (let car of activeCars) {
                 car.x = carStartX;
                 car.y = carStartY;
-                car.drawCar();
             }
-            setCarPosition = false;
+            setup();
         });
+        setCarPosition = false;
     }
 
 }
@@ -151,36 +140,54 @@ function setCarPos() {
 window.addEventListener("dblclick", function (e) {
     startDraw = false;
     setup();
-    drawCars();
     localStorage.setItem("boundaries", JSON.stringify(boundaries));
 })
 
 let keyDown;
 let keyUp;
 
-let move = "";
+
+let pressedKeys = [];
 document.addEventListener("keydown", function (e) {
     e = e || window.event;
     switch (e.keyCode) {
         case 38:
-            move = "F";
+            pressedKeys.push("F");
             break;
         case 40:
-            move = "B";
+            pressedKeys.push("B");
             break;
         case 37:
-            move = "L";
+            pressedKeys.push("L");
             break;
         case 39:
-            move = "R";
+            pressedKeys.push("R");
+            break;
+        case 32:
+            pressedKeys.push("reduceSpeed");
             break;
     }
 });
 
 document.addEventListener("keyup", function (e) {
     e = e || window.event;
-    keyUp = e.keyCode;
-    move = ""
+    switch (e.keyCode) {
+        case 38:
+            pressedKeys = pressedKeys.filter(e => e !== "F");
+            break;
+        case 40:
+            pressedKeys = pressedKeys.filter(e => e !== "B");
+            break;
+        case 37:
+            pressedKeys = pressedKeys.filter(e => e !== "L");
+            break;
+        case 39:
+            pressedKeys = pressedKeys.filter(e => e !== "R");
+            break;
+        case 32:
+            pressedKeys = pressedKeys.filter(e => e !== "reduceSpeed");
+            break;
+    }
 
 });
 
@@ -188,12 +195,36 @@ const MOVES = ["L", "R", ""];
 
 let gen = 0;
 let genText = document.getElementById("genText");
-genText.innerHTML = "";
+let genSpeedText = document.getElementById("genSpeedText");
+let carNumsText = document.getElementById("carNumsText");
+let numRaysText = document.getElementById("numRaysText");
+let genSpeed = 1;
 genText.insertAdjacentHTML('beforeend', gen);
-var genSpeed = 1;
+genSpeedText.insertAdjacentHTML('beforeend', genSpeed);
+carNumsText.insertAdjacentHTML('beforeend', totalCars);
+numRaysText.insertAdjacentHTML('beforeend', numRays);
 let nextGen = false;
+
+
+document.getElementById("carNumsSlider").oninput = function () {
+    totalCars = this.value //gets the oninput value
+    carNumsText.innerHTML = "";
+    carNumsText.insertAdjacentHTML('beforeend', totalCars);
+    reset(totalCars);
+}
+
+document.getElementById("numRaysSlider").oninput = function () {
+    numRays = this.value;
+    numRaysText.innerHTML = "";
+    numRaysText.insertAdjacentHTML('beforeend', numRays);
+    reset(totalCars);
+}
+
+
 document.getElementById("genslider").oninput = function () {
     genSpeed = this.value //gets the oninput value
+    genSpeedText.innerHTML = "";
+    genSpeedText.insertAdjacentHTML('beforeend', genSpeed);
 }
 
 var maxScore = -1;
@@ -201,6 +232,24 @@ var maxScore = -1;
 function startNextGen() {
     nextGen = true;
 }
+
+var moveType = "tank";
+
+function drawCars() {
+    for (let car of activeCars) {
+        if (car.score == maxScore) {
+            car.drawCar("green");
+            if (moveType == "ackerman")
+                car.drawTurn()
+            car.drawRays();
+        } else
+            car.drawCar();
+        car.rayTrace();
+    }
+
+}
+
+let requestId;
 
 function update() {
     clearCanvas();
@@ -210,12 +259,14 @@ function update() {
 
         for (let i = activeCars.length - 1; i >= 0; i--) {
             car = activeCars[i];
-//            car.moveCar("F");
-                        car.moveCar(move);
+            car.moveCar("F");
+            pressedKeys = uniq = [...new Set(pressedKeys)];
+            for (let move of pressedKeys)
+                car.moveCar(move);
             let alive = true;
             let inputs = [];
             for (let ray of car.rays) {
-                inputs.push(ray.distance);
+                inputs.push(1 - ray.distance / car.vision);
                 if (ray.distance < car.height / 2) {
                     alive = false;
                     allCars.push(car);
@@ -224,19 +275,13 @@ function update() {
                 }
             }
             if (alive) {
-//                let predicts = car.brain.query(inputs);
-//                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-//                //                console.log(MOVES[indexOfMaxValue]);
-//                let carMove = MOVES[indexOfMaxValue];
-//                car.moveCar(MOVES[indexOfMaxValue]);
-                car.rayTrace();
-
+                car.think(inputs);
             }
             if (car.score > maxScore) {
                 maxScore = car.score;
             }
             score.innerHTML = "";
-            score.insertAdjacentHTML('beforeend', maxScore);
+            score.insertAdjacentHTML('beforeend', Math.floor(maxScore * 100) / 100);
         }
     }
     if (activeCars.length == 0 || nextGen == true) {
@@ -244,15 +289,95 @@ function update() {
         nextGen = false;
     }
     drawCars();
-    requestAnimationFrame(update);
+    requestId = window.requestAnimationFrame(update);
 
 }
 
 let startAnim = false;
 
+function cancelMainAnim() {
+    window.cancelAnimationFrame(requestId);
+    requestId = undefined;
+    startAnim = false;
+}
+
+function reset(numCars = totalCars) {
+    cancelMainAnim();
+    cancelTestAnim();
+    score.innerHTML = "";
+    gen = 0;
+    genText.innerHTML = "";
+    genText.insertAdjacentHTML('beforeend', gen);
+    maxScore = 0;
+    activeCars = [];
+    allCars = [];
+    createCars(numCars);
+    setup();
+}
+
+function setTurnType(type) {
+    moveType = type.value;
+    if (type.value == "ackerman") {
+        type.innerHTML = "Turn type: Tank";
+        type.value = "tank";
+
+    } else {
+        type.innerHTML = "Turn type: Ackerman";
+        type.value = "ackerman";
+    }
+}
+
+let requestIdTestDrive;
+let testDriveOn = false;
+let testCar;
+
+
+function cancelTestAnim() {
+    if (requestIdTestDrive) {
+        window.cancelAnimationFrame(requestIdTestDrive);
+        testCar = null;
+        testDriveOn = false;
+        requestIdTestDrive = undefined;
+    }
+}
+
 function start() {
+    cancelTestAnim();
     if (!startAnim) {
         startAnim = true;
         update();
     }
+}
+
+function startTestDrive() {
+    cancelMainAnim();
+    if (!testDriveOn) {
+        testCar = new Car();
+        testDriveOn = true;
+        testDrive()
+    }
+}
+
+function testDrive() {
+    clearCanvas();
+    drawBoundaries();
+    pressedKeys = uniq = [...new Set(pressedKeys)];
+    for (let move of pressedKeys)
+        testCar.moveCar(move);
+
+    testCar.rayTrace();
+    for (let ray of testCar.rays) {
+        if (ray.distance < testCar.height / 2) {
+            testCar = null;
+            break;
+        }
+    }
+
+    score.innerHTML = "";
+    score.insertAdjacentHTML('beforeend', Math.floor(maxScore * 100) / 100);
+
+    testCar.drawTurn();
+    testCar.drawCar();
+    testCar.drawRays();
+    requestIdTestDrive = window.requestAnimationFrame(testDrive);
 }

@@ -1,17 +1,82 @@
 #canvas {
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: -1;
+    position: absolute;
     background: black;
+    left: 0;
+    z-index: 0;
 }
 
 body {
     font-family: 'Helvetica', 'Arial', sans-serif;
     color: #444444;
+    padding: 0;
+    margin: 0;
 }
 
-main {
+#program {
     color: white;
+    position: absolute;
+    z-index: 1;
 }
 
+
+#buttons {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 100px;
+}
+
+.buttons div {
+    display: flex;
+    flex-direction: row;
+}
+
+.buttonsRight div {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.buttonsLeft {
+    position: absolute;
+    left: 0;
+}
+
+.buttonsRight {
+    position: absolute;
+    right: 0;
+}
+
+button {
+    -webkit-transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
+    -moz-transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
+    -ms-transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
+    -o-transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
+    transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
+    margin: 5px 10px;
+    text-decoration: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    color: rgba(0, 10, 10, 0.8);
+    box-shadow: rgba(30, 22, 54, 0.4) 0 0px 0px 2px inset;
+}
+
+button:hover {
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.85);
+    box-shadow: rgba(30, 22, 54, 0.7) 0 0px 0px 40px inset;
+}
+
+button:focus {
+    outline: 0;
+}
+
+button:hover {
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.85);
+    box-shadow: rgba(33, 31, 100, 0.7) 0 0px 0px 40px inset;
+}
+
+button:active {
+    transform: scale(0.95);
+
+}

@@ -6,25 +6,53 @@
     <link rel="stylesheet" href="main.css">
     <meta name="viewport" content="width=device-width, 
     initial-scale=1, maximum-scale=1" />
-<!--    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>-->
+    <!--    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>-->
 </head>
 
 <body>
-    <canvas id="canvas"></canvas>
 
     <main>
-        <button onclick="initBounds()">Draw track</button>
-        <button onclick="clearBounds()">Clear track</button>
-         <button onclick="setCarPos()">Set Car Position</button>
-        <button onclick="start()">Start</button>
-        <button onclick="startNextGen()">Next gen</button>
-        <input id="genslider" type="range" min="1" max="100" step="1" value="1">
-        <p>Gen</p>
-        <p id="genText"></p>
-        <br>
-        <p>Score</p>
-        <p id="score"></p>
-        <img id="car" src="car.png" style="display: none;">
+        <canvas id="canvas"></canvas>
+        <section id="buttons">
+            <div class="buttons buttonsLeft">
+                <div>
+                    <button onclick="initBounds()">Draw track</button>
+                    <button onclick="clearBounds()">Clear track</button>
+                </div>
+                <div>
+                    <button onclick="reset()">Reset</button>
+                    <button onclick="start()">Start</button>
+                </div>
+            </div>
+            <div class="buttons buttonsRight">
+                <div>
+                    <button onclick="setCarPos()">Set Car Position</button>
+                    <button onclick="startNextGen()">Next gen</button>
+                </div>
+                <div>
+                    <button onclick="startTestDrive()">Test drive</button>
+                    <button onclick="setTurnType(this)" value="ackerman">Turn type: Ackerman</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="program">
+            <p>Total Cars: <span id="carNumsText"></span></p>
+            <p><input id="carNumsSlider" type="range" min="1" max="1000" step="1" value="20">
+            </p>
+            <br>
+             <p>Total sensors: <span id="numRaysText"></span></p>
+            <p><input id="numRaysSlider" type="range" min="1" max="7" step="2" value="3">
+            </p>
+            <br>
+            <p>Speed: <span id="genSpeedText"></span></p>
+            <p><input id="genslider" type="range" min="1" max="20" step="1" value="1">
+            </p>
+            <br>
+            <p>Gen: <span id="genText"></span></p>
+            <br>
+            <p>Score <span id="score"></span></p>
+        </section>
     </main>
     <script src="lib/nn.js"></script>
     <script src="lib/matrix.js"></script>

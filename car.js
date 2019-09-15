@@ -24,7 +24,7 @@ class Car {
     constructor(brain) {
         this.x = carStartX;
         this.y = carStartY;
-        this.alpha = -Math.PI/2;
+        this.alpha = -Math.PI / 2;
         this.turnAngle = 0;
         this.turnAngleLeft = 0;
         this.turnAngleRight = 0;
@@ -35,21 +35,24 @@ class Car {
         this.fitness = 0;
         this.prevAngle = -1;
         this.vision = 100;
-        this.width = 80;
-        this.height = 40;
-        this.speed = 4;
+        this.width = 40;
+        this.height = 20;
+        this.speed = 2;
         this.laps = 0;
+        this.tyreWidth = this.width / 4;
+        this.tyreHeight = this.height / 6;
+
+
+        for (let i = -45 * Math.floor(numRays / 2); i <= 45 * Math.floor(numRays / 2); i += 45) {
+            this.rays.push(new Ray(this.x, this.y, Math.PI * i / 180 + this.alpha));
+        }
 
         if (brain instanceof NeuralNetwork) {
             this.brain = brain.copy();
             //            console.log("mutating");
             this.brain.mutate(mutate);
         } else {
-            this.brain = new NeuralNetwork([3, 4, 3, 3]);
-        }
-
-        for (let i = -45; i <= 45; i += 45) {
-            this.rays.push(new Ray(this.x, this.y, Math.PI * i / 180 + this.alpha));
+            this.brain = new NeuralNetwork([this.rays.length, 4, 3, 3]);
         }
     }
 
@@ -57,8 +60,16 @@ class Car {
         return new Car(this.brain);
     }
 
+    think(inputs) {
+        let predicts = this.brain.query(inputs);
+        let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+        let carMove = MOVES[indexOfMaxValue];
+        this.moveCar(MOVES[indexOfMaxValue]);
+        this.rayTrace();
+    }
+
     rayTrace() {
-        let i = -45;
+        let i = -45 * Math.floor(numRays / 2);
         for (let ray of this.rays) {
             ray.x = this.x;
             ray.y = this.y;
@@ -97,24 +108,19 @@ class Car {
     goForward() {
         let newX = this.x + this.speed * Math.cos(this.alpha);
         let newY = this.y + this.speed * Math.sin(this.alpha);
-        if (newX < w / 2 - this.width / 2 && newY < h / 2 - this.height / 2 && newX > -w / 2 + this.width / 2 && newY > -h / 2 + this.height / 2) {
-            this.x = newX;
-            this.y = newY;
-        }
+        this.x = newX;
+        this.y = newY;
     }
 
     goBackward() {
         let newX = this.x - this.speed * Math.cos(this.alpha);
         let newY = this.y - this.speed * Math.sin(this.alpha);
-        if (newX < w / 2 - this.width / 2 && newY < h / 2 - this.height / 2 && newX > -w / 2 + this.width / 2 && newY > -h / 2 + this.height / 2) {
-            this.x = newX;
-            this.y = newY;
-        }
+        this.x = newX;
+        this.y = newY;
     }
 
     calculateScore() {
         let tmp = Math.atan2(this.y, this.x) - Math.PI;
-        let crossed = false;
         let angle = tmp;
         if (this.prevAngle - angle >= Math.PI) {
             angle = angle + 2 * Math.PI;
@@ -127,63 +133,134 @@ class Car {
     }
 
     turnForward() {
-        let newX = this.x + this.r * Math.cos(Math.PI / 180);
-        let newY = this.x + this.r * Math.sin(Math.PI / 180);
-        this.x = newX;
-        this.y = newY;
+        this.alpha += 1 / this.r;
+        if (this.alpha >= Math.PI * 2 || this.alpha <= -Math.PI * 2)
+            this.alpha = 0;
+        if (this.alpha != 0) {
+            let newX = this.x + Math.cos(this.alpha);
+            let newY = this.y + Math.sin(this.alpha);
+            this.x = newX;
+            this.y = newY;
+        }
+        console.log(this.alpha)
     }
 
-    calculateTurnAngles() {
-        this.r = (this.width / 2) / Math.tan(this.turnAngle);
-        this.turnAngleLeft = Math.atan((this.width / 2) / (this.r + this.height / 2))
-        this.turnAngleRight = Math.atan((this.width / 2) / (this.r - this.height / 2))
-
-        this.rLeft = this.r + this.height / 2;
-        this.rRight = this.r - this.height / 2
-
-        //        context.beginPath()
-        //        context.moveTo(this.x - this.width / 4, this.y);
-        //        context.lineTo(this.x - this.width / 4, this.y + this.r)
-        //        context.lineWidth = 2;
-        //        context.strokeStyle = "purple";
-        //        context.stroke();
-        //
-        //        context.beginPath();
-        //        context.arc(this.x - this.width / 4, this.y + this.r, 4, 0, Math.PI * 2);
-        //        context.fillStyle = "purple";
-        //        context.fill();
-    }
 
     turnBackward() {
-
+        this.alpha -= 1 / this.r;
+        if (this.alpha >= Math.PI * 2 || this.alpha <= -Math.PI * 2)
+            this.alpha = 0;
+        if (this.alpha != 0) {
+            let newX = this.x - Math.cos(this.alpha);
+            let newY = this.y - Math.sin(this.alpha);
+            this.x = newX;
+            this.y = newY;
+        }
     }
 
 
+    calculateTurnAngles() {
+        let r = (this.width / 2) / Math.tan(this.turnAngle);
+        this.turnAngleLeft = Math.atan((this.width / 2) / (r + this.height / 2))
+        this.turnAngleRight = Math.atan((this.width / 2) / (r - this.height / 2))
+
+        this.rLeft = r + this.height / 2;
+        this.rRight = r - this.height / 2
+
+        this.r = r * Math.cos(this.turnAngle / 2);
+    }
+
+    drawTurn() {
+        context.beginPath()
+        context.moveTo(this.x, this.y);
+        context.lineTo(this.x - this.r * Math.sin(this.alpha), this.y + this.r * Math.cos(this.alpha))
+        context.lineWidth = 2;
+        context.strokeStyle = "purple";
+        context.stroke();
+
+        context.beginPath();
+        context.arc(this.x - this.r * Math.sin(this.alpha), this.y + this.r * Math.cos(this.alpha), 4, 0, Math.PI * 2);
+        context.fillStyle = "purple";
+        context.fill();
+
+        context.beginPath();
+        context.arc(this.x - this.r * Math.sin(this.alpha), this.y + this.r * Math.cos(this.alpha), Math.abs(this.rLeft), 0, Math.PI * 2);
+        context.strokeStyle = "rgba(255, 255, 102, 0.6";;
+        context.stroke();
+
+        context.beginPath();
+        context.arc(this.x - this.r * Math.sin(this.alpha), this.y + this.r * Math.cos(this.alpha), Math.abs(this.rRight), 0, Math.PI * 2);
+        context.strokeStyle = "rgba(255, 255, 102, 0.6";;
+        context.stroke();
+    }
+
     moveCar(move) {
+        if (moveType == "ackerman") {
+            this.moveCarAckerman(move);
+        } else {
+            this.turnAngle = 0;
+            this.calculateTurnAngles();
+            switch (move) {
+                case "F":
+                    this.goForward();
+                    break;
+                case "B":
+                    this.goBackward();
+                    break;
+                case "R":
+                    this.alpha += Math.PI / 45;
+                    break;
+                case "L":
+                    this.alpha -= Math.PI / 45;
+                    break;
+                case "":
+                    break;
+
+            }
+        }
+        this.calculateScore();
+    }
+
+    moveCarAckerman(move) {
+
         switch (move) {
             case "F":
-                if (this.turnAngle == 0)
+                if (this.turnAngle == 0) {
                     this.goForward();
-                else
+                } else {
                     this.turnForward();
+                }
                 break;
             case "B":
-                if (this.turnAngle == 0)
+                if (this.turnAngle == 0) {
                     this.goBackward();
-                else
+                } else
                     this.turnBackward();
                 break;
             case "R":
-                if (this.turnAngle < Math.PI / 8)
-                    this.turnAngle += Math.PI / 90;
-                //                this.calculateTurnAngles();
+                if (this.turnAngle < Math.PI / 5)
+                    this.turnAngle += Math.PI / 360;
+                this.calculateTurnAngles();
                 break;
             case "L":
-                if (this.turnAngle > -Math.PI / 8)
-                    this.turnAngle -= Math.PI / 90;
-                //                this.calculateTurnAngles();
+                if (this.turnAngle > -Math.PI / 5)
+                    this.turnAngle -= Math.PI / 360;
+                this.calculateTurnAngles();
                 break;
             case "":
+                this.turnAngle = 0;
+                //                if (Math.floor(this.turnAngle * 10) == 0) {
+                //                    this.turnAngle = 0;
+                //                    this.r = 0;
+                //                } else if (this.turnAngle > 0)
+                //                    this.turnAngle -= Math.PI / 180;
+                //                else if (this.turnAngle < 0)
+                //                    this.turnAngle += Math.PI / 180;
+                break;
+            case "reduceSpeed":
+                if (Math.floor(this.speed * 100) == 0) {
+                    this.speed = 0;
+                }
                 break;
 
         }
@@ -191,7 +268,6 @@ class Car {
     }
 
     drawCar(style = "rgba(255, 0, 0, 0.4") {
-        clearCanvas();
         context.beginPath();
         context.translate(this.x, this.y);
         context.rotate(this.alpha);
@@ -202,14 +278,6 @@ class Car {
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
 
-        context.beginPath();
-        context.translate(this.x, this.y);
-        context.rotate(this.alpha);
-        context.arc(-this.width / 4, this.y, 4, 0, Math.PI * 2);
-        context.fillStyle = "orange";
-        context.fill();
-        context.rotate(-this.alpha);
-        context.translate(-this.x, -this.y);
         this.calculateTurnAngles();
         this.drawFrontWheels();
         this.drawBackWheels();
@@ -223,7 +291,7 @@ class Car {
         context.translate(this.x + dist * Math.cos(lAng), this.y - dist * Math.sin(lAng));
         context.rotate(this.alpha + this.turnAngleLeft);
         //                context.arc(0,0,5,0,Math.PI*2);
-        context.rect(-this.width / 8, -this.height / 8, this.width / 4, this.height / 4);
+        context.rect(-this.tyreWidth / 2, -this.tyreHeight / 2, this.tyreWidth, this.tyreHeight);
         //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
         context.fillStyle = "blue";
         context.fill();
@@ -238,7 +306,7 @@ class Car {
         context.translate(this.x + dist * Math.cos(rAng), this.y + dist * Math.sin(rAng));
         context.rotate(this.alpha + this.turnAngleRight);
         //        context.arc(0,0,5,0,Math.PI*2);
-        context.rect(-this.width / 8, -this.height / 8, this.width / 4, this.height / 4);
+        context.rect(-this.tyreWidth / 2, -this.tyreHeight / 2, this.tyreWidth, this.tyreHeight);
         //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
         context.fillStyle = "blue";
         context.fill();
@@ -255,7 +323,7 @@ class Car {
         context.translate(this.x, this.y);
         context.rotate(this.alpha);
         //        context.arc(0,0,5,0,Math.PI*2);
-        context.rect(-this.width / 4 - this.width / 8, -this.height / 2 - this.height / 8, this.width / 4, this.height / 4);
+        context.rect(-this.width / 4 - this.tyreWidth / 2, -this.height / 2 - this.tyreHeight / 2, this.tyreWidth, this.tyreHeight);
         //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
         context.fillStyle = "blue";
         context.fill();
@@ -268,7 +336,7 @@ class Car {
         context.translate(this.x, this.y);
         context.rotate(this.alpha);
         //        context.arc(0,0,5,0,Math.PI*2);
-        context.rect(-this.width / 4 - this.width / 8, this.height / 2 - this.height / 8, this.width / 4, this.height / 4);
+        context.rect(-this.width / 4 - this.tyreWidth / 2, this.height / 2 - this.tyreHeight / 2, this.tyreWidth, this.tyreHeight);
         //        context.drawImage(CAR, -this.width / 2, -this.height / 2, this.width, this.height);
         context.fillStyle = "blue";
         context.fill();
