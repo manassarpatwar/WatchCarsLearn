@@ -33,15 +33,22 @@
                     <button onclick="startTestDrive()">Test drive</button>
                     <button onclick="setTurnType(this)" value="ackerman">Turn type: Ackerman</button>
                 </div>
+                <div>
+                    <button onclick="zoomInCanvas()">Zoom in</button>
+                     <button onclick="zoomOutCanvas()">Zoom out</button>
+                </div>
             </div>
         </section>
 
         <section id="program">
-            <p>Total Cars: <span id="carNumsText"></span></p>
-            <p><input id="carNumsSlider" type="range" min="1" max="1000" step="1" value="20">
-            </p>
+            <p>Total Cars:</p>
+            <div class="number-input"><button onclick="this.parentNode.querySelector('input[type=number]').stepDown()"></button>
+                <input id="carNumsInput" class="quantity" min="1" name="quantity" value="20" type="number">
+                <button onclick="this.parentNode.querySelector('input[type=number]').stepUp()" class="plus"></button>
+            </div>
             <br>
-             <p>Total sensors: <span id="numRaysText"></span></p>
+            <br>
+            <p>Total sensors: <span id="numRaysText"></span></p>
             <p><input id="numRaysSlider" type="range" min="1" max="7" step="2" value="3">
             </p>
             <br>
