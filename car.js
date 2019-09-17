@@ -24,12 +24,11 @@ class Car {
     constructor(brain) {
         this.x = carStartX;
         this.y = carStartY;
-        this.alpha = -Math.PI / 2;
+        this.alpha = 0;
         this.turnAngle = 0;
         this.turnAngleLeft = 0;
         this.turnAngleRight = 0;
         this.rays = [];
-        this.direction = 0;
         this.turn = 0;
         this.score = 0;
         this.fitness = 0;
@@ -38,10 +37,10 @@ class Car {
         this.width = 40;
         this.height = 20;
         this.speed = 4;
-        this.speedLimit = 1;
+        this.speedLimit = 3;
         this.vx = 0;
         this.vy = 0;
-        this.acceleration = 0.035;
+        this.acceleration = 0.05;
         this.friction = 0.01;
         this.laps = 0;
         this.tyreWidth = this.width / 4;
@@ -110,15 +109,21 @@ class Car {
         }
     }
 
-    applyFriction() {
-        let spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        let ang = Math.atan2(this.vy, this.vx);
-        if (spd > this.friction)
-            spd -= this.friction;
-        else
-            spd = 0;
-        this.vx = Math.cos(ang) * spd;
-        this.vy = Math.sin(ang) * spd;
+    applyFriction(fr = this.friction) {
+        if(this.direction != 0){
+            let spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            let ang = Math.atan2(this.vy, this.vx);
+            if (spd > fr)
+                spd -= fr;
+            else
+                spd = 0;
+            this.vx = Math.cos(ang) * spd;
+            this.vy = Math.sin(ang) * spd;
+            if(spd == 0){
+                console.log("dir zero")
+                this.direction = 0;
+            }
+        }
     }
 
     goForward() {
@@ -137,8 +142,8 @@ class Car {
 
 
     go() {
-        let newX = this.x + this.vx * Math.cos(this.alpha);
-        let newY = this.y + this.vy * Math.sin(this.alpha);
+        let newX = this.x + this.vx;
+        let newY = this.y + this.vy;
         this.x = newX;
         this.y = newY;
     }
@@ -159,28 +164,28 @@ class Car {
 
     turnCar() {
         let spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        if (this.vx > 0 && this.vy > 0)
-            this.alpha += spd / this.r;
-        else if (this.vx < 0 && this.vy < 0)
-            this.alpha -= spd / this.r;
+        this.alpha += this.direction*spd / this.r;
         this.x = this.turnCenterX + this.r * Math.sin(this.alpha);
         this.y = this.turnCenterY - this.r * Math.cos(this.alpha);
+        this.vx = this.direction*Math.cos(this.alpha) * spd;
+        this.vy = this.direction*Math.sin(this.alpha) * spd;
     }
+
 
     calculateTurnAngles() {
         let r = (this.width / 2) / Math.tan(this.turnAngle);
-        if (Math.abs(r) < 5000) {
-            this.turnAngleLeft = Math.atan((this.width / 2) / (r + this.height / 2))
-            this.turnAngleRight = Math.atan((this.width / 2) / (r - this.height / 2))
+        //        if (Math.abs(r) < 5000) {
+        this.turnAngleLeft = Math.atan((this.width / 2) / (r + this.height / 2))
+        this.turnAngleRight = Math.atan((this.width / 2) / (r - this.height / 2))
 
-            this.rLeft = r + this.height / 2;
-            this.rRight = r - this.height / 2
+        this.rLeft = r + this.height / 2;
+        this.rRight = r - this.height / 2
 
-            //        this.r = r * Math.cos(this.turnAngle / 2);
-            this.r = r;
-            this.turnCenterX = this.x - this.r * Math.sin(this.alpha);
-            this.turnCenterY = this.y + this.r * Math.cos(this.alpha);
-        }
+        //        this.r = r * Math.cos(this.turnAngle / 2);
+        this.r = r;
+        this.turnCenterX = this.x - this.r * Math.sin(this.alpha);
+        this.turnCenterY = this.y + this.r * Math.cos(this.alpha);
+        //        }
     }
 
     drawTurn() {
@@ -237,27 +242,39 @@ class Car {
     }
 
     moveCarAckerman(move) {
+        this.applyFriction();
         switch (move) {
             case "F":
-                if (this.vx < this.speedLimit && this.vy < this.speedLimit) {
-                    this.vx += this.acceleration;
-                    this.vy += this.acceleration;
-                }
-                if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
-                    this.go();
-                } else {
-                    this.turnCar();
+                if(this.direction == -1){
+                    this.applyFriction(0.05);
+                }else{
+                    this.direction = 1;
+                                    console.log(this.vx + " "+this.vy)
+                    if (this.vx < this.speedLimit && this.vy < this.speedLimit && this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
+                        this.vx += this.acceleration * Math.cos(this.alpha);
+                        this.vy += this.acceleration * Math.sin(this.alpha);
+                    }
+                    if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
+                        this.go();
+                    } else {
+                        this.turnCar();
+                    }
                 }
                 break;
             case "B":
-                if (this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
-                    this.vx -= this.acceleration;
-                    this.vy -= this.acceleration;
+                 if(this.direction == 1){
+                    this.applyFriction(0.05);
+                }else{
+                    this.direction = -1
+                    if (this.vx < this.speedLimit && this.vy < this.speedLimit && this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
+                        this.vx -= this.acceleration * Math.cos(this.alpha);
+                        this.vy -= this.acceleration * Math.sin(this.alpha);
+                    }
+                    if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
+                        this.go();
+                    } else
+                        this.turnCar();
                 }
-                if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
-                    this.go();
-                } else
-                    this.turnCar();
                 break;
             case "R":
                 if (this.turnAngle < Math.PI / 6)
@@ -291,8 +308,9 @@ class Car {
         }
         if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
             this.go();
-        } else {
-            this.turnCar();
+        }
+        else{
+           this.turnCar();
         }
         this.calculateScore();
     }

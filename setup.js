@@ -13,7 +13,7 @@ var context = canvas.getContext("2d");
 var w = 0;
 var h = 0;
 
-if(mobilecheck()){
+if (mobilecheck()) {
     canvas.remove();
     document.getElementById("program").remove();
     document.getElementById("buttons").remove();
@@ -111,6 +111,9 @@ setup();
 
 let startDraw = false;
 let setCarPosition = false;
+let startErase = false;
+let initEraseX = 0;
+let initEraseY = 0;
 let initX = 0;
 let initY = 0;
 
@@ -120,6 +123,16 @@ function initBounds() {
         startDraw = true;
         initX = canvasFactor * e.clientX - w / 2;
         initY = canvasFactor * e.clientY - h / 2;
+        this.removeEventListener('click', arguments.callee, false);
+    });
+}
+
+function eraseBounds() {
+    setup();
+    canvas.addEventListener("click", function (e) {
+        startErase = true;
+        initEraseX = canvasFactor * e.clientX - w / 2;
+        initEraseY = canvasFactor * e.clientY - h / 2;
         this.removeEventListener('click', arguments.callee, false);
     });
 }
@@ -135,21 +148,35 @@ canvas.addEventListener("mouseenter", function () {
     setup();
 })
 
-window.addEventListener("mousemove", function (e) {
+canvas.addEventListener("mousemove", function (e) {
+    let moveX = canvasFactor * e.clientX - w / 2;
+    let moveY = canvasFactor * e.clientY - h / 2;
     if (startDraw) {
-        let moveX = canvasFactor * e.clientX - w / 2;
-        let moveY = canvasFactor * e.clientY - h / 2;
         boundaries.push(new Boundary(initX, initY, moveX, moveY));
         initX = moveX;
         initY = moveY;
         setup();
+    } else if (startErase) {
+        for (let i = 0; i < boundaries.length; i++) {
+            let b = boundaries[i];
+            if (b.x1 >= moveX - 40 && b.x1 <= moveX + 40 && b.y1 >= moveY - 40 && b.y1 <= moveY + 40)
+                boundaries.splice(i, 1);
+        }
+        console.log(moveX + " " + moveY);
+        setup();
     }
 })
 
-window.addEventListener("dblclick", function (e) {
-    startDraw = false;
-    setup();
-    localStorage.setItem("boundaries", JSON.stringify(boundaries));
+canvas.addEventListener("dblclick", function (e) {
+    if (startDraw) {
+        startDraw = false;
+        setup();
+        localStorage.setItem("boundaries", JSON.stringify(boundaries));
+    } else if (startErase) {
+        startErase = false;
+        localStorage.setItem("boundaries", JSON.stringify(boundaries));
+        setup();
+    }
 })
 
 
@@ -230,9 +257,6 @@ document.addEventListener("keydown", function (e) {
             pressedKeys = pressedKeys.filter(e => e !== "reduceTurn");
             pressedKeys.push("R");
             break;
-        case 32:
-            pressedKeys.push("reduceSpeed");
-            break;
     }
 });
 
@@ -254,11 +278,6 @@ document.addEventListener("keyup", function (e) {
         case 39:
             pressedKeys = pressedKeys.filter(e => e !== "R");
             pressedKeys.push("reduceTurn");
-            break;
-        case 32:
-            pressedKeys = pressedKeys.filter(e => e !== "reduceSpeed");
-            break;
-        case 90:
             break;
     }
 
