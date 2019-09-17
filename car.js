@@ -37,11 +37,11 @@ class Car {
         this.width = 40;
         this.height = 20;
         this.speed = 4;
-        this.speedLimit = 3;
+        this.speedLimit = 2;
         this.vx = 0;
         this.vy = 0;
         this.acceleration = 0.05;
-        this.friction = 0.01;
+        this.friction = 0.007;
         this.laps = 0;
         this.tyreWidth = this.width / 4;
         this.tyreHeight = this.height / 6;
