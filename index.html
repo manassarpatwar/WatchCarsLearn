@@ -13,30 +13,31 @@
 
     <main>
         <canvas id="canvas"></canvas>
+        <canvas id="NNcanvas"></canvas>
         <section id="buttons">
             <div class="buttons buttonsLeft">
                 <div>
-                    <button onclick="initBounds()">Draw track</button>
-                    <button onclick="clearBounds()">Clear track</button>
-                     <button onclick="eraseBounds()">Erase track</button>
+                    <button onclick="initBounds()"><img alt = "Draw track" title = "Draw track" class="button-icons" src="img/draw.png"></button>
+                    <button onclick="clearBounds()"><img alt = "Clear track" title = "Clear track" class="button-icons" src="img/clear.png"></button>
+                    <button onclick="eraseBounds()"><img alt = "Erase track" title = "Erase track" class="button-icons" src="img/erase.png"></button>
                 </div>
                 <div>
-                    <button onclick="reset()">Reset</button>
-                    <button onclick="start()">Start</button>
+                    <button onclick="reset()"><img alt = "Reset" title = "Reset" class="button-icons" src="img/reset.png"></button>
+                    <button onclick="start()"><img alt = "Start" title = "Start" class="button-icons" src="img/start.png"></button>
                 </div>
             </div>
             <div class="buttons buttonsRight">
                 <div>
-                    <button onclick="setCarPos()">Set Car Position</button>
-                    <button onclick="startNextGen()">Next gen</button>
+                    <button onclick="setCarPos()"><img alt = "Set car position" title = "Set car position" class="button-icons" src="img/place.png"></button>
+                    <button onclick="startNextGen()"><img alt = "Start next generation" title = "Start next generation" class="button-icons" src="img/nextGen.png"></button>
                 </div>
                 <div>
-                    <button onclick="startTestDrive()">Test drive</button>
-                    <button onclick="setTurnType(this)" value="ackerman">Turn type: Ackerman</button>
+                    <button onclick="startTestDrive()"><img alt = "Test drive" title = "Test drive" class="button-icons" src="img/testDrive.png"></button>
+                    <button onclick="setTurnType(this)" value="ackerman"><img class = "ackerman" alt = "Set turn type: Ackerman" title = "Set turn type: Ackerman" class="button-icons" src="img/ackerman.png"><img class = "tank" alt = "Set turn type: Tank" title = "Set turn type: Tank" class="button-icons" src="img/tank.png"></button>
                 </div>
                 <div>
-                    <button onclick="zoomInCanvas()">Zoom in</button>
-                     <button onclick="zoomOutCanvas()">Zoom out</button>
+                    <button onclick="zoomInCanvas()"><img alt = "Zoom in" title = "Zoom in" class="button-icons" src="img/zoomIn.png"></button>
+                    <button onclick="zoomOutCanvas()"><img alt = "Zoom out" title = "Zoom out" class="button-icons" src="img/zoomOut.png"></button>
                 </div>
             </div>
         </section>
@@ -62,6 +63,11 @@
             <p>Score <span id="score"></span></p>
         </section>
     </main>
+    <footer style = "display: none">
+        <div>Erase icon made by <a href="https://www.flaticon.com/authors/creaticca-creative-agency" title="Creaticca Creative Agency">Creaticca Creative Agency</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+        <div>Key icon made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/"             title="Flaticon">www.flaticon.com</a></div>
+        <div>Tank icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/"             title="Flaticon">www.flaticon.com</a></div>
+    </footer>
     <script src="lib/nn.js"></script>
     <script src="lib/matrix.js"></script>
     <script src="car.js"></script>
@@ -69,4 +75,7 @@
     <script src="ray.js"></script>
     <script src="boundary.js"></script>
     <script src="setup.js"></script>
-</body></html>
+    <script src="visualiseNN.js"></script>
+</body>
+
+</html>

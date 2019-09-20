@@ -24,7 +24,7 @@ class Car {
     constructor(brain) {
         this.x = carStartX;
         this.y = carStartY;
-        this.alpha = 0;
+        this.alpha = -Math.PI / 2;
         this.turnAngle = 0;
         this.turnAngleLeft = 0;
         this.turnAngleRight = 0;
@@ -37,11 +37,11 @@ class Car {
         this.width = 40;
         this.height = 20;
         this.speed = 4;
-        this.speedLimit = 2;
+        this.speedLimit = 0.5;
         this.vx = 0;
         this.vy = 0;
-        this.acceleration = 0.05;
-        this.friction = 0.007;
+        this.acceleration = 0.5;
+        this.friction = 0;
         this.laps = 0;
         this.tyreWidth = this.width / 4;
         this.tyreHeight = this.height / 6;
@@ -56,7 +56,7 @@ class Car {
             //            console.log("mutating");
             this.brain.mutate(mutate);
         } else {
-            this.brain = new NeuralNetwork([this.rays.length, 5, 4, 3]);
+            this.brain = new NeuralNetwork([this.rays.length, 5, 4, MOVES.length]);
         }
     }
 
@@ -66,10 +66,21 @@ class Car {
 
     think(inputs) {
         let predicts = this.brain.query(inputs);
-        let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-        let carMove = MOVES[indexOfMaxValue];
-        this.moveCar(MOVES[indexOfMaxValue]);
-        this.rayTrace();
+        if (moveType == "tank") {
+            for (let i = 0; i < predicts.length; i++) {
+                //            let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+                if (predicts[i] >= 0.5) {
+                    let carMove = MOVES[i];
+                    this.moveCar(carMove);
+                    this.rayTrace();
+                }
+            }
+        } else {
+            let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+            let carMove = MOVES[indexOfMaxValue];
+            this.moveCar(carMove);
+            this.rayTrace();
+        }
     }
 
     rayTrace() {
@@ -110,7 +121,7 @@ class Car {
     }
 
     applyFriction(fr = this.friction) {
-        if(this.direction != 0){
+        if (this.direction != 0) {
             let spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
             let ang = Math.atan2(this.vy, this.vx);
             if (spd > fr)
@@ -119,7 +130,7 @@ class Car {
                 spd = 0;
             this.vx = Math.cos(ang) * spd;
             this.vy = Math.sin(ang) * spd;
-            if(spd == 0){
+            if (spd == 0) {
                 console.log("dir zero")
                 this.direction = 0;
             }
@@ -164,11 +175,11 @@ class Car {
 
     turnCar() {
         let spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        this.alpha += this.direction*spd / this.r;
+        this.alpha += this.direction * spd / this.r;
         this.x = this.turnCenterX + this.r * Math.sin(this.alpha);
         this.y = this.turnCenterY - this.r * Math.cos(this.alpha);
-        this.vx = this.direction*Math.cos(this.alpha) * spd;
-        this.vy = this.direction*Math.sin(this.alpha) * spd;
+        this.vx = this.direction * Math.cos(this.alpha) * spd;
+        this.vy = this.direction * Math.sin(this.alpha) * spd;
     }
 
 
@@ -245,36 +256,28 @@ class Car {
         this.applyFriction();
         switch (move) {
             case "F":
-                if(this.direction == -1){
-                    this.applyFriction(0.05);
-                }else{
-                    this.direction = 1;
-                                    console.log(this.vx + " "+this.vy)
-                    if (this.vx < this.speedLimit && this.vy < this.speedLimit && this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
-                        this.vx += this.acceleration * Math.cos(this.alpha);
-                        this.vy += this.acceleration * Math.sin(this.alpha);
-                    }
-                    if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
-                        this.go();
-                    } else {
-                        this.turnCar();
-                    }
+                this.direction = 1;
+                console.log(this.vx + " " + this.vy)
+                if (this.vx < this.speedLimit && this.vy < this.speedLimit && this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
+                    this.vx += this.acceleration * Math.cos(this.alpha);
+                    this.vy += this.acceleration * Math.sin(this.alpha);
+                }
+                if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
+                    this.go();
+                } else {
+                    this.turnCar();
                 }
                 break;
             case "B":
-                 if(this.direction == 1){
-                    this.applyFriction(0.05);
-                }else{
-                    this.direction = -1
-                    if (this.vx < this.speedLimit && this.vy < this.speedLimit && this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
-                        this.vx -= this.acceleration * Math.cos(this.alpha);
-                        this.vy -= this.acceleration * Math.sin(this.alpha);
-                    }
-                    if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
-                        this.go();
-                    } else
-                        this.turnCar();
+                this.direction = -1
+                if (this.vx < this.speedLimit && this.vy < this.speedLimit && this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
+                    this.vx -= this.acceleration * Math.cos(this.alpha);
+                    this.vy -= this.acceleration * Math.sin(this.alpha);
                 }
+                if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
+                    this.go();
+                } else
+                    this.turnCar();
                 break;
             case "R":
                 if (this.turnAngle < Math.PI / 6)
@@ -308,9 +311,8 @@ class Car {
         }
         if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
             this.go();
-        }
-        else{
-           this.turnCar();
+        } else {
+            this.turnCar();
         }
         this.calculateScore();
     }
