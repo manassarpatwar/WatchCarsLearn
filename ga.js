@@ -32,19 +32,21 @@ function nextGeneration() {
 // Generate a new population of Cars
 function generate(oldCars) {
     let newCars = [];
-        for (let i = 0; i < Math.floor(oldCars.length*0.4); i++) {
-            // Select a car based on fitness
-            let car = poolSelection(oldCars);
-            newCars[i] = car;
-        }
+    for (let i = 0; i < Math.floor(oldCars.length * 0.3); i++) {
+        // Select a car based on fitness
+        let car = poolSelection(oldCars);
+        newCars[i] = car;
+    }
     let numChildren = 0;
-    let numCars = oldCars.length*0.6;
-    let top1 = oldCars.pop();
-    let top2 = oldCars.pop();
-    while (numChildren < numCars) {
+    while (numChildren < oldCars.length * 0.7) {
+        let numCars = oldCars.length;
+        let top1 = poolSelection(oldCars);
+        let top2 = poolSelection(oldCars);
+
         let babyBrain = top1.brain.merge(top2.brain);
         newCars.push(new Car(babyBrain));
-        numChildren++;
+        newCars.push(new Car(babyBrain));
+        numChildren+=2;
     }
     return newCars;
 }
