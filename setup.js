@@ -67,7 +67,7 @@ var activeCars = [];
 var allCars = [];
 var numRays = 3;
 var totalCars = 20;
-const MOVES = ["L", "R", "F", "reduceTurn"];
+const MOVES = ["L", "R", "reduceTurn"];
 
 
 function setNumRays(nrays) {
@@ -86,15 +86,12 @@ let carStartX = 0;
 let carStartY = 0;
 
 let storedCarCoords = JSON.parse(localStorage.getItem("storedCarStartCoords"));
-let storedCanvasCoords = JSON.parse(localStorage.getItem("storedCanvasCoords"));
+
 if (storedCarCoords) {
     carStartX = storedCarCoords[0];
     carStartY = storedCarCoords[1];
 }
 
-if (storedCanvasCoords) {
-    resizeCanvas(storedCanvasCoords[0], storedCanvasCoords[1]);
-}
 
 createCars(totalCars);
 
@@ -141,6 +138,7 @@ function eraseBounds() {
 function clearBounds() {
     localStorage.removeItem("boundaries");
     startDraw = false;
+    startErase = false;
     boundaries = [];
     setup();
 }
@@ -172,8 +170,8 @@ canvas.addEventListener("mousemove", function (e) {
 canvas.addEventListener("dblclick", function (e) {
     if (startDraw) {
         startDraw = false;
-        setup();
         localStorage.setItem("boundaries", JSON.stringify(boundaries));
+        setup();
     } else if (startErase) {
         startErase = false;
         localStorage.setItem("boundaries", JSON.stringify(boundaries));
@@ -376,24 +374,22 @@ let requestId;
 let bestBrain;
 let prevBest;
 
-let prevTime = Date.now();
 
 function update() {
     clearCanvas();
-    let currTime = Date.now();
+
     for (let j = 0; j < genSpeed; j++) {
         maxScore = 0;
         for (let i = activeCars.length - 1; i >= 0; i--) {
             car = activeCars[i];
-//            car.moveCar("F");
-            //            pressedKeys = uniq = [...new Set(pressedKeys)];
-            //            for (let move of pressedKeys)
-            //                car.moveCar(move);
+            car.moveCar("F");
+            car.moveCar(move);
             let alive = true;
             let inputs = [];
+            car.rayTrace()
             for (let ray of car.rays) {
                 inputs.push(1 - ray.distance / car.vision);
-                if (ray.distance < car.height / 2) {
+                if (ray.distance < car.height/2) {
                     alive = false;
                     allCars.push(car);
                     activeCars.splice(i, 1);
@@ -401,13 +397,6 @@ function update() {
                 }
             }
 
-            if (currTime - prevTime > 1000) {
-                if (car.x == storedCarCoords[0] && car.y == storedCarCoords[1]) {
-                    alive = false;
-                    allCars.push(car);
-                    activeCars.splice(i, 1);
-                }
-            }
             if (alive) {
                 car.think(inputs);
             }
@@ -419,13 +408,9 @@ function update() {
                     context.scale(zoom, zoom);
                 }
                 bestBrain = car.brain.copy();
-                bestCarScore = car.score;
             }
             score.innerHTML = "";
             score.insertAdjacentHTML('beforeend', Math.floor(maxScore * 100) / 100);
-        }
-        if (currTime - prevTime > 1000) {
-            prevTime = currTime;
         }
     }
     if (activeCars.length == 0 || nextGen == true) {
@@ -516,8 +501,6 @@ function testDrive() {
     //    for (let move of pressedKeys)
     //        testCar.moveCar(move);
     testCar.moveCar(move);
-    carStartX = testCar.x;
-    carStartY = testCar.y;
     testCar.rayTrace();
     for (let ray of testCar.rays) {
         if (ray.distance < testCar.height / 2) {

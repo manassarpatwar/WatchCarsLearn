@@ -36,15 +36,16 @@ class Car {
         this.vision = 100;
         this.width = 40;
         this.height = 20;
-        this.speed = 4;
-        this.speedLimit = 0.5;
+        this.speed = 2;
+        this.speedLimit = 1;
         this.vx = 0;
         this.vy = 0;
-        this.acceleration = 0.5;
-        this.friction = 0;
+        this.acceleration = 0.1;
+        this.friction = 0.01;
         this.laps = 0;
         this.tyreWidth = this.width / 4;
         this.tyreHeight = this.height / 6;
+        this.boundingCoordinates = [];
 
 
         for (let i = -45 * Math.floor(numRays / 2); i <= 45 * Math.floor(numRays / 2); i += 45) {
@@ -229,8 +230,6 @@ class Car {
         if (moveType == "ackerman") {
             this.moveCarAckerman(move);
         } else {
-            this.turnAngle = 0;
-            this.calculateTurnAngles();
             switch (move) {
                 case "F":
                     this.goForward();
@@ -248,8 +247,8 @@ class Car {
                     break;
 
             }
+            this.calculateScore();
         }
-        this.calculateScore();
     }
 
     moveCarAckerman(move) {
@@ -290,19 +289,7 @@ class Car {
                 this.calculateTurnAngles();
                 break;
             case "reduceTurn":
-                if (this.turnAngle > 0)
-                    this.turnAngle -= Math.PI / 150;
-                else if (this.turnAngle < 0)
-                    this.turnAngle += Math.PI / 150;
-                if (Math.floor(Math.abs(this.turnAngle * 10)) == 0) {
-                    this.turnAngle = 0;
-                    this.turnAngleLeft = 0;
-                    this.turnAngleRight = 0;
-                    this.r = 0;
-                    this.rLeft = 0;
-                    this.rRight = 0;
-                }
-                this.calculateTurnAngles();
+                this.reduceTurn();
                 break;
             case "reduceSpeed":
                 this.applyFriction();
@@ -317,7 +304,38 @@ class Car {
         this.calculateScore();
     }
 
+    reduceTurn() {
+        if (this.turnAngle > 0)
+            this.turnAngle -= Math.PI / 150;
+        else if (this.turnAngle < 0)
+            this.turnAngle += Math.PI / 150;
+        if (Math.floor(Math.abs(this.turnAngle * 10)) == 0) {
+            this.turnAngle = 0;
+            this.turnAngleLeft = 0;
+            this.turnAngleRight = 0;
+            this.r = 0;
+            this.rLeft = 0;
+            this.rRight = 0;
+        }
+        this.calculateTurnAngles();
+    }
+
+    calculateBoundingCoords() {
+        let ang = Math.atan((this.height / 2) / (this.width / 2)) - this.alpha;
+        let dist = Math.sqrt(Math.pow(this.width / 2, 2) + Math.pow(this.height / 2, 2));
+
+        this.boundingCoordinates[0] = new Vector(this.x + dist * Math.cos(ang), this.y - dist * Math.sin(ang));
+
+        this.boundingCoordinates[1] = new Vector(this.x + dist * Math.cos(ang), this.y + dist * Math.sin(ang));
+
+        this.boundingCoordinates[2] = new Vector(this.x - dist * Math.cos(ang), this.y - dist * Math.sin(ang));
+
+
+        this.boundingCoordinates[3] = new Vector(this.x - dist * Math.cos(ang), this.y + dist * Math.sin(ang));
+    }
+
     drawCar(style = "rgba(255, 0, 0, 0.4") {
+
         context.beginPath();
         context.translate(this.x, this.y);
         context.rotate(this.alpha);
@@ -327,7 +345,7 @@ class Car {
         context.fill();
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
-
+        
         this.calculateTurnAngles();
         this.drawFrontWheels();
         this.drawBackWheels();
@@ -346,7 +364,6 @@ class Car {
         context.fillStyle = "blue";
         context.fill();
         context.rotate(-(this.alpha + this.turnAngleLeft));
-        context.restore();
         context.translate(-(this.x + dist * Math.cos(lAng)), -(this.y - dist * Math.sin(lAng)));
 
 

@@ -45,7 +45,7 @@ function visualizeBrain(brain, prevBrain) {
                 NNcontext.beginPath();
                 NNcontext.moveTo(x, y);
                 NNcontext.lineTo(brainVisualization[j + 1].visualNodes[k].x, brainVisualization[j + 1].visualNodes[k].y)
-                NNcontext.lineWidth = weight * 5;
+                NNcontext.lineWidth = weight * 2;
                  NNcontext.strokeStyle = "grey";
                 if (prevBrain) {
                     let prevWeight = prevBrain.weights[j].data[k][i];

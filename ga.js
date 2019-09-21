@@ -15,7 +15,7 @@
 
 // Create the next generation
 function nextGeneration() {
-    for(let c of activeCars){
+    for (let c of activeCars) {
         allCars.unshift(c);
     }
     gen++;
@@ -32,20 +32,19 @@ function nextGeneration() {
 // Generate a new population of Cars
 function generate(oldCars) {
     let newCars = [];
-    for (let i = 0; i < oldCars.length-oldCars.length/20; i++) {
-        // Select a car based on fitness
-        let car = poolSelection(oldCars);
-        newCars[i] = car;
-    }
-    let numChildren = 0;
-    for(let j = 0; j < oldCars.length/10; j++){
-        let top1 = allCars.pop();
-        let top2 = allCars.pop();
-        while(numChildren < oldCars.length/20){
-            let babyBrain = top1.brain.merge(top2.brain);
-            newCars.push(new Car(babyBrain));
-            numChildren++;
+        for (let i = 0; i < Math.floor(oldCars.length*0.4); i++) {
+            // Select a car based on fitness
+            let car = poolSelection(oldCars);
+            newCars[i] = car;
         }
+    let numChildren = 0;
+    let numCars = oldCars.length*0.6;
+    let top1 = oldCars.pop();
+    let top2 = oldCars.pop();
+    while (numChildren < numCars) {
+        let babyBrain = top1.brain.merge(top2.brain);
+        newCars.push(new Car(babyBrain));
+        numChildren++;
     }
     return newCars;
 }
