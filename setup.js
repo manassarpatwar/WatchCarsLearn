@@ -215,6 +215,7 @@ function setCarPos() {
         zoom = 1;
         zoomOutCanvas();
         canvas.style.zIndex = 1;
+        
         canvas.addEventListener("mousemove", function(e){
             if(!setCarPosition)
                 this.removeEventListener('mousemove', arguments.callee, false);
