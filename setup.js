@@ -212,11 +212,30 @@ function zoomOutCanvas() {
 function setCarPos() {
     if (!startDraw) {
         setCarPosition = true;
+        zoom = 1;
+        zoomOutCanvas();
         canvas.style.zIndex = 1;
+        
+        canvas.addEventListener("mousemove", function(e){
+            if(!setCarPosition)
+                this.removeEventListener('mousemove', arguments.callee, false);
+            else{
+                moveX = canvasFactor * e.clientX - w / 2;
+                moveY = canvasFactor * e.clientY - h / 2;
+                let car = new Car();
+                car.x = moveX;
+                car.y = moveY;
+                setup();
+                car.drawCar("red");
+                car.rayTrace();
+            }
+        });
+        
         canvas.addEventListener("click", function (e) {
             carStartX = canvasFactor * e.clientX - w / 2;
             carStartY = canvasFactor * e.clientY - h / 2;
             this.removeEventListener('click', arguments.callee, false);
+            console.log(carStartX + " " +  carStartY);
             carStartCoords = [];
             carStartCoords.push(carStartX);
             carStartCoords.push(carStartY);
@@ -224,6 +243,7 @@ function setCarPos() {
             for (let car of activeCars) {
                 car.x = carStartX;
                 car.y = carStartY;
+                car.rayTrace();
             }
             if (testCar) {
                 testCar.x = carStartX;
@@ -231,8 +251,8 @@ function setCarPos() {
             }
             canvas.style.zIndex = -1;
             setup();
+            setCarPosition = false;
         });
-        setCarPosition = false;
     }
 
 }
@@ -503,7 +523,7 @@ function testDrive() {
     testCar.moveCar(move);
     testCar.rayTrace();
     for (let ray of testCar.rays) {
-        if (ray.distance < testCar.height / 2) {
+        if (ray.distance < 7*testCar.height / 8) {
             testCar = new Car();
             break;
         }
