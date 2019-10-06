@@ -68,9 +68,9 @@
 
         <section id="program">
             <p>Total Cars:</p>
-            <div class="number-input"><button onclick="this.parentNode.querySelector('input[type=number]').stepDown()"></button>
+            <div class="number-input"><button onclick="changeCars(-10)"></button>
                 <input id="carNumsInput" class="quantity" min="1" name="quantity" value="20" type="number">
-                <button onclick="this.parentNode.querySelector('input[type=number]').stepUp()" class="plus"></button>
+                <button onclick="changeCars(10)" class="plus"></button>
             </div>
             <br>
             <br>

@@ -326,7 +326,8 @@ numRaysText.insertAdjacentHTML('beforeend', numRays);
 let nextGen = false;
 
 
-document.getElementById("carNumsInput").oninput = function () {
+let carNumsInput = document.getElementById("carNumsInput")
+carNumsInput.oninput = function () {
     totalCars = this.value //gets the oninput value
     reset(totalCars);
 }
@@ -449,6 +450,14 @@ function reset(numCars = totalCars) {
     allCars = [];
     createCars(numCars);
     setup();
+}
+
+function changeCars(offset){
+    totalCars += offset;
+    reset(totalCars);
+    console.log(offset)
+    carNumsInput.value = totalCars;
+    
 }
 
 function setTurnType(type) {
