@@ -18,6 +18,14 @@ Instructions:
 ## Neural network visualisation
 The changes in the "brain" of the best car, or its Neural Network are shown in the bottom right corner of the screen.
 The green color and red color represents positive and negative change in weight over the previous best car respectively.
+### The inputs:
+The distance measured by the sensors
+
+### The outputs:
+Turn Left, turn Right or nothing
+
+## Learning
+Cars learn using mutations of best car's neural network
 
 ## Note:
 The cars with ackerman turning will take a longer time to learn if the track is too difficult, for example with many twists and turns
