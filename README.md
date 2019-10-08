@@ -13,6 +13,7 @@ Instructions:
 ![alt text](https://user-images.githubusercontent.com/44678221/66262574-15234d80-e7db-11e9-8cac-3b7692c46316.png)
 
 * Run the cars by pressing the play button
+* If cars get stuck press next gen (>>) button
 * Tweak parameters, such as number of cars, number of sensors, turn type and Enjoy!
 
 ## Neural network visualisation
