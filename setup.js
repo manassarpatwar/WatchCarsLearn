@@ -123,11 +123,6 @@ function clearBounds() {
     setup();
 }
 
-//canvas.addEventListener("mouseenter", function () {
-//    setup();
-//})
-
-
 canvas.addEventListener("mousemove", function (e) {
     let moveX = canvasFactor * e.clientX - w / 2;
     let moveY = canvasFactor * e.clientY - h / 2;
@@ -163,7 +158,7 @@ canvas.addEventListener("dblclick", function (e) {
 let zoom = 1;
 
 function zoomInCanvas() {
-    if (zoom < 6) {
+    if (zoom < 5) {
         zoom++;
         resizeCanvas(window.innerWidth, window.innerHeight);
         context.translate(-zoom * carStartX, -zoom * carStartY);
@@ -225,10 +220,6 @@ function setCarPos() {
                 car.y = carStartY;
                 car.rayTrace();
             }
-            if (testCar) {
-                testCar.x = carStartX;
-                testCar.y = carStartY;
-            }
             canvas.style.zIndex = -1;
             setup();
             setCarPosition = false;
@@ -236,84 +227,6 @@ function setCarPos() {
     }
 
 }
-
-let keyDown;
-let keyUp;
-
-
-let pressedKeys = [];
-
-let move = "";
-document.addEventListener("keydown", function (e) {
-    e = e || window.event;
-    switch (e.keyCode) {
-        case 38:
-            move = "F";
-            break;
-        case 40:
-            move = "B";
-            break;
-        case 37:
-            move = "L";
-            break;
-        case 39:
-            move = "R";
-            break;
-        case 32:
-            move = "reduceTurn";
-            break;
-    }
-});
-
-document.addEventListener("keyup", function (e) {
-    move = "";
-
-});
-
-//document.addEventListener("keydown", function (e) {
-//    e = e || window.event;
-//    switch (e.keyCode) {
-//        case 38:
-//            pressedKeys = pressedKeys.filter(e => e !== "reduceSpeed");
-//            pressedKeys.push("F");
-//            break;
-//        case 40:
-//            pressedKeys = pressedKeys.filter(e => e !== "reduceSpeed");
-//            pressedKeys.push("B");
-//            break;
-//        case 37:
-//            pressedKeys = pressedKeys.filter(e => e !== "reduceTurn");
-//            pressedKeys.push("L");
-//            break;
-//        case 39:
-//            pressedKeys = pressedKeys.filter(e => e !== "reduceTurn");
-//            pressedKeys.push("R");
-//            break;
-//    }
-//});
-//
-//document.addEventListener("keyup", function (e) {
-//    e = e || window.event;
-//    switch (e.keyCode) {
-//        case 38:
-//            pressedKeys = pressedKeys.filter(e => e !== "F");
-//            pressedKeys.push("reduceSpeed");
-//            break;
-//        case 40:
-//            pressedKeys = pressedKeys.filter(e => e !== "B");
-//            pressedKeys.push("reduceSpeed");
-//            break;
-//        case 37:
-//            pressedKeys = pressedKeys.filter(e => e !== "L");
-//            pressedKeys.push("reduceTurn");
-//            break;
-//        case 39:
-//            pressedKeys = pressedKeys.filter(e => e !== "R");
-//            pressedKeys.push("reduceTurn");
-//            break;
-//    }
-//
-//});
 
 let gen = 0;
 let genText = document.getElementById("genText");
@@ -384,7 +297,6 @@ function update() {
         for (let i = activeCars.length - 1; i >= 0; i--) {
             car = activeCars[i];
             car.moveCar("F");
-            car.moveCar(move);
             let alive = true;
             let inputs = [];
             car.rayTrace()
@@ -438,7 +350,6 @@ function cancelMainAnim() {
 
 function reset(numCars = totalCars) {
     cancelMainAnim();
-    cancelTestAnim();
     zoom = 1;
     zoomOutCanvas();
     score.innerHTML = "";
@@ -470,59 +381,9 @@ function setTurnType(type) {
     }
 }
 
-let requestIdTestDrive;
-let testDriveOn = false;
-let testCar;
-
-
-function cancelTestAnim() {
-    if (requestIdTestDrive) {
-        window.cancelAnimationFrame(requestIdTestDrive);
-        testCar = null;
-        testDriveOn = false;
-        requestIdTestDrive = undefined;
-        carStartX = carStartCoords[0];
-        carStartY = carStartCoords[1];
-    }
-}
-
 function start() {
-    cancelTestAnim();
     if (!startAnim) {
         startAnim = true;
         update();
     }
-}
-
-function startTestDrive() {
-    cancelMainAnim();
-    if (!testDriveOn) {
-        testCar = new Car();
-        testDriveOn = true;
-        testDrive()
-    }
-}
-
-function testDrive() {
-    clearCanvas();
-    drawBoundaries();
-    //    pressedKeys = uniq = [...new Set(pressedKeys)];
-    //    for (let move of pressedKeys)
-    //        testCar.moveCar(move);
-    testCar.moveCar(move);
-    testCar.rayTrace();
-    for (let ray of testCar.rays) {
-        if (ray.distance < 7*testCar.height / 8) {
-            testCar = new Car();
-            break;
-        }
-    }
-
-    score.innerHTML = "";
-    score.insertAdjacentHTML('beforeend', Math.floor(testCar.score * 100) / 100);
-
-    testCar.drawTurn();
-    testCar.drawCar();
-    testCar.drawRays();
-    requestIdTestDrive = window.requestAnimationFrame(testDrive);
 }

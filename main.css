@@ -87,7 +87,7 @@
 #NNcanvas {
     position: absolute;
     right: 0;
-    background: transparent;
+    background: blue;
     bottom: 0;
     z-index: -1;
 }
