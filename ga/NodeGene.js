@@ -1,21 +1,21 @@
 class NodeGene{
     type;
-    id;
+    innovation;
 
-    constructor(type, id){
+    constructor(type, innovation){
         this.type = type;
-        this.id = id;
+        this.innovation = innovation;
     }
 
     getType(){
         return this.type;
     }
 
-    getId(){
-        return this.id;
+    getInnovation(){
+        return this.innovation;
     }
 
     copy(){
-        return new NodeGene(this.type, this.id);
+        return new NodeGene(this.type, this.innovation);
     }
 }

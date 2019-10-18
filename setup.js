@@ -288,6 +288,30 @@ let requestId;
 let bestBrain;
 let prevBest;
 
+var NNcanvas = document.getElementById("NNcanvas");
+var NNctx = NNcanvas.getContext("2d");
+var NNw;
+var NNh;
+function setupNNCanvas(canvas) {
+    canvas.width = 250 * 2;
+    canvas.height = 250 * 2;
+    NNw = canvas.width;
+    NNh = canvas.height;
+    canvas.style.width = canvas.width / 2 + "px";
+    canvas.style.height = canvas.height / 2 + "px";
+};
+setupNNCanvas(NNcanvas);
+let car = activeCars[0];
+car.brain.initialize(NNctx, NNw, NNh);
+car.brain.draw();
+let nC = new Counter(numRays+MOVES.length)
+let cC = new Counter(numRays+MOVES.length)
+car.brain.addNodeMutation(cC, nC)
+car.brain.draw();
+car.brain.addNodeMutation(cC, nC)
+car.brain.draw();
+
+const EVAL = new Evaluator(activeCars, numRays, MOVES.length)
 
 function update() {
     clearCanvas();

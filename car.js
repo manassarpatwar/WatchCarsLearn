@@ -52,17 +52,15 @@ class Car {
             this.rays.push(new Ray(this.x, this.y, Math.PI * i / 180 + this.alpha));
         }
 
-        if (brain instanceof NeuralNetwork) {
-            this.brain = brain.copy();
-            //            console.log("mutating");
-            this.brain.mutate(mutate);
+        if (brain instanceof Genome) {
+            this.brain = genome.copy();
         } else {
-            this.brain = new NeuralNetwork([this.rays.length, 5, 4, MOVES.length]);
+            this.brain = new Genome(numRays, MOVES.length);
         }
     }
 
-    copyCar() {
-        return new Car(this.brain);
+    copy(genome) {
+        return new Car(genome);
     }
 
     think(inputs) {

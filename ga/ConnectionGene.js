@@ -25,6 +25,10 @@ class ConnectionGene{
         return this.weight;
     }
 
+    setWeight(weight){
+        this.weight = weight;
+    }
+
     disable(){
         this.expressed = false;
     }
