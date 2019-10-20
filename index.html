@@ -11,7 +11,7 @@
 
 <body>
 
-    <main>
+    <main id = "main">
         <canvas id="canvas"></canvas>
         <canvas id="NNcanvas"></canvas>
         <section id="help-splash">
@@ -29,7 +29,6 @@
                     <li><img alt="Help" title="Help" class="button-icons" src="img/help.png"><p>Help</p></li>
                     <li><img alt="Set car position" title="Set car position" class="button-icons" src="img/place.png"><p>Set Car Position: Click anywhere on screen to place cars</p></li>
                     <li><img alt="Start next generation" title="Start next generation" class="button-icons" src="img/nextGen.png"><p>Start Next Genertion: Kills every car alive and moves on to next generation</p></li>
-                    <li><img alt="Test drive" title="Test drive" class="button-icons" src="img/testDrive.png"><p>Test Drive: Test Drive what the AI would be controlling</p></li>
                     <li><img alt="Set turn type: Ackerman" title="Set turn type: Ackerman" class="button-icons" src="img/ackerman.png"><p>Set Turn Type-Ackerman: Sets ackerman steering</p></li>
                     <li><img alt="Set turn type: Tank" title="Set turn type: Tank" class="button-icons" src="img/tank.png"><p>Set Turn Type-Tank: Sets tank steering</p></li>
                     <li><img alt="Zoom in" title="Zoom in" class="button-icons" src="img/zoomIn.png"><p>Zoom in: Zooms in on the best car</p></li>
@@ -54,9 +53,6 @@
                 <div>
                     <button onclick="setCarPos()"><img alt="Set car position" title="Set car position" class="button-icons" src="img/place.png"></button>
                     <button onclick="startNextGen()"><img alt="Start next generation" title="Start next generation" class="button-icons" src="img/nextGen.png"></button>
-                </div>
-                <div>
-                    <button onclick="startTestDrive()"><img alt="Test drive" title="Test drive" class="button-icons" src="img/testDrive.png"></button>
                     <button onclick="setTurnType(this)" value="ackerman"><img class="ackerman" alt="Set turn type: Ackerman" title="Set turn type: Ackerman" class="button-icons" src="img/ackerman.png"><img class="tank" alt="Set turn type: Tank" title="Set turn type: Tank" class="button-icons" src="img/tank.png"></button>
                 </div>
                 <div>
@@ -79,7 +75,7 @@
             </p>
             <br>
             <p>Speed: <span id="genSpeedText"></span></p>
-            <p><input id="genslider" type="range" min="1" max="20" step="1" value="1">
+            <p><input id="genslider" type="range" min="1" max="50" step="1" value="1">
             </p>
             <br>
             <p>Gen: <span id="genText"></span></p>
