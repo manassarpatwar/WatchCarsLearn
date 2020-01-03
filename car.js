@@ -11,8 +11,8 @@ function randn_bm() {
 
 
 function mutate(x) {
-    if (Math.random() < 0.1) {
-        let offset = randn_bm() * 0.5;
+    if (Math.random() < 0.5) {
+        let offset = randn_bm() * 0.4;
         let newx = x + offset;
         return newx;
     } else {
@@ -37,15 +37,16 @@ class Car {
         this.width = 40;
         this.height = 20;
         this.speed = 2;
-        this.speedLimit = 1;
-        this.vx = 0;
-        this.vy = 0;
+        this.speedLimit = 5;
         this.acceleration = 0.1;
+        this.velocity = 1;
         this.friction = 0.01;
         this.laps = 0;
         this.tyreWidth = this.width / 4;
         this.tyreHeight = this.height / 6;
         this.boundingCoordinates = [];
+        this.movehistory = []
+        this.straightLineCount = 0;
 
 
         for (let i = -45 * Math.floor(numRays / 2); i <= 45 * Math.floor(numRays / 2); i += 45) {
@@ -57,7 +58,7 @@ class Car {
             //            console.log("mutating");
             this.brain.mutate(mutate);
         } else {
-            this.brain = new NeuralNetwork([this.rays.length, 5, 4, MOVES.length]);
+            this.brain = new NeuralNetwork([this.rays.length, 5, MOVES.length]);
         }
     }
 
@@ -67,21 +68,8 @@ class Car {
 
     think(inputs) {
         let predicts = this.brain.query(inputs);
-        if (moveType == "tank") {
-            for (let i = 0; i < predicts.length; i++) {
-                //            let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-                if (predicts[i] >= 0.5) {
-                    let carMove = MOVES[i];
-                    this.moveCar(carMove);
-                    this.rayTrace();
-                }
-            }
-        } else {
-            let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-            let carMove = MOVES[indexOfMaxValue];
-            this.moveCar(carMove);
-            this.rayTrace();
-        }
+        let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+        return MOVES[indexOfMaxValue];
     }
 
     rayTrace() {
@@ -154,33 +142,33 @@ class Car {
 
 
     go() {
-        let newX = this.x + this.vx;
-        let newY = this.y + this.vy;
+        let vx = Math.cos(this.alpha) * this.velocity;
+        let vy = Math.sin(this.alpha) * this.velocity;
+        let newX = this.x + vx;
+        let newY = this.y + vy;
         this.x = newX;
         this.y = newY;
     }
 
     calculateScore() {
-        let tmp = Math.atan2(this.y, this.x) - Math.PI;
-        let angle = tmp;
-        if (this.prevAngle - angle >= Math.PI) {
-            angle = angle + 2 * Math.PI;
-        }
-        if (angle >= Math.PI * 2 - 0.01) {
-            this.laps++;
-        }
-        this.score = angle + Math.PI * 2 * this.laps;
-        this.prevAngle = angle - 1 / 720;
+        this.score += 0.01;
+        // let tmp = Math.atan2(this.y, this.x) - Math.PI;
+        // let angle = tmp;
+        // if (this.prevAngle - angle >= Math.PI) {
+        //     angle = angle + 2 * Math.PI;
+        // }
+        // if (angle >= Math.PI * 2 - 0.01) {
+        //     this.laps++;
+        // }
+        // this.score = angle + Math.PI * 2 * this.laps;
+        // this.prevAngle = angle - 1 / 720;
     }
 
 
     turnCar() {
-        let spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        this.alpha += this.direction * spd / this.r;
+        this.alpha += this.velocity / this.r;
         this.x = this.turnCenterX + this.r * Math.sin(this.alpha);
         this.y = this.turnCenterY - this.r * Math.cos(this.alpha);
-        this.vx = this.direction * Math.cos(this.alpha) * spd;
-        this.vy = this.direction * Math.sin(this.alpha) * spd;
     }
 
 
@@ -255,36 +243,32 @@ class Car {
         this.applyFriction();
         switch (move) {
             case "F":
-                this.direction = 1;
                 console.log(this.vx + " " + this.vy)
-                if (this.vx < this.speedLimit && this.vy < this.speedLimit && this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
-                    this.vx += this.acceleration * Math.cos(this.alpha);
-                    this.vy += this.acceleration * Math.sin(this.alpha);
+                if (this.velocity < this.speedLimit) {
+                    this.velocity += this.acceleration;
                 }
-                if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
+                if (Math.floor(Math.abs(this.turnAngle * 10)) == 0) {
                     this.go();
                 } else {
                     this.turnCar();
                 }
                 break;
             case "B":
-                this.direction = -1
-                if (this.vx < this.speedLimit && this.vy < this.speedLimit && this.vx > -this.speedLimit && this.vy > -this.speedLimit) {
-                    this.vx -= this.acceleration * Math.cos(this.alpha);
-                    this.vy -= this.acceleration * Math.sin(this.alpha);
+                if (this.velocity > -this.speedLimit){
+                    this.velocity -= this.acceleration;
                 }
-                if (Math.floor(Math.abs(this.turnAngle * 100)) == 0) {
+                if (Math.floor(Math.abs(this.turnAngle * 10)) == 0) {
                     this.go();
                 } else
                     this.turnCar();
                 break;
             case "R":
-                if (this.turnAngle < Math.PI / 6)
+                if (this.turnAngle < Math.PI / 12)
                     this.turnAngle += Math.PI / 180;
                 this.calculateTurnAngles();
                 break;
             case "L":
-                if (this.turnAngle > -Math.PI / 6)
+                if (this.turnAngle > -Math.PI / 12)
                     this.turnAngle -= Math.PI / 180;
                 this.calculateTurnAngles();
                 break;
@@ -292,7 +276,7 @@ class Car {
                 this.reduceTurn();
                 break;
             case "reduceSpeed":
-                this.applyFriction();
+                // this.applyFriction();
                 break;
 
         }

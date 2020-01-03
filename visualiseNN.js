@@ -30,7 +30,7 @@ function visualizeBrain(brain, prevBrain) {
     for (let j = 0; j < brain.nodes.length; j++) {
         brainVisualization[j] = new VisualLayer();
         for (let i = 0; i < brain.nodes[j]; i++) {
-            let x = NNw/max + 100 * j;
+            let x = NNw/max + 500/(brain.nodes.length) * j;
             let y = NNh + NNh/max*2 * i - brain.nodes[j] / max * NNh+max+8;
             brainVisualization[j].visualNodes[i] = new VisualNode(x, y);
         }

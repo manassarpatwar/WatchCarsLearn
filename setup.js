@@ -269,8 +269,8 @@ function drawCars() {
     for (let car of activeCars) {
         if (car.score == maxScore && !bestCarDrawn) {
             car.drawCar("green");
-            if (moveType == "ackerman")
-                car.drawTurn()
+            // if (moveType == "ackerman")
+            //     car.drawTurn()
             car.drawRays();
             bestCarDrawn = true;
         } else
@@ -285,7 +285,6 @@ let requestId;
 let bestBrain;
 let prevBest;
 
-
 function update() {
     clearCanvas();
 
@@ -293,9 +292,10 @@ function update() {
         maxScore = 0;
         for (let i = activeCars.length - 1; i >= 0; i--) {
             car = activeCars[i];
-            car.moveCar("F");
             let alive = true;
             let inputs = [];
+            if(moveType == "tank")
+                car.moveCar("F");
             car.rayTrace()
             for (let ray of car.rays) {
                 inputs.push(1 - ray.distance / car.vision);
@@ -306,9 +306,11 @@ function update() {
                     break;
                 }
             }
-
+            
             if (alive) {
-                car.think(inputs);
+                let move = car.think(inputs);
+                car.moveCar(move);
+                car.rayTrace();
             }
             if (car.score > maxScore) {
                 maxScore = car.score;
@@ -319,9 +321,10 @@ function update() {
                 }
                 bestBrain = car.brain.copy();
             }
-            score.innerHTML = "";
-            score.insertAdjacentHTML('beforeend', Math.floor(maxScore * 100) / 100);
         }
+        score.innerHTML = "";
+        score.insertAdjacentHTML('beforeend', Math.floor(maxScore * 100) / 100);
+        
     }
     if (activeCars.length == 0 || nextGen == true) {
         if (bestBrain) {
@@ -345,7 +348,7 @@ function cancelMainAnim() {
     startAnim = false;
 }
 
-function reset(numCars = totalCars) {
+function reset(numCars) {
     cancelMainAnim();
     zoom = 1;
     zoomOutCanvas();
