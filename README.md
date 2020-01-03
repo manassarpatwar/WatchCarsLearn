@@ -4,29 +4,31 @@ Cars learn to drive around user drawn track by [Neuroevolution of Augmenting Top
 
 [Check It Out!](https://manassarpatwar.github.io/Self-driving-AI/)
 
-Used HTML5 Canvas, and Javascript
+Used HTML5 Canvas and Javascript
 
 Instructions:
-* Place the cars to the left of the screen as the fitness of each car is based on its clockwise progress of track
-* Draw a track of any shape using the drawTrack button, similar to this
+* Press (?) for the description of icons
+* Draw a track of any shape using the drawTrack button (pencil icon), example track below.
 
-![alt text](https://user-images.githubusercontent.com/44678221/66262574-15234d80-e7db-11e9-8cac-3b7692c46316.png)
+![Sample track](https://user-images.githubusercontent.com/44678221/71742869-f7599900-2e5a-11ea-961b-633a9f521800.png)
 
 * Run the cars by pressing the play button
-* If cars get stuck press next gen (>>) button
+* Note: A car that is stuck in a loop is considered a good car as the fitness of each car is just the time it is alive.
+  To avoid this draw the track with a smaller width. If cars get stuck press next gen (>>) button
 * Tweak parameters, such as number of cars, number of sensors, turn type and Enjoy!
 
 ## Neural network visualisation
 The changes in the "brain" of the best car, or its Neural Network are shown in the bottom right corner of the screen.
 The green color and red color represents positive and negative change in weight over the previous best car respectively.
+
 ### The inputs:
 The distance measured by the sensors
 
 ### The outputs:
-Turn Left, turn Right or nothing
+Turn Left, turn Right or (nothing/return to center steering)
 
 ## Learning
 Cars learn using mutations of best car's neural network
 
-## Note:
-The cars with ackerman turning will take a longer time to learn if the track is too difficult, for example with many twists and turns
+## NEAT
+All cars use a fixed topology neural network. The cars cannot mutate new nodes and connections. The genetic algorithm does not implement crossover of two parents. It simple makes a clone of the brain of the best car.
