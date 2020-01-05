@@ -11,10 +11,14 @@ function randn_bm() {
 
 
 function mutate(x) {
-    if (Math.random() < 0.5) {
-        let offset = randn_bm() * 0.4;
-        let newx = x + offset;
-        return newx;
+    if (Math.random() < 0.7) {
+        let offset = randn_bm();
+        if(x+offset > 1)
+            return 1;
+        else if(x+offset<-1)
+            return -1;
+        else
+            return x+offset;
     } else {
         return x;
     }
@@ -47,6 +51,8 @@ class Car {
         this.boundingCoordinates = [];
         this.movehistory = []
         this.straightLineCount = 0;
+        this.laps = 0;
+
 
 
         for (let i = -45 * Math.floor(numRays / 2); i <= 45 * Math.floor(numRays / 2); i += 45) {
@@ -56,10 +62,14 @@ class Car {
         if (brain instanceof NeuralNetwork) {
             this.brain = brain.copy();
             //            console.log("mutating");
-            this.brain.mutate(mutate);
+            // this.brain.mutate(mutate);
         } else {
-            this.brain = new NeuralNetwork([this.rays.length, 5, MOVES.length]);
+            this.brain = new NeuralNetwork([this.rays.length,5 ,4, MOVES.length]);
         }
+    }
+
+    mutate(){
+        this.brain.mutate(mutate);
     }
 
     copyCar() {
@@ -151,17 +161,21 @@ class Car {
     }
 
     calculateScore() {
-        this.score += 0.01;
-        // let tmp = Math.atan2(this.y, this.x) - Math.PI;
-        // let angle = tmp;
-        // if (this.prevAngle - angle >= Math.PI) {
-        //     angle = angle + 2 * Math.PI;
-        // }
-        // if (angle >= Math.PI * 2 - 0.01) {
-        //     this.laps++;
-        // }
-        // this.score = angle + Math.PI * 2 * this.laps;
-        // this.prevAngle = angle - 1 / 720;
+        // this.score += 0.01;
+        let bestP = 0;
+        let bestD = Infinity;
+        for(let i = 0; i < path.length; i++){
+            let p = path[i];
+            let d = getPerpendicularDist(p, this.x, this.y)+getDist(p.x1, p.y1, this.x, this.y);
+            if(d < bestD){
+                bestD = d;
+                bestP = i;
+            }
+        }
+        this.score = this.laps+(bestP/(path.length-1));
+        if(this.score == this.laps+1)
+            this.laps++;
+
     }
 
 

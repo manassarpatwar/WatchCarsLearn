@@ -32,10 +32,17 @@ function nextGeneration() {
 // Generate a new population of Cars
 function generate(oldCars) {
     let newCars = [];
-    for (let i = 0; i < oldCars.length; i++) {
-        // Select a car based on fitness
-        let car = poolSelection(oldCars);
-        newCars[i] = car;
+    let bestCar = oldCars.reduce((x, y) => x.fitness > y.fitness ? x : y);
+    let numCars = oldCars.length
+    // oldCars = oldCars.filter(x => x.fitness != bestCar.fitness);
+    let sndBestCar = oldCars.reduce((x, y) => x.fitness > y.fitness ? x : y);
+    newCars.push(new Car(bestCar.brain));
+    newCars.push(new Car(sndBestCar.brain));
+    while(newCars.length <= numCars){
+        let babyBrain = bestCar.brain.merge(sndBestCar.brain, 0.7);
+        let babyCar = new Car(babyBrain);
+        babyCar.mutate();
+        newCars.push(babyCar);
     }
     return newCars;
 }

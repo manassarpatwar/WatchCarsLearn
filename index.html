@@ -17,13 +17,12 @@
         <section id="help-splash">
             <button id="close-help" onclick="viewHelp()"><img alt="Close" title="Close" class="button-icons" src="img/cross.png"></button>
             <div class="title">
-                <h1>Self Driving AI</h1>
+                <h1>Legend</h1>
             </div>
             <div class="info">
                 <ul>
-                    <li><img alt="Draw track" title="Draw track" class="button-icons" src="img/draw.png"><p>Draw Track: Click once on screen to start drawing, double click to stop</p></li>
-                    <li><img alt="Clear track" title="Clear track" class="button-icons" src="img/cross.png"><p>Clear track: Clears the track</p></li>
-                    <li><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"><p>Erase Track: Click once on screen to start erasing, double click to stop</p></li>
+                    <li><img alt="Draw track" title="Draw track" class="button-icons" src="img/draw.png"><p>Draw Track: Click once on screen to start drawing, double click to stop (Erases the current track)</p></li>
+                    <li><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"><p>Erase Track: Erases the track</p></li>
                     <li><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"><p>Reset: Resets the environment</p></li>
                     <li><img alt="Start" title="Start" class="button-icons" src="img/start.png"><p>Start: Start evolution</p></li>
                     <li><img alt="Help" title="Help" class="button-icons" src="img/help.png"><p>Help</p></li>
@@ -40,13 +39,12 @@
             <div class="buttons buttonsLeft">
                 <div>
                     <button onclick="initBounds()"><img alt="Draw track" title="Draw track" class="button-icons" src="img/draw.png"></button>
-                    <button onclick="clearBounds()"><img alt="Clear track" title="Clear track" class="button-icons" src="img/cross.png"></button>
-                    <button onclick="eraseBounds()"><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"></button>
+                    <button onclick="clearBounds()"><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"></button>
+                    <button onclick="viewHelp()"><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
                 </div>
                 <div>
                     <button onclick="reset(totalCars)"><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"></button>
                     <button onclick="start()"><img alt="Start" title="Start" class="button-icons" src="img/start.png"></button>
-                    <button onclick="viewHelp()"><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
                 </div>
             </div>
             <div class="buttons buttonsRight">
@@ -80,7 +78,7 @@
             <br>
             <p>Gen: <span id="genText"></span></p>
             <br>
-            <p>Score <span id="score"></span></p>
+            <p>Score: <span id="score"></span></p>
         </section>
     </main>
     <script>

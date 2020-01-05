@@ -18,12 +18,12 @@ function resizeCanvas(width, height) {
 };
 resizeCanvas(window.innerWidth, window.innerHeight);
 
-function drawLine(x1, y1, x2, y2, opacity, linewidth) {
+function drawLine(x1, y1, x2, y2, opacity, linewidth, color) {
     context.beginPath();
     context.moveTo(x1, y1);
     context.lineTo(x2, y2);
     context.lineWidth = linewidth;
-    context.strokeStyle = "rgba(255, 255, 255, " + opacity + ")";
+    context.strokeStyle = "rgba("+color+", " + opacity + ")";
     context.stroke();
 }
 
@@ -32,22 +32,41 @@ function getDist(x1, y1, x2, y2) {
 }
 
 let storedBounds = JSON.parse(localStorage.getItem("boundaries"));
+let storedPath = JSON.parse(localStorage.getItem("path"));
 var boundaries = [];
+var path = [];
+var innerTrack = [];
+var outerTrack = [];
+
 if (storedBounds) {
     for (let b of storedBounds)
         boundaries.push(new Boundary(b.x1, b.y1, b.x2, b.y2));
 }
 
+if(storedPath){
+    for (let b of storedPath)
+        path.push(new Boundary(b.x1, b.y1, b.x2, b.y2));
+}
+
 function drawBoundaries() {
     for (let boundary of boundaries)
         boundary.drawBoundary();
+
+    for (let boundary of innerTrack)
+        boundary.drawBoundary();
+    
+    for (let boundary of outerTrack)
+        boundary.drawBoundary();
+
+    // for (let i = 0; i < path.length; i+=2)
+    //     path[i].drawBoundary("255, 255, 0");
 }
 
 var activeCars = [];
 var allCars = [];
 var numRays = 3;
 var totalCars = 20;
-const MOVES = ["L", "R", "reduceTurn"];
+const MOVES = ["L", "reduceTurn", "R"];
 
 
 function setNumRays(nrays) {
@@ -95,62 +114,106 @@ let initEraseY = 0;
 let initX = 0;
 let initY = 0;
 
+const TRACKWIDTH = 35;
+
 function initBounds() {
     setup();
-    canvas.addEventListener("click", function (e) {
+    clearBounds();
+    canvas.addEventListener("click", function(e){
         startDraw = true;
-        initX = canvasFactor * e.clientX - w / 2;
-        initY = canvasFactor * e.clientY - h / 2;
-        this.removeEventListener('click', arguments.callee, false);
-    });
-}
-
-function eraseBounds() {
-    setup();
-    canvas.addEventListener("click", function (e) {
-        startErase = true;
-        initEraseX = canvasFactor * e.clientX - w / 2;
-        initEraseY = canvasFactor * e.clientY - h / 2;
+        newX = canvasFactor * e.clientX - w / 2;
+        newY = canvasFactor * e.clientY - h / 2;
+        initX = newX;
+        initY = newY;
         this.removeEventListener('click', arguments.callee, false);
     });
 }
 
 function clearBounds() {
     localStorage.removeItem("boundaries");
+    localStorage.removeItem("path");
     startDraw = false;
     startErase = false;
     boundaries = [];
+    innerTrack = [];
+    outerTrack = [];
+    path = [];
     setup();
 }
 
-canvas.addEventListener("mousemove", function (e) {
-    let moveX = canvasFactor * e.clientX - w / 2;
-    let moveY = canvasFactor * e.clientY - h / 2;
-    if (startDraw) {
-        boundaries.push(new Boundary(initX, initY, moveX, moveY));
-        initX = moveX;
-        initY = moveY;
-        setup();
-    } else if (startErase) {
-        for (let i = 0; i < boundaries.length; i++) {
-            let b = boundaries[i];
-            if (b.x1 >= moveX - 40 && b.x1 <= moveX + 40 && b.y1 >= moveY - 40 && b.y1 <= moveY + 40)
-                boundaries.splice(i, 1);
+canvas.addEventListener("mousedown", function(){
+    canvas.addEventListener("mousemove", function (e) {
+        let moveX = canvasFactor * e.clientX - w / 2;
+        let moveY = canvasFactor * e.clientY - h / 2;
+        if (startDraw) {
+            let newX = moveX;
+            let newY = moveY;
+            if(initX != 0 && initY != 0 && getDist(newX, newY, initX, initY) > 50){
+                let alpha = Math.atan2(newY - initY, newX - initX);
+                let newPath = new Boundary(initX, initY, newX, newY);
+                path.push(newPath);
+                let innerB = new Boundary(initX-TRACKWIDTH*Math.sin(alpha), initY+TRACKWIDTH*Math.cos(alpha), newX-TRACKWIDTH*Math.sin(alpha), newY+TRACKWIDTH*Math.cos(alpha));
+                let outerB = new Boundary(initX+TRACKWIDTH*Math.sin(alpha), initY-TRACKWIDTH*Math.cos(alpha), newX+TRACKWIDTH*Math.sin(alpha), newY-TRACKWIDTH*Math.cos(alpha));
+
+                if(innerTrack.length > 0){
+                    let int = Boundary.getIntersection(innerB, innerTrack[innerTrack.length-1]);
+                    if(int == null)
+                        return;
+                    innerB.setStart(int);
+                    innerTrack[innerTrack.length-1].setEnd(int);
+                }
+
+                if(outerTrack.length > 0){
+                    let int = Boundary.getIntersection(outerB, outerTrack[outerTrack.length-1]);
+                    if(int == null)
+                        return;
+                    outerB.setStart(int);
+                    outerTrack[outerTrack.length-1].setEnd(int);
+                }
+                innerTrack.push(innerB);
+                outerTrack.push(outerB);
+                initX = newX;
+                initY = newY;
+            }
+            setup();
         }
-        setup();
-    }
+    })
 })
 
 canvas.addEventListener("dblclick", function (e) {
     if (startDraw) {
         startDraw = false;
+        let moveX = canvasFactor * e.clientX - w / 2;
+        let moveY = canvasFactor * e.clientY - h / 2;
+        initX = null;
+        initY = null;
+        if(innerTrack.length > 0){
+            let int = Boundary.getIntersection(innerTrack[0], innerTrack[innerTrack.length-1]);
+            if(int != null){
+                innerTrack[0].setStart(int);
+                innerTrack[innerTrack.length-1].setEnd(int);
+            }
+        }
+
+        if(outerTrack.length > 0){
+            let int = Boundary.getIntersection(outerTrack[0], outerTrack[outerTrack.length-1]);
+            if(int != null){
+                outerTrack[0].setStart(int);
+                outerTrack[outerTrack.length-1].setEnd(int);
+            }
+        }
+        let int = Boundary.getIntersection(path[0], path[path.length-1]);
+        if(int != null){
+            path[0].setStart(int);
+            path[path.length-1].setEnd(int);
+        }
+        boundaries = boundaries.concat(innerTrack.concat(outerTrack));
+        innerTrack = [];
+        outerTrack = [];
         localStorage.setItem("boundaries", JSON.stringify(boundaries));
+        localStorage.setItem("path", JSON.stringify(path));
         setup();
-    } else if (startErase) {
-        startErase = false;
-        localStorage.setItem("boundaries", JSON.stringify(boundaries));
-        setup();
-    }
+    } 
 })
 
 
@@ -285,6 +348,20 @@ let requestId;
 let bestBrain;
 let prevBest;
 
+function getPerpendicularDist(boundary, m, n){
+    const x1 = boundary.x1;
+    const x2 = boundary.x2;
+    const y1 = boundary.y1;
+    const y2 = boundary.y2;
+
+    let A = y1 - y2;
+    let B = x2 - x1;
+    let C = x1*(y2-y1)-y1*(x2-x1);
+
+    let d = Math.abs(A*m+B*n+C)/Math.sqrt(A*A+B*B);
+    return d;
+}
+
 function update() {
     clearCanvas();
 
@@ -317,10 +394,12 @@ function update() {
                 if (zoom > 1) {
                     resizeCanvas(window.innerWidth, window.innerHeight);
                     context.translate(-zoom * car.x, -zoom * car.y);
+            
                     context.scale(zoom, zoom);
                 }
                 bestBrain = car.brain.copy();
             }
+
         }
         score.innerHTML = "";
         score.insertAdjacentHTML('beforeend', Math.floor(maxScore * 100) / 100);
@@ -384,6 +463,17 @@ function setTurnType(type) {
 function start() {
     if (!startAnim) {
         startAnim = true;
+        let bestP = 0;
+        let bestD = Infinity;
+        for(let i = 0; i < path.length; i++){
+            let p = path[i];
+            let d = getPerpendicularDist(p, carStartX, carStartY)+getDist((p.x1+p.x2)/2, (p.y1+p.y2)/2, carStartX, carStartY);
+            if(d < bestD){
+                bestD = d;
+                bestP = i;
+            }
+        }
+        path = path.concat(path.splice(0,bestP));
         update();
     }
 }
