@@ -10,12 +10,12 @@ Instructions:
 * Press (?) for the description of icons
 * Draw a track of any shape using the drawTrack button (pencil icon), example track below.
 
-![Sample track](https://user-images.githubusercontent.com/44678221/71742869-f7599900-2e5a-11ea-961b-633a9f521800.png)
+![Sample track](https://user-images.githubusercontent.com/44678221/71773884-117ba000-2f5d-11ea-929d-5d46a0dcd7be.png)
 
+* The track is self enclosing, i.e. the track closes itself when you double click to stop drawing.
 * Run the cars by pressing the play button
-* Note: A car that is stuck in a loop is considered a good car as the fitness of each car is just the time it is alive.
-  To avoid this draw the track with a smaller width. If cars get stuck press next gen (>>) button
 * Tweak parameters, such as number of cars, number of sensors, turn type and Enjoy!
+* If the cars fail to learn a track try tweaking the parameters, or it may simply be the case that the track has very sharp turns.
 
 ## Neural network visualisation
 The changes in the "brain" of the best car, or its Neural Network are shown in the bottom right corner of the screen.
@@ -31,4 +31,4 @@ Turn Left, turn Right or (nothing/return to center steering)
 Cars learn using mutations of best car's neural network
 
 ## NEAT
-All cars use a fixed topology neural network. The cars cannot mutate new nodes and connections. The genetic algorithm does not implement crossover of two parents. It simple makes a clone of the brain of the best car.
+All cars use a fixed topology neural network. The cars cannot mutate new nodes and connections. The genetic algorithm implements crossover of two parents, which produce all the new offsprings for the next generation.
