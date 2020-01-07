@@ -11,7 +11,7 @@ class Boundary {
     }
 
     getLength(){
-        return getDist(this.x1, this.x2, this.y1, this.y2);
+        return getDist(this.x1, this.y2, this.x1, this.y2);
     }
 
     setStart(p){

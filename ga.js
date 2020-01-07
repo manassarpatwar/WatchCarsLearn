@@ -38,7 +38,7 @@ function generate(oldCars) {
     let sndBestCar = oldCars.reduce((x, y) => x.fitness > y.fitness ? x : y);
     newCars.push(new Car(bestCar.brain));
     newCars.push(new Car(sndBestCar.brain));
-    while(newCars.length <= numCars){
+    while(newCars.length < numCars){
         let babyBrain = bestCar.brain.merge(sndBestCar.brain, 0.7);
         let babyCar = new Car(babyBrain);
         babyCar.mutate();
