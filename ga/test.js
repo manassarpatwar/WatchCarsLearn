@@ -36,7 +36,7 @@ function testCrossover(){
     parent2.addConnectionGene(new ConnectionGene(3,5, true,1, 9))
     parent2.addConnectionGene(new ConnectionGene(1,6, true,1, 10))
 
-    let child = Genome.crossover(parent2, parent1);
+    return Genome.crossover(parent2, parent1);
 }
 
 // function testNodeMutation(){}

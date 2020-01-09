@@ -4,6 +4,7 @@ class ConnectionGene{
     weight;
     expressed;
     innovation;
+    output = 0;
 
     constructor(innode, outnode, weight, expressed, innovation){
         this.innode = innode;
@@ -11,6 +12,14 @@ class ConnectionGene{
         this.weight = weight;
         this.expressed = expressed;
         this.innovation = innovation;
+    }
+
+    calculateOutput(nodeOutput){
+        this.output = this.weight*nodeOutput;
+    }
+
+    getConnectionOutput(){
+        return this.output;
     }
 
     getInNode(){

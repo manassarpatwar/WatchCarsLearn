@@ -8,6 +8,14 @@ function VisualNode(vector, node){
     this.node = node;
 }
 
+function randn_bm() {
+    var u = 0,
+        v = 0;
+    while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
 class Genome {
     constructor(numInputs, numOutputs) {
         this.connections = new Map();
@@ -23,32 +31,119 @@ class Genome {
         this.hidden = [];
 
         for(let i = 0; i < numInputs; i++){
-            let node = new NodeGene("INPUT", i);
+            let x = NNw/8;
+            let y = NNh/(numInputs*2)+NNh/numInputs * i;
+            let node = new NodeGene("INPUT", i, new Vector(x,y));
             this.addNodeGene(node);
-            this.inputs.push(node);
+            this.inputs.push(i);
         }
 
         for(let i = 0; i < numOutputs; i++){
-            let node = new NodeGene("OUTPUT", i+numInputs);
+            let x = 7*NNw/8;
+            let y = NNh/(numOutputs*2)+NNh/numOutputs * i;
+            let node = new NodeGene("OUTPUT", i+numInputs, new Vector(x, y));
             this.addNodeGene(node);
-            this.outputs.push(node);
+            this.outputs.push(i+numInputs);
         }
-
-        this.addConnectionGene(new ConnectionGene(this.inputs[Math.floor(Math.random()*this.inputs.length)].getInnovation(), this.outputs[Math.floor(Math.random()*this.outputs.length)].getInnovation(), 1, true, numInputs+numOutputs+1))
+        // let conInnov = 0;
+        // for(let input of this.inputs){
+        //     for(let output of this.outputs){
+        //         this.addConnectionGene(new ConnectionGene(input, output, Math.random()*2-1, true, conInnov++))
+        //     }
+        // }
+        this.addConnectionGene(new ConnectionGene(this.inputs[Math.floor(Math.random()*this.inputs.length)], this.outputs[Math.floor(Math.random()*this.outputs.length)], 1, true, 1))
+        this.addConnectionGene(new ConnectionGene(this.inputs[Math.floor(Math.random()*this.inputs.length)], this.outputs[Math.floor(Math.random()*this.outputs.length)], 1, true, 2))
+        this.addConnectionGene(new ConnectionGene(this.inputs[Math.floor(Math.random()*this.inputs.length)], this.outputs[Math.floor(Math.random()*this.outputs.length)], 1, true, 3))
     }
 
     copy(){
         let copy = new Genome();
         copy.nodes = new Map(this.nodes);
         copy.connections = new Map(this.connections);
-
+        for(let n of this.nodes.values()){
+            if(n.getType() == "INPUT")
+                copy.inputs.push(n.getInnovation())
+            else if(n.getType() == "OUTPUT")
+                copy.outputs.push(n.getInnovation());
+            else if(n.getType() == "HIDDEN")
+                copy.hidden.push(n.getInnovation());
+        }
         return copy;
     }
 
-    think(inputs){
-        for(let con of this.connections.values()){
-            
+    think(query_inputs){
+        //calculate output of input nodes
+
+        //calculate output of all connections from input nodes
+
+        //while hidden nodes not having output > 0
+        //  loop over all nodes, 
+        //      find all the connections for each node
+        //      if all the connections have output
+        //          calculate output of the node
+
+        //calculate output of all connections to output nodes
+
+        //calculate output of output nodes
+        if(query_inputs.length != this.inputs.length){
+            console.log(this.inputs.length);
+            return;
         }
+        for(let i = 0; i < query_inputs.length; i++){
+            this.nodes.get(this.inputs[i]).activate(query_inputs[i]);
+        }
+        for(let input of this.inputs){
+            for(let con of this.connections.values()){
+                if(!con.isExpressed)
+                    continue;
+                if(con.getInNode() == input){
+                    con.calculateOutput(this.nodes.get(input).getNodeOutput());
+                }
+            }
+        }
+        if(this.hidden.length > 0){
+            let hiddenNodes = this.hidden.map(h => this.nodes.get(h)).filter(n => n.getNodeOutput() == null);
+            for(let i = 0; i < 100; i++){
+                for(let node of hiddenNodes){
+                    let connectionsToNode = this.getAllConnectionsTo(node.getInnovation())
+                    let sum = connectionsToNode.map(c => c.getConnectionOutput()).reduce((a, b) => a + b, 0)
+                    node.activate(sum);
+                    for(let con of this.connections.values()){
+                        if(!con.isExpressed)
+                            continue;
+                        if(con.getInNode() == node.getInnovation()){
+                            con.calculateOutput(this.nodes.get(node.getInnovation()).getNodeOutput());
+                        }
+                    }
+                }
+            }
+        }
+
+        let predicts = [];
+        for(let output of this.outputs){
+            let connectionsToNode = this.getAllConnectionsTo(output);
+            if(connectionsToNode.length == 0){
+                this.nodes.get(output).zeroOutput()
+                predicts.push(0);
+                continue;
+            }
+            let sum = connectionsToNode.map(c => c.getConnectionOutput()).reduce((a, b) => a + b, 0)
+            this.nodes.get(output).activate(sum);
+            predicts.push(this.nodes.get(output).getNodeOutput());
+        }
+
+        return predicts;
+
+
+    }
+
+    getAllConnectionsTo(node){
+        let connectionsToNode = []
+        for(let con of this.connections.values()){
+            if(con.getOutNode() == node)
+                connectionsToNode.push(con);
+        }
+        return connectionsToNode;
     }
 
     addNodeGene(gene){
@@ -57,7 +152,6 @@ class Genome {
 
     addConnectionGene(gene){
         this.connections.set(gene.getInnovation(), gene);
-        this.innovation++;
     }
 
     getNodeGenes(){
@@ -68,19 +162,31 @@ class Genome {
         return this.connections;
     }
 
-    mutatation(){
+    mutation(){
         for(let con of this.connections.values()){
-            if(Math.random() < this.PROBABILITY_MUTATION){
-                con.setWeight(con.getWeight()*(Math.random()*4-2))
+            if(Math.random() < this.PROBABILITY_MUTATION){//otherwise slightly change it
+                let weight = con.getWeight() + randn_bm();
+                //keep weight between bounds
+                if(weight > 1){
+                    weight = 1;
+                }
+                if(weight < -1){
+                    weight = -1;        
+                }
+                con.setWeight(weight);
             }else{
-                con.setWeight(Math.random()*4-2);
+                con.setWeight(Math.random()*2-1);
             }
         }
     }
 
-    addConnectionMutation(innovation){
+    addConnectionMutation(connectionInnovation){
         let nodes = Array.from(this.nodes.values())
         let node1 = nodes[Math.floor(Math.random()*nodes.length)];
+        if(node1.getType() == "INPUT")
+            nodes = nodes.filter(n => n.getType() != "INPUT");
+        if(node1.getType() == "OUTPUT")
+            nodes = nodes.filter(n => n.getType() != "OUTPUT");
         let node2 = nodes[Math.floor(Math.random()*nodes.length)];
 
         let reversed = false;
@@ -99,7 +205,7 @@ class Genome {
                 break;
             }else if(con.getInNode() == node2.getInnovation() && con.getOutNode() == node1.getInnovation()){
                 connectionExists = true;
-                break;
+                break; 
             }
         }
 
@@ -107,7 +213,7 @@ class Genome {
             return
 
         let newCon = new ConnectionGene(reversed ? node2.getInnovation() : node1.getInnovation(), 
-        reversed ? node1.getInnovation() : node2.getInnovation(), Math.random()*2-1, true, innovation.getInnovation())
+        reversed ? node1.getInnovation() : node2.getInnovation(), Math.random()*2-1, true, connectionInnovation.getInnovation())
 
         this.connections.set(newCon.getInnovation(), newCon)
 
@@ -115,14 +221,21 @@ class Genome {
 
     addNodeMutation(connectionInnovation, nodeInnovation){
         let cons = Array.from(this.connections.values())
+        cons = cons.filter(c => c.isExpressed());
         let con = cons[Math.floor(Math.random()*cons.length)];
-        console.log("mutated");
+        if(cons.length == 0)
+            return
         let inNode = this.nodes.get(con.getInNode());
         let outNode = this.nodes.get(con.getOutNode());
 
+        if(outNode == undefined)
+            console.log("OUTNODE IS UNDEFINED");
+
         con.disable();
 
-        let newNode = new NodeGene("HIDDEN", nodeInnovation.getInnovation())
+        let newNodeInnovation = nodeInnovation.getInnovation();
+
+        let newNode = new NodeGene("HIDDEN", newNodeInnovation, null)
         let inToNew = new ConnectionGene(inNode.getInnovation(), newNode.getInnovation(), 1, true, connectionInnovation.getInnovation());
         let newToOut = new ConnectionGene(newNode.getInnovation(), outNode.getInnovation(), con.getWeight(), true, connectionInnovation.getInnovation());
 
@@ -130,31 +243,30 @@ class Genome {
         this.addConnectionGene(inToNew);
         this.addConnectionGene(newToOut);
 
-        this.hidden.push(newNode);
-
-        //Drawing
-        if(this.visible){
-            let x = Math.random()*this.w/2+this.w/4;
-            let y = Math.random()*this.h/2+this.h/4;
-            this.vNodes.push(new VisualNode(new Vector(x, y), newNode));
-        }
+        // console.log(outNode)
+        //drawing
+        let alpha = Math.atan2(outNode.pos.y-inNode.pos.y, outNode.pos.x - inNode.pos.x)
+        let x = (inNode.pos.x+outNode.pos.x)/2+15*Math.sin(alpha);
+        let y = (inNode.pos.y+outNode.pos.y)/2-15*Math.cos(alpha);
+        newNode.setPos(new Vector(x, y));
+        this.hidden.push(newNodeInnovation);
 
     }
 
     /*Parent 1 is more fit than parent 2*/
     static crossover(parent1, parent2){
-        let child = new Genome();
+        let child = new Genome(numRays, MOVES.length);
 
         for(let parent1Node of parent1.getNodeGenes().values()){
             child.addNodeGene(parent1Node.copy())
         }
 
-        for(let parent1Node of parent1.getConnectionGenes().values()){
-            if(parent2.getConnectionGenes().has(parent1Node.getInnovation())){
-                let childConGene = Math.random() >= 0.5 ? parent1Node.copy() : parent2.getConnectionGenes().get(parent1Node.getInnovation()).copy();
+        for(let parent1Con of parent1.getConnectionGenes().values()){
+            if(parent2.getConnectionGenes().has(parent1Con.getInnovation())){
+                let childConGene = Math.random() >= 0.5 ? parent1Con.copy() : parent2.getConnectionGenes().get(parent1Con.getInnovation()).copy();
                 child.addConnectionGene(childConGene);
             }else{
-                let childConGene = parent1Node.copy();
+                let childConGene = parent1Con.copy();
                 child.addConnectionGene(childConGene);
             }
         }
@@ -207,7 +319,7 @@ class Genome {
         highestInnovation1 = conKeys1[conKeys1.length-1];
         highestInnovation2 = conKeys2[conKeys2.length-1];
         indices = Math.max(highestInnovation1, highestInnovation2);
-        console.log(indices+" "+conKeys1+" "+conKeys2);
+        // console.log(indices+" "+conKeys1+" "+conKeys2);
         for(let i = 1; i <= indices; i++){
             let con1 = genome1.getConnectionGenes().get(i);
             let con2 = genome2.getConnectionGenes().get(i);
@@ -231,94 +343,4 @@ class Genome {
         return {disjointGenes: disjointGenes, excessGenes: excessGenes, avgWeightDifference: avgWeightDifference};
     }
 
-
-    //Drawing on canvas
-    initialize(ctx, w, h){
-        this.visible = true;
-        this.w = w;
-        this.h = h;
-        this.ctx = ctx;
-        this.vNodes = []
-        this.inputs = [];
-        this.outputs = [];
-        this.hidden = [];
-        for (let n of this.getNodeGenes().values()) {
-            if(n.getType() == "INPUT")
-                this.inputs.push(n);
-            else if(n.getType() == "OUTPUT")
-                this.outputs.push(n);
-            else if(n.getType() == "HIDDEN")
-                this.hidden.push(n);
-        }
-
-        for(let i = 0; i < this.inputs.length; i++){
-            let x = w/8;
-            let y = h/(this.inputs.length*2)+h/this.inputs.length * i;
-            this.vNodes.push(new VisualNode(new Vector(x, y), this.inputs[i]));
-        }
-
-        for(let i = 0; i < this.hidden.length; i++){
-            let x = Math.random()*w/4+w/2;
-            let y = Math.random()*h/4+h/2;
-            this.vNodes.push(new VisualNode(new Vector(x, y), this.hidden[i]));
-        }
-
-        for(let i = 0; i < this.outputs.length; i++){
-            let x = 7*w/8;
-            let y = h/(this.outputs.length*2)+h/this.outputs.length * i;
-            this.vNodes.push(new VisualNode(new Vector(x, y), this.outputs[i]));
-        }
-    }
-
-    clearCanvas(){
-        this.ctx.clearRect(0, 0, 500, 500);
-    }
-
-    drawNodes(){
-        for(let node of this.vNodes){
-            this.ctx.beginPath()
-            this.ctx.arc(node.vector.x,node.vector.y,10,0,Math.PI*2);
-            this.ctx.fillStyle = "white";
-            this.ctx.fill();
-
-            this.ctx.font = 25 + "px Arial";
-            this.ctx.fillStyle = 'black';
-            let id = node.node.getInnovation();
-            this.ctx.fillText(id,node.vector.x-5*Math.log(id), node.vector.y+10);
-        }
-    }
-
-    drawConnections(){
-        for(let con of this.getConnectionGenes().values()){
-            let inNode = 0;
-            let outNode= 0;
-            for(let i = 0; i < this.vNodes.length; i++){
-                if(this.vNodes[i].node.getInnovation() == con.getInNode())
-                    inNode = this.vNodes[i].vector;
-                else if(this.vNodes[i].node.getInnovation() == con.getOutNode())
-                    outNode = this.vNodes[i].vector;;
-            }
-            this.ctx.beginPath()
-            this.ctx.moveTo(inNode.x, inNode.y);
-            this.ctx.lineTo(outNode.x, outNode.y);
-            let wt = con.getWeight();
-            this.ctx.lineWidth = wt+2;
-            if(!con.isExpressed())
-                this.ctx.strokeStyle = "grey";
-            else{
-                if(wt>0)
-                    this.ctx.strokeStyle = "green";
-                else
-                    this.ctx.strokeStyle = "red";
-            }
-            this.ctx.stroke();
-
-        }
-    }
-
-    draw(){
-        this.clearCanvas();
-        this.drawConnections();
-        this.drawNodes();
-    }
 }

@@ -21,7 +21,7 @@ function mutate(x) {
 }
 
 class Car {
-    constructor(brain) {
+    constructor(genome) {
         this.x = carStartX;
         this.y = carStartY;
         this.alpha = -Math.PI / 2;
@@ -37,7 +37,7 @@ class Car {
         this.width = 40;
         this.height = 20;
         this.speed = 2;
-        this.speedLimit = 1;
+        this.speedLimit = 0.5;
         this.vx = 0;
         this.vy = 0;
         this.acceleration = 0.1;
@@ -52,22 +52,18 @@ class Car {
             this.rays.push(new Ray(this.x, this.y, Math.PI * i / 180 + this.alpha));
         }
 
-        if (brain instanceof Genome) {
-            this.brain = genome.copy();
+        if (genome instanceof Genome) {
+            this.genome = genome.copy();
         } else {
-            this.brain = new Genome(numRays, MOVES.length);
+            this.genome = new Genome(numRays, MOVES.length);
         }
     }
 
-    copy(genome) {
-        return new Car(genome);
-    }
-
     think(inputs) {
-        let predicts = this.brain.query(inputs);
+        let predicts = this.genome.think(inputs);
         if (moveType == "tank") {
             for (let i = 0; i < predicts.length; i++) {
-                //            let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
+                let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
                 if (predicts[i] >= 0.5) {
                     let carMove = MOVES[i];
                     this.moveCar(carMove);

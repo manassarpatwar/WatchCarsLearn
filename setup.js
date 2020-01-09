@@ -47,7 +47,7 @@ var activeCars = [];
 var allCars = [];
 var numRays = 3;
 var totalCars = 20;
-const MOVES = ["L", "R", "reduceTurn"];
+const MOVES = ["reduceTurn", "L", "R"];
 
 
 function setNumRays(nrays) {
@@ -272,8 +272,10 @@ function drawCars() {
     for (let car of activeCars) {
         if (car.score == maxScore && !bestCarDrawn) {
             car.drawCar("green");
-            if (moveType == "ackerman")
-                car.drawTurn()
+            visualizeNN(car.genome)
+            // car.brain.draw();
+            // if (moveType == "ackerman")
+            //     car.drawTurn()
             car.drawRays();
             bestCarDrawn = true;
         } else
@@ -285,33 +287,26 @@ function drawCars() {
 
 let requestId;
 
-let bestBrain;
-let prevBest;
-
-var NNcanvas = document.getElementById("NNcanvas");
-var NNctx = NNcanvas.getContext("2d");
-var NNw;
-var NNh;
-function setupNNCanvas(canvas) {
-    canvas.width = 250 * 2;
-    canvas.height = 250 * 2;
-    NNw = canvas.width;
-    NNh = canvas.height;
-    canvas.style.width = canvas.width / 2 + "px";
-    canvas.style.height = canvas.height / 2 + "px";
-};
-setupNNCanvas(NNcanvas);
+let NODEINNOVATION = new Counter(numRays+MOVES.length)
+let CONNECTIONINNOVATION = new Counter(3);
 let car = activeCars[0];
-car.brain.initialize(NNctx, NNw, NNh);
-car.brain.draw();
-let nC = new Counter(numRays+MOVES.length)
-let cC = new Counter(numRays+MOVES.length)
-car.brain.addNodeMutation(cC, nC)
-car.brain.draw();
-car.brain.addNodeMutation(cC, nC)
-car.brain.draw();
+// car.brain.initialize(NNctx, NNw, NNh);
+// visualizeNN(car.genome)
+// let nC = new Counter(numRays+MOVES.length)
+// let cC = new Counter(numRays+MOVES.length)
+// car.brain.addNodeMutation(cC, nC)
+// car.brain.draw();
 
-const EVAL = new Evaluator(activeCars, numRays, MOVES.length)
+function addNodeMut(){
+    car.genome.addNodeMutation(CONNECTIONINNOVATION, NODEINNOVATION)
+    visualizeNN(car.genome)
+}
+
+function addConnectionMut(){
+    car.genome.addConnectionMutation(CONNECTIONINNOVATION);
+    visualizeNN(car.genome)
+}
+
 
 function update() {
     clearCanvas();
@@ -344,19 +339,19 @@ function update() {
                     context.translate(-zoom * car.x, -zoom * car.y);
                     context.scale(zoom, zoom);
                 }
-                bestBrain = car.brain.copy();
             }
             score.innerHTML = "";
             score.insertAdjacentHTML('beforeend', Math.floor(maxScore * 100) / 100);
         }
     }
     if (activeCars.length == 0 || nextGen == true) {
-        if (bestBrain) {
-            visualizeBrain(bestBrain, prevBest);
-            prevBest = bestBrain.copy();
-        }
-        nextGeneration();
+        let eval = new Evaluator(allCars);
+        activeCars = eval.evaluate();
+        allCars = [];
         nextGen = false;
+        gen++;
+        genText.innerHTML = "";
+        genText.insertAdjacentHTML('beforeend', gen);
     }
     drawBoundaries();
     drawCars();
