@@ -2,6 +2,7 @@ var canvas = document.getElementById("canvas");
 var program = document.getElementById("program");
 var score = document.getElementById("score");
 var context = canvas.getContext("2d");
+var speciesText = document.getElementById("species")
 var w = 0;
 var h = 0;
 
@@ -334,6 +335,7 @@ function drawCars() {
             car.drawCar("green");
             // if (moveType == "ackerman")
             //     car.drawTurn()
+            visualizeNN(car.genome);
             car.drawRays();
             bestCarDrawn = true;
         } else
@@ -344,9 +346,6 @@ function drawCars() {
 }
 
 let requestId;
-
-let bestBrain;
-let prevBest;
 
 function getPerpendicularDist(boundary, m, n){
     const x1 = boundary.x1;
@@ -360,6 +359,21 @@ function getPerpendicularDist(boundary, m, n){
 
     let d = Math.abs(A*m+B*n+C)/Math.sqrt(A*A+B*B);
     return d;
+}
+
+
+let CONNECTIONINNOVATION = new Counter(9)
+let car = activeCars[0];
+// visualizeNN(car.genome);
+
+function addNodeMut(){
+    car.genome.addNodeMutation(CONNECTIONINNOVATION);
+    visualizeNN(car.genome);
+}
+
+function addConMut(){
+    car.genome.addConnectionMutation(CONNECTIONINNOVATION);
+    visualizeNN(car.genome);
 }
 
 function update() {
@@ -397,7 +411,6 @@ function update() {
             
                     context.scale(zoom, zoom);
                 }
-                bestBrain = car.brain.copy();
             }
 
         }
@@ -406,11 +419,15 @@ function update() {
         
     }
     if (activeCars.length == 0 || nextGen == true) {
-        if (bestBrain) {
-            visualizeBrain(bestBrain, prevBest);
-            prevBest = bestBrain.copy();
+        for (let c of activeCars) {
+            allCars.unshift(c);
         }
-        nextGeneration();
+        gen++;
+        genText.innerHTML = "";
+        genText.insertAdjacentHTML('beforeend', gen);
+        let ev = new Evaluator(allCars);
+        activeCars = ev.evaluate();
+        allCars = [];
         nextGen = false;
     }
     drawBoundaries();
@@ -427,7 +444,7 @@ function cancelMainAnim() {
     startAnim = false;
 }
 
-function reset(numCars) {
+function reset(numCars = totalCars) {
     cancelMainAnim();
     zoom = 1;
     zoomOutCanvas();

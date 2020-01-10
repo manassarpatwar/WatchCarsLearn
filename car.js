@@ -25,7 +25,7 @@ function mutate(x) {
 }
 
 class Car {
-    constructor(brain) {
+    constructor(genome) {
         this.x = carStartX;
         this.y = carStartY;
         this.alpha = -Math.PI / 2;
@@ -59,12 +59,11 @@ class Car {
             this.rays.push(new Ray(this.x, this.y, Math.PI * i / 180 + this.alpha));
         }
 
-        if (brain instanceof NeuralNetwork) {
-            this.brain = brain.copy();
-            //            console.log("mutating");
+        if (genome instanceof Genome) {
+            this.genome = genome;
             // this.brain.mutate(mutate);
         } else {
-            this.brain = new NeuralNetwork([this.rays.length,5 ,4, MOVES.length]);
+            this.genome = new Genome(numRays, MOVES.length)
         }
     }
 
@@ -77,7 +76,7 @@ class Car {
     }
 
     think(inputs) {
-        let predicts = this.brain.query(inputs);
+        let predicts = this.genome.think(inputs);
         let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
         return MOVES[indexOfMaxValue];
     }
@@ -130,7 +129,6 @@ class Car {
             this.vx = Math.cos(ang) * spd;
             this.vy = Math.sin(ang) * spd;
             if (spd == 0) {
-                console.log("dir zero")
                 this.direction = 0;
             }
         }
@@ -245,7 +243,7 @@ class Car {
                 case "L":
                     this.alpha -= Math.PI / 45;
                     break;
-                case "":
+                case "reduceTurn":
                     break;
 
             }
@@ -254,7 +252,6 @@ class Car {
     }
 
     moveCarAckerman(move) {
-        this.applyFriction();
         switch (move) {
             case "F":
                 console.log(this.vx + " " + this.vy)

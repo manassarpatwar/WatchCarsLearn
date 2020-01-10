@@ -11,18 +11,19 @@
 
 <body>
 
-    <main id = "main">
+    <main>
         <canvas id="canvas"></canvas>
-        <canvas id="NNcanvas"></canvas>
+        <canvas id="NNcanvas" class = "NNcanvas"></canvas>
         <section id="help-splash">
             <button id="close-help" onclick="viewHelp()"><img alt="Close" title="Close" class="button-icons" src="img/cross.png"></button>
             <div class="title">
-                <h1>Legend</h1>
+                <h1>Self Driving AI</h1>
             </div>
             <div class="info">
                 <ul>
-                    <li><img alt="Draw track" title="Draw track" class="button-icons" src="img/draw.png"><p>Draw Track: Click once on screen to start drawing, double click to stop (Erases the current track)</p></li>
-                    <li><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"><p>Erase Track: Erases the track</p></li>
+                    <li><img alt="Draw track" title="Draw track" class="button-icons" src="img/draw.png"><p>Draw Track: Click once on screen to start drawing, double click to stop</p></li>
+                    <li><img alt="Clear track" title="Clear track" class="button-icons" src="img/cross.png"><p>Clear track: Clears the track</p></li>
+                    <li><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"><p>Erase Track: Click once on screen to start erasing, double click to stop</p></li>
                     <li><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"><p>Reset: Resets the environment</p></li>
                     <li><img alt="Start" title="Start" class="button-icons" src="img/start.png"><p>Start: Start evolution</p></li>
                     <li><img alt="Help" title="Help" class="button-icons" src="img/help.png"><p>Help</p></li>
@@ -39,12 +40,13 @@
             <div class="buttons buttonsLeft">
                 <div>
                     <button onclick="initBounds()"><img alt="Draw track" title="Draw track" class="button-icons" src="img/draw.png"></button>
-                    <button onclick="clearBounds()"><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"></button>
-                    <button onclick="viewHelp()"><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
+                    <button onclick="clearBounds()"><img alt="Clear track" title="Clear track" class="button-icons" src="img/cross.png"></button>
+                    <button onclick="eraseBounds()"><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"></button>
                 </div>
                 <div>
-                    <button onclick="reset(totalCars)"><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"></button>
+                    <button onclick="reset()"><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"></button>
                     <button onclick="start()"><img alt="Start" title="Start" class="button-icons" src="img/start.png"></button>
+                    <button onclick="viewHelp()"><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
                 </div>
             </div>
             <div class="buttons buttonsRight">
@@ -73,12 +75,15 @@
             </p>
             <br>
             <p>Speed: <span id="genSpeedText"></span></p>
-            <p><input id="genslider" type="range" min="1" max="50" step="1" value="1">
+            <p><input id="genslider" type="range" min="1" max="20" step="1" value="1">
             </p>
             <br>
             <p>Gen: <span id="genText"></span></p>
             <br>
-            <p>Score: <span id="score"></span></p>
+            <p>Score <span id="score"></span></p>
+            <button onclick="addConnectionMut()">Add con mut</button>
+            <button onclick="addNodeMut()">Add node mut</button>
+            <p>Species: <span id = "species"></span></p>
         </section>
     </main>
     <script>
@@ -88,12 +93,19 @@
             help.classList.toggle('display-help');
         }
     </script>
-    <script src="lib/nn.js"></script>
+    <script src="ga/ConnectionGene.js"></script>
+    <script src="ga/Counter.js"></script>
+    <script src="ga/NodeGene.js"></script>
+    <script src="ga/test.js"></script>
+    <script src="ga/Evaluator.js"></script>
+    <script src="ga/VisualizeNN.js"></script>
+    <script src="ga/Species.js"></script>
     <script src="lib/matrix.js"></script>
+    <script src="lib/nn.js"></script>
+    <script src="ga/Genome.js"></script>
     <script src="car.js"></script>
-    <script src="ga.js"></script>
     <script src="ray.js"></script>
     <script src="boundary.js"></script>
     <script src="setup.js"></script>
-    <script src="visualiseNN.js"></script>
+    <!-- <script src="visualiseNN.js"></script> -->
 </body></html>
