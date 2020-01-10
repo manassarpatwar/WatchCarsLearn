@@ -340,7 +340,6 @@ class Car {
         context.rotate(-this.alpha);
         context.translate(-this.x, -this.y);
         
-        this.calculateTurnAngles();
         this.drawFrontWheels();
         this.drawBackWheels();
     }

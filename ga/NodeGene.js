@@ -22,8 +22,8 @@ class NodeGene{
         this.output = activation(input);
     }
 
-    zeroOutput(){
-        this.output = 0;
+    setOutput(out){
+        this.output = out;
     }
 
     getNodeOutput(){

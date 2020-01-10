@@ -45,15 +45,12 @@ class Genome {
             this.addNodeGene(node);
             this.outputs.push(i+numInputs);
         }
-        // let conInnov = 0;
-        // for(let input of this.inputs){
-        //     for(let output of this.outputs){
-        //         this.addConnectionGene(new ConnectionGene(input, output, Math.random()*2-1, true, conInnov++))
-        //     }
-        // }
-        this.addConnectionGene(new ConnectionGene(this.inputs[Math.floor(Math.random()*this.inputs.length)], this.outputs[Math.floor(Math.random()*this.outputs.length)], 1, true, 1))
-        this.addConnectionGene(new ConnectionGene(this.inputs[Math.floor(Math.random()*this.inputs.length)], this.outputs[Math.floor(Math.random()*this.outputs.length)], 1, true, 2))
-        this.addConnectionGene(new ConnectionGene(this.inputs[Math.floor(Math.random()*this.inputs.length)], this.outputs[Math.floor(Math.random()*this.outputs.length)], 1, true, 3))
+        let conInnov = 0;
+        for(let input of this.inputs){
+            for(let output of this.outputs){
+                this.addConnectionGene(new ConnectionGene(input, output, Math.random()*2-1, true, conInnov++))
+            }
+        }
     }
 
     copy(){
@@ -90,7 +87,7 @@ class Genome {
             return;
         }
         for(let i = 0; i < query_inputs.length; i++){
-            this.nodes.get(this.inputs[i]).activate(query_inputs[i]);
+            this.nodes.get(this.inputs[i]).setOutput(query_inputs[i]);
         }
         for(let input of this.inputs){
             for(let con of this.connections.values()){
@@ -123,7 +120,7 @@ class Genome {
         for(let output of this.outputs){
             let connectionsToNode = this.getAllConnectionsTo(output);
             if(connectionsToNode.length == 0){
-                this.nodes.get(output).zeroOutput()
+                this.nodes.get(output).setOutput(0)
                 predicts.push(0);
                 continue;
             }
