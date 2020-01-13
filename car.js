@@ -52,6 +52,10 @@ class Car {
         x = this.x + this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
         y = this.y + this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
         this.corners[3] = createVector(x,y)
+        for(let i = 0; i < this.corners.length-1; i++){
+            this.borders[i] = new Boundary(this.corners[i], this.corners[i+1])
+        }
+        this.borders[this.corners.length-1] = new Boundary(this.corners[0], this.corners[this.corners.length-1])
 
     }
 
@@ -75,16 +79,10 @@ class Car {
         rect(-this.width/2, -this.height/2, this.width, this.height, 2);
         pop();
 
-        this.recomputeCorners()
-        this.computeRays();
+    
         // fill(255)
         // for(let c of this.corners)
         //     ellipse(c.x, c.y, 5, 5);
-
-        for(let i = 0; i < this.corners.length-1; i++){
-            this.borders[i] = new Boundary(this.corners[i], this.corners[i+1])
-        }
-        this.borders[this.corners.length-1] = new Boundary(this.corners[0], this.corners[this.corners.length-1])
        
     }
 

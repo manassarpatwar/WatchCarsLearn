@@ -2,7 +2,7 @@ let paths;
 let innerTrack;
 let outerTrack;
 let localCar = null;
-const TRACKWIDTH = 15;
+const TRACKWIDTH = 20;
 
 const maxPower = 0.08;
 const maxReverse = 0.0375;
@@ -25,15 +25,26 @@ function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 }
 
+let zoom = 0;
+let maxZoom = 7;
+function zoomInCanvas(){
+    if(zoom < maxZoom)
+        zoom += 1;
+}
+
+function zoomOutCanvas(){
+    if(zoom > 0)
+        zoom -= 1;
+}
+
 let initPos = null;
 let startDrawingBoundary = false;
 let clicks = 0;
 let drawingTrack = false;
 
 function drawTracks(){
-    console.log("drawing");
+    zoom = 0;
     if (startDrawingBoundary) {
-        console.log("drawing");
         let mouseVector =  createVector(mouseX, mouseY);
         if (initPos == null)
         initPos = mouseVector;
@@ -209,6 +220,8 @@ function updateCar (car, i) {
     car.yVelocity *= drag;
     car.angle += car.angularVelocity;
     car.angularVelocity *= angularDrag;
+    car.computeRays();
+    car.recomputeCorners()
 }
 
 
@@ -216,12 +229,19 @@ function draw() {
     background(0);
     stroke(255);
 
+    if(zoom > 0){
+        translate(-zoom * localCar.x+width/2, -zoom * localCar.y+height/2);
+        scale(zoom);
+            
+    }
 
     let boundaries = innerTrack.concat(outerTrack);
     for(let b of boundaries){
         for(let ray of localCar.rays){
             let int = ray.isHitting(b)
-            let d = dist(ray.tail.x, ray.tail.y, int.x, int.y);
+            let d = Infinity;
+            if(int != null)
+                d = dist(ray.tail.x, ray.tail.y, int.x, int.y);
             if(int && d < ray.maxlength)
                 ray.setLength(d);
         }
@@ -241,6 +261,7 @@ function draw() {
 
     if(overlap)
         localCar.display([0,255,0]);
+        // localCar = new Car()
     else
         localCar.display();
     
