@@ -1,24 +1,90 @@
 let paths;
 let innerTrack;
 let outerTrack;
-let localCar = null;
-const TRACKWIDTH = 20;
 
-const maxPower = 0.08;
-const maxReverse = 0.0375;
-const powerFactor = 0.001;
-const reverseFactor = 0.0005;
+var nextConnectionNo = 1000;
+var population;
+var speed = 60;
 
-const drag = 0.95;
-const angularDrag = 0.95;
-const turnSpeed = 0.002;
+
+var showBest = false; //true if only show the best of the previous generation
+var runBest = false; //true if replaying the best ever game
+var humanPlaying = false; //true if the user is playing
+
+var humanPlayer;
+
+
+var showBrain = false;
+var showBestEachGen = false;
+var upToGen = 0;
+var genPlayerTemp; //player
+
+var showNothing = false;
+
 
 function setup() {
     paths = [];
     innerTrack = [];
     outerTrack = [];
+    carStartCoords = [];
+    let storedCarCoords = JSON.parse(localStorage.getItem("storedCarStartCoords"));
+    
+    if (storedCarCoords) {
+        carStartX = storedCarCoords[0];
+        carStartY = storedCarCoords[1];
+    }
+    
+    let storedInnerTrack = JSON.parse(localStorage.getItem("innerTrack"));
+    let storedOuterTrack = JSON.parse(localStorage.getItem("outerTrack"));
+    let storedPaths = JSON.parse(localStorage.getItem("paths"));
+    if(storedInnerTrack){
+        for (let b of storedInnerTrack)
+        innerTrack.push(new Boundary(createVector(b.x1, b.y1), createVector(b.x2, b.y2)));
+    }
+    
+    if(storedOuterTrack){
+        for (let b of storedOuterTrack)
+        outerTrack.push(new Boundary(createVector(b.x1, b.y1), createVector(b.x2, b.y2)));
+    }
+    
+    if(storedPaths){
+        for (let p of storedPaths)
+        paths.push(new Boundary(createVector(p.x1, p.y1), createVector(p.x2, p.y2)));
+    }
     createCanvas(windowWidth, windowHeight);
-    localCar = new Car();
+    
+    population = new Population(200);
+    humanPlayer = new Car();
+}
+
+function setCarPos() {
+    setCarPosition = true;
+    zoom = 0;
+    zoomOutCanvas();
+    let clicks = 0;
+    
+    cursor('img/placeCursor.png', 32, 64);
+    
+    window.addEventListener("click", function (e) {
+        if(clicks > 0){
+            carStartX = mouseX;
+            carStartY = mouseY;
+            this.removeEventListener('click', arguments.callee, false);
+            carStartCoords = [];
+            carStartCoords.push(carStartX);
+            carStartCoords.push(carStartY);
+            localStorage.setItem("storedCarStartCoords", JSON.stringify(carStartCoords));
+            for(let p of population.players){
+                p.x = carStartX;
+                p.y = carStartY;
+            }
+            humanPlayer.x = carStartX;
+            humanPlayer.y = carStartY;
+            cursor(ARROW);
+        }
+        clicks++;
+    });
+    
 }
 
 function windowResized() {
@@ -29,73 +95,12 @@ let zoom = 0;
 let maxZoom = 7;
 function zoomInCanvas(){
     if(zoom < maxZoom)
-        zoom += 1;
+    zoom += 1;
 }
 
 function zoomOutCanvas(){
     if(zoom > 0)
-        zoom -= 1;
-}
-
-let initPos = null;
-let startDrawingBoundary = false;
-let clicks = 0;
-let drawingTrack = false;
-
-function drawTracks(){
-    zoom = 0;
-    if (startDrawingBoundary) {
-        let mouseVector =  createVector(mouseX, mouseY);
-        if (initPos == null)
-        initPos = mouseVector;
-        let newX = mouseX;
-        let newY = mouseY;
-        let initX = initPos.x;
-        let initY = initPos.y;
-        if(initPos != null && dist(newX, newY, initX, initY) > 50){
-            let alpha = Math.atan2(newY - initY, newX - initX);
-            
-            let t = new Boundary(initPos, mouseVector);
-            paths.push(t);
-            
-            let innerB = new Boundary(createVector(initX-TRACKWIDTH*Math.sin(alpha), initY+TRACKWIDTH*Math.cos(alpha)), createVector(newX-TRACKWIDTH*Math.sin(alpha), newY+TRACKWIDTH*Math.cos(alpha)));
-            let outerB = new Boundary(createVector(initX+TRACKWIDTH*Math.sin(alpha), initY-TRACKWIDTH*Math.cos(alpha)), createVector(newX+TRACKWIDTH*Math.sin(alpha), newY-TRACKWIDTH*Math.cos(alpha)));
-            
-            if(innerTrack.length > 0){
-                let int = Boundary.getIntersection(innerB, innerTrack[innerTrack.length-1]);
-                if(int == null)
-                return;
-                innerB.setStart(int);
-                innerTrack[innerTrack.length-1].setEnd(int);
-            }
-            
-            if(outerTrack.length > 0){
-                let int = Boundary.getIntersection(outerB, outerTrack[outerTrack.length-1]);
-                if(int == null)
-                return;
-                outerB.setStart(int);
-                outerTrack[outerTrack.length-1].setEnd(int);
-            }
-            innerTrack.push(innerB);
-            outerTrack.push(outerB);
-            initPos = createVector(newX, newY);
-        }
-    }
-}
-
-function drawTrack(){
-    drawingTrack = true;
-    let clicks = 0;
-    window.addEventListener("click", function(){
-        if(clicks > 0)
-            startDrawingBoundary = !startDrawingBoundary;
-        if(startDrawingBoundary == false && clicks > 0){
-            this.removeEventListener('click', arguments.callee, false);
-            this.removeEventListener('mousemove', drawTracks);
-        }
-        clicks++;
-    })
-    window.addEventListener("mousemove", drawTracks);
+    zoom -= 1;
 }
 
 const arrowKeys = {
@@ -118,7 +123,7 @@ const keyActive = (key) => {
 let windowWidth = window.innerWidth;
 let windowHeight = window.innerHeight;
 
-const cars = [localCar];
+const cars = [humanPlayer];
 const carsById = {};
 
 const keysDown = {};
@@ -139,37 +144,37 @@ let acc = 0;
 const step = 1 / 120;
 
 setInterval(() => {
-    if(localCar != null){
-        const canTurn = localCar.power > 0.0025 || localCar.reverse;
+    if(humanPlayer != null){
+        const canTurn = humanPlayer.power > 0.0025 || humanPlayer.reverse;
         
         const pressingUp = keyActive('up');
         const pressingDown = keyActive('down');
         
-        if (localCar.isThrottling !== pressingUp || localCar.isReversing !== pressingDown) {
-            localCar.isThrottling = pressingUp;
-            localCar.isReversing = pressingDown;
+        if (humanPlayer.isThrottling !== pressingUp || humanPlayer.isReversing !== pressingDown) {
+            humanPlayer.isThrottling = pressingUp;
+            humanPlayer.isReversing = pressingDown;
         }
         
         const turnLeft = canTurn && keyActive('left');
         const turnRight = canTurn && keyActive('right');
         
-        if (localCar.isTurningLeft !== turnLeft) {
-            localCar.isTurningLeft = turnLeft;
+        if (humanPlayer.isTurningLeft !== turnLeft) {
+            humanPlayer.isTurningLeft = turnLeft;
         }
-        if (localCar.isTurningRight !== turnRight) {
-            localCar.isTurningRight = turnRight;
-        }
-        
-        if (localCar.x > windowWidth) {
-            localCar.x -= windowWidth;
-        } else if (localCar.x < 0) {
-            localCar.x += windowWidth;
+        if (humanPlayer.isTurningRight !== turnRight) {
+            humanPlayer.isTurningRight = turnRight;
         }
         
-        if (localCar.y > windowHeight) {
-            localCar.y -= windowHeight;
-        } else if (localCar.y < 0) {
-            localCar.y += windowHeight;
+        if (humanPlayer.x > windowWidth) {
+            humanPlayer.x -= windowWidth;
+        } else if (humanPlayer.x < 0) {
+            humanPlayer.x += windowWidth;
+        }
+        
+        if (humanPlayer.y > windowHeight) {
+            humanPlayer.y -= windowHeight;
+        } else if (humanPlayer.y < 0) {
+            humanPlayer.y += windowHeight;
         }
         
         const ms = Date.now();
@@ -177,104 +182,137 @@ setInterval(() => {
             acc += (ms - lastTime) / 1000;
             
             while (acc > step) {
-                //   update();
-                updateCar(localCar);
+                // if(humanPlaying)
+                // humanPlayer.update();
+                // else
+                // update();
                 acc -= step;
             }
         }
         
         lastTime = ms;
     }
-}, 1000 / 60);
+}, 10 / 60);
 
-function updateCar (car, i) {
-    if (car.isThrottling) {
-        car.power += powerFactor * car.isThrottling;
-    } else {
-        car.power -= powerFactor;
+function showHumanPlaying() {
+    if (!humanPlayer.dead) { //if the player isnt dead then move and show the player based on input
+        humanPlayer.look();
+        humanPlayer.update();
+        humanPlayer.show();
+    } else { //once done return to ai
+        humanPlayer = new Car();
     }
-    if (car.isReversing) {
-        car.reverse += reverseFactor;
-    } else {
-        car.reverse -= reverseFactor;
-    }
-    
-    car.power = Math.max(0, Math.min(maxPower, car.power));
-    car.reverse = Math.max(0, Math.min(maxReverse, car.reverse));
-    
-    const direction = car.power > car.reverse ? 1 : -1;
-    
-    if (car.isTurningLeft) {
-        car.angularVelocity -= direction * turnSpeed * car.isTurningLeft;
-    }
-    if (car.isTurningRight) {
-        car.angularVelocity += direction * turnSpeed * car.isTurningRight;
-    }
-    
-    car.xVelocity += Math.sin(car.angle) * (car.power - car.reverse);
-    car.yVelocity += Math.cos(car.angle) * (car.power - car.reverse);
-    
-    car.x += car.xVelocity;
-    car.y -= car.yVelocity;
-    car.xVelocity *= drag;
-    car.yVelocity *= drag;
-    car.angle += car.angularVelocity;
-    car.angularVelocity *= angularDrag;
-    car.computeRays();
-    car.recomputeCorners()
 }
 
+function showBestPlayersForEachGeneration() {
+    if (!genPlayerTemp.dead) { //if current gen player is not dead then update it
+        
+        genPlayerTemp.look();
+        genPlayerTemp.think();
+        genPlayerTemp.update();
+        genPlayerTemp.show([0,255,0]);
+    } else { //if dead move on to the next generation
+        upToGen++;
+        if (upToGen >= population.genPlayers.length) { //if at the end then return to the start and stop doing it
+            upToGen = 0;
+            showBestEachGen = false;
+        } else { //if not at the end then get the next generation
+            genPlayerTemp = population.genPlayers[upToGen].cloneForReplay();
+        }
+    }
+}
+
+function drawBrain() { //show the brain of whatever genome is currently showing
+    var startX = 500; //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<replace
+    var startY = 0;
+    var w = 1000;
+    var h = 500;
+    
+    if (runBest) {
+        population.bestPlayer.brain.drawGenome(startX, startY, w, h);
+    } else
+    if (humanPlaying) {
+        showBrain = false;
+    } else if (showBestEachGen) {
+        genPlayerTemp.brain.drawGenome(startX, startY, w, h);
+    } else {
+        population.players[0].brain.drawGenome(startX, startY, w, h);
+    }
+}
 
 function draw() {
     background(0);
     stroke(255);
-
+    
     if(zoom > 0){
-        translate(-zoom * localCar.x+width/2, -zoom * localCar.y+height/2);
-        scale(zoom);
-            
-    }
-
-    let boundaries = innerTrack.concat(outerTrack);
-    for(let b of boundaries){
-        for(let ray of localCar.rays){
-            let int = ray.isHitting(b)
-            let d = Infinity;
-            if(int != null)
-                d = dist(ray.tail.x, ray.tail.y, int.x, int.y);
-            if(int && d < ray.maxlength)
-                ray.setLength(d);
+        if(population.bestPlayer){
+            translate(-zoom * population.bestPlayer.x+width/2, -zoom * population.bestPlayer.y+height/2);
+            scale(zoom);
         }
+        
     }
-
-    let overlap = false;
-    for(let b of boundaries){
-        for(let border of localCar.borders){
-            if(Boundary.overlaps(border, b)){
-                overlap = true;
-                break
-            }
-        }
-        if(overlap)
-            break
+    push();
+    drawBrain();
+    pop();
+    push()
+    noStroke();
+    fill(50,50,50);
+    beginShape();
+    for(let b of innerTrack){
+        vertex(b.x1, b.y1);
     }
-
-    if(overlap)
-        localCar.display([0,255,0]);
-        // localCar = new Car()
-    else
-        localCar.display();
+    endShape(CLOSE);
+    pop();
     
-    // for (let path of paths) {
-    //     path.display();
-    // }
+    // fill(255);
+    // textSize(16);
+    // text(frameRate(), 50, 500);
     
-    for (let t of innerTrack) {
+    for(let t of innerTrack){
         t.display();
     }
     
-    for (let t of outerTrack) {
+    for(let t of outerTrack){
         t.display();
     }
+    if (showBestEachGen) { //show the best of each gen
+        showBestPlayersForEachGeneration();
+    } else if (humanPlaying) { //if the user is controling the ship[
+        showHumanPlaying();
+    } else if (runBest) { // if replaying the best ever game
+        showBestEverPlayer();
+    } else { //if just evolving normally
+        if (!population.done()) { //if any players are alive then update them
+            population.updateAlive();
+          } else { //all dead
+            //genetic algorithm
+            population.naturalSelection();
+          }
+    }
     
+    
+}
+
+function keyPressed() {
+    switch (key) {
+        case ' ':
+        //toggle showBest
+        showBest = !showBest;
+        break;
+        case 'B': //run the best
+        runBest = !runBest;
+        break;
+        case 'G': //show generations
+        showBestEachGen = !showBestEachGen;
+        upToGen = 0;
+        genPlayerTemp = population.genPlayers[upToGen].clone();
+        break;
+        case 'N': //show absolutely nothing in order to speed up computation
+        showNothing = !showNothing;
+        break;
+        case 'P': //play
+        humanPlaying = !humanPlaying;
+        humanPlayer = new Car();
+        break;
+    }
 }
