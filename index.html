@@ -6,11 +6,18 @@
     <link rel="stylesheet" href="main.css">
     <meta name="viewport" content="width=device-width, 
     initial-scale=1, maximum-scale=1" />
-    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>
-    <script language="javascript" type="text/javascript" src="Self-Driving-AI.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/p5.js"></script>
     <script language="javascript" type="text/javascript" src="Car.js"></script>
     <script language="javascript" type="text/javascript" src="Ray.js"></script>
     <script language="javascript" type="text/javascript" src="Boundary.js"></script>
+    <script language="javascript" type="text/javascript" src="./connection.js"></script>
+    <script language="javascript" type="text/javascript" src="./genome.js"></script>
+    <script language="javascript" type="text/javascript" src="./node.js"></script>
+    <script language="javascript" type="text/javascript" src="./connectionHistory.js"></script>
+    <script language="javascript" type="text/javascript" src="./innovationCounter.js"></script>
+    <script language="javascript" type="text/javascript" src="./species.js"></script>
+    <script language="javascript" type="text/javascript" src="./population.js"></script>
+    <script language="javascript" type="text/javascript" src="Self-Driving-AI.js"></script>
 </head>
 
 <body>
@@ -47,6 +54,8 @@
                 </div>
                 <div>
                     <button onclick="zoomOutCanvas()"><img alt="Zoom out" title="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
+                    <button onclick="start()"><img alt="Start" title="Start" class="button-icons" src="img/start.png"></button>
+                    <button onclick="reset()"><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"></button>
                 </div>
             </div>
         </section>

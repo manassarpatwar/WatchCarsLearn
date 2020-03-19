@@ -1,34 +1,44 @@
 class Boundary{
-    point1;
-    point2;
+    x1;
+    y1;
+    x2;
+    y2;
     
-    constructor(p1, p2){
-        this.point1 = p1;
-        this.point2 = p2;
+    constructor(x1, y1, x2, y2){
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+    }
+
+    length(){
+        return dist(this.x1, this.y1, this.x2, this.y2);
     }
     
     setStart(p){
-        this.point1 = p;
+        this.x1 = p.x;
+        this.y1 = p.y;
     }
     
     setEnd(p){
-        this.point2 = p;
+        this.x2 = p.x;
+        this.y2 = p.y;
     }
     
     display(){
-        line(this.point1.x, this.point1.y, this.point2.x, this.point2.y); 
+        line(this.x1, this.y1, this.x2, this.y2); 
     }
     
     static getIntersection(boundary1, boundary2){
-        const x1 = boundary1.point1.x;
-        const x2 = boundary1.point2.x;
-        const y1 = boundary1.point1.y;
-        const y2 = boundary1.point2.y;
+        const x1 = boundary1.x1;
+        const x2 = boundary1.x2;
+        const y1 = boundary1.y1;
+        const y2 = boundary1.y2;
         
-        const x3 = boundary2.point1.x;
-        const x4 = boundary2.point2.x;
-        const y3 = boundary2.point1.y;
-        const y4 = boundary2.point2.y;
+        const x3 = boundary2.x1;
+        const x4 = boundary2.x2;
+        const y3 = boundary2.y1;
+        const y4 = boundary2.y2;
         var ua, ub, denom = (y4 - y3)*(x2 - x1) - (x4 - x3)*(y2 - y1);
         if (denom == 0) {
             return null;
@@ -40,15 +50,15 @@ class Boundary{
     }
     
     static intersects(boundary1, boundary2) {
-        const a = boundary1.point1.x;
-        const b = boundary1.point2.x;
-        const c = boundary1.point1.y;
-        const d = boundary1.point2.y;
+        const a = boundary1.x1;
+        const b = boundary1.x2;
+        const c = boundary1.y1;
+        const d = boundary1.y2;
         
-        const p = boundary2.point1.x;
-        const q = boundary2.point2.x;
-        const r = boundary2.point1.y;
-        const s = boundary2.point2.y;
+        const p = boundary2.x1;
+        const q = boundary2.x2;
+        const r = boundary2.y1;
+        const s = boundary2.y2;
         var det, gamma, lambda;
         det = (c - a) * (s - q) - (r - p) * (d - b);
         if (det === 0) {
@@ -61,14 +71,14 @@ class Boundary{
     };
     
     static overlaps(boundary1, boundary2){
-        const p0_x = boundary1.point1.x;
-        const p0_y = boundary1.point1.y;
-        const p1_x = boundary1.point2.x;
-        const p1_y = boundary1.point2.y;
-        const p2_x = boundary2.point1.x;
-        const p2_y = boundary2.point1.y;
-        const p3_x = boundary2.point2.x;
-        const p3_y = boundary2.point2.y;
+        const p0_x = boundary1.x1;
+        const p0_y = boundary1.y1;
+        const p1_x = boundary1.x2;
+        const p1_y = boundary1.y2;
+        const p2_x = boundary2.x1;
+        const p2_y = boundary2.y1;
+        const p3_x = boundary2.x2;
+        const p3_y = boundary2.y2;
         
         
         

@@ -20,10 +20,10 @@ class Ray{
     }
 
     isHitting(boundary) {
-        const x1 = boundary.point1.x;
-        const x2 = boundary.point2.x;
-        const y1 = boundary.point1.y;
-        const y2 = boundary.point2.y;
+        const x1 = boundary.x1;
+        const x2 = boundary.x2;
+        const y1 = boundary.y1;
+        const y2 = boundary.y2;
         
         let point2 = this.getPoint2(this.maxlength)
         const x3 = this.tail.x;
