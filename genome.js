@@ -12,8 +12,6 @@ class Genome{
         this.biasNode.layer = 0;
         this.addNode(this.biasNode);
 
-        this.drawDimensions = 300;
-
         if(numInputs != null && numOutputs != null){
             let inputs = [];
             let outputs = [];
@@ -34,8 +32,15 @@ class Genome{
         }
     }
 
-    setCanvasPos(pos){
-        this.canvasPos = pos;
+    fullyConnect(innovationHistory){
+        for(let n1 of this.nodes.values()){
+            for(let n2 of this.nodes.values()){
+                if(n2.layer == n1.layer+1){
+                    let innovationNumber = this.getInnovationNumber(innovationHistory, n1.getNodeNumber(), n2.getNodeNumber());
+                    this.addConnection(new Connection(n1.getNodeNumber(), n2.getNodeNumber(), innovationNumber, random(-1,1), true));
+                }
+            }
+        }
     }
 
     clone(){
@@ -102,16 +107,16 @@ class Genome{
             this.drawLayers[n.layer].push(n);
         }
     
-        let x = this.drawDimensions/(this.drawLayers.length+1);
+        let x = Genome.drawDimensions/(this.drawLayers.length+1);
 
         for(let l of this.drawLayers){
-            let y = this.drawDimensions/(l.length+1);
+            let y = Genome.drawDimensions/(l.length+1);
             for(let n of l){
                 n.vector = createVector(x,y);
-                n.radius = Math.pow(this.drawDimensions, 1/3)*2
-                y += this.drawDimensions/(l.length+1);
+                n.radius = 12 - this.numInputs*this.numInputs/100;
+                y += Genome.drawDimensions/(l.length+1);
             }
-            x += this.drawDimensions/(this.drawLayers.length+1);
+            x += Genome.drawDimensions/(this.drawLayers.length+1);
         }
     }
 
@@ -133,7 +138,7 @@ class Genome{
         var isNew = true;
         var connectionInnovationNumber = innovationCounter.innovationNumber;
         for (var i = 0; i < innovationHistory.length; i++) { //for each previous mutation
-            if (innovationHistory[i].matches(from, to)) { //if match found
+            if (innovationHistory[i].matches(this, from, to)) { //if match found
                 isNew = false; //its not a new mutation
                 connectionInnovationNumber = innovationHistory[i].innovationNumber; //set the innovation number as the innovation number of the match
                 break;
@@ -223,7 +228,11 @@ class Genome{
         }
     }
 
-    mutate(innovationCounter){
+    mutate(innovationHistory){
+        if(this.connections.size == 0){
+            this.mutateConnection(innovationHistory)
+        }
+
         let rand1 = Math.random();
 
         if(rand1 < 0.8){
@@ -231,13 +240,15 @@ class Genome{
         }
         let rand2 = Math.random();
         if(rand2 < 0.05){
-            this.mutateConnection(innovationCounter);
+            this.mutateConnection(innovationHistory);
         }
 
+       
         let rand3 = Math.random();
         if(rand3 < 0.01){
-            this.mutateNode(innovationCounter);
+            this.mutateNode(innovationHistory);
         }
+
     }
 
     crossover(parent2){
@@ -289,34 +300,41 @@ class Genome{
         return false
     }
 
-
-    static compatibilityDistance(parent1, parent2, N, c1, c2){
-        let geneSet = Genome.countGenes(parent1, parent2);
-        // console.log(geneSet['disjointAndExcess'] + " " + geneSet['weightDiff'])
-        return geneSet['disjointAndExcess']*c1/N + geneSet['weightDiff']*c2;
-    }
-
-    static countGenes(parent1, parent2){
-
-        let matching = 0;
-        let totalDiff = 0;
-
-        for(let con1 of parent1.connections.values()){
-            for(let con2 of parent2.connections.values()){
-                if(con1.getInnovationNo() == con2.getInnovationNo()){
+    static getExcessDisjoint(parent1, parent2) {
+        var matching = 0;
+        for (let c1 of parent1.connections.values()) {
+            for (let c2 of parent2.connections.values()) {
+                if (c1.getInnovationNo() == c2.getInnovationNo()) {
                     matching++;
-                    totalDiff += abs(con1.weight - con2.weight);
+                    break;
                 }
             }
         }
+        return (parent1.connections.size + parent2.connections.size - 2 * (matching)); //return no of excess and disjoint genes
+    }
 
-        let weightDiff = totalDiff/matching;
-
-        if(matching == 0){
-            weightDiff = 100;
+    static averageWeightDiff(parent1, parent2) {
+        if (parent1.connections.size == 0 || parent2.connections.size == 0) {
+          return 0;
         }
-        let disjointAndExcess = parent1.connections.size + parent2.connections.size - 2 * (matching)
-       
-        return {disjointAndExcess: disjointAndExcess, weightDiff : weightDiff}
+  
+  
+        var matching = 0;
+        var totalDiff = 0;
+        for (let c1 of parent1.connections.values()) {
+            for (let c2 of parent2.connections.values()) {
+                if (c1.getInnovationNo() == c2.getInnovationNo()) {
+                    matching++;
+                    totalDiff += abs(c1.weight - c2.weight);
+                    break;
+                }
+            }
+        }
+        if (matching == 0) { //divide by 0 error
+          return 100;
+        }
+        return totalDiff / matching;
     }
 }
+
+Genome.drawDimensions = 300;

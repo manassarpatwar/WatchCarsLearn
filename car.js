@@ -1,14 +1,13 @@
 class Car {
     
     constructor(inputs, outputs) {
-        this.x = 225;
-        this.y = 510;
-        this.el = document.getElementsByClassName('car')[0];
+        this.x = carSettings[0];
+        this.y = carSettings[1];
         this.xVelocity = 0,
         this.yVelocity =  0,
         this.power = 0,
         this.reverse = 0,
-        this.angle = 0,
+        this.angle = carSettings[2],
         this.angularVelocity = 0,
         this.isThrottling = false,
         this.isReversing = false
@@ -20,16 +19,18 @@ class Car {
         this.dead = false;
         this.oldScore = 0;
         this.score = 0;
+        this.bestScore = 0;
         this.staleness = 0;
         this.checkpoints = new Set();
         this.inputs = [];
-        let offset = -Math.PI/6;
-        for (let i = 0; i < 3; i++) {
-            this.rays[i] = new Ray(createVector(this.x, this.y), this.angle-Math.PI/2+offset, 50);
-            offset += Math.PI /6;
-        }
-        
+        this.laps = 0;
+        this.gen = 0;
+        this.moves = 0;
+        this.fitness = 0;
+
         if(inputs instanceof Genome){
+            this.genomeInputs = inputs.numInputs;
+            this.genomeOutputs = inputs.numOutputs;
             this.brain = inputs.clone();
         }else{
             this.genomeInputs = inputs;
@@ -37,17 +38,26 @@ class Car {
             this.brain = new Genome(this.genomeInputs, this.genomeOutputs);
         }
 
+        this.numRays = this.genomeInputs;
+        this.computeRays();
+
+    }
+
+    crossover(parent2){
+        let child = new Car();
+        child.brain = this.brain.crossover(parent2.brain);
+        child.bestScore = Math.max(this.bestScore, parent2.bestScore);
+        return child;
     }
 
     reset(){
-        this.x = 210;
-        this.y = 500;
-        this.el = document.getElementsByClassName('car')[0];
+        this.x = carSettings[0];
+        this.y = carSettings[1];
         this.xVelocity = 0,
         this.yVelocity =  0,
         this.power = 0,
         this.reverse = 0,
-        this.angle = 0,
+        this.angle = carSettings[2],
         this.angularVelocity = 0,
         this.corners = [];
         this.width = 10;
@@ -59,22 +69,20 @@ class Car {
         this.staleness = 0;
         this.checkpoints = new Set();
         this.inputs = [];
+        this.gen = 0;
+        this.laps = 0;
+        this.moves = 0;
     }
 
     died(){
-        this.power = 0;
-        this.reverse = 0;
-        this.angularVelocity = 0;
-        this.isThrottling = false;
-        this.isReversing = false;
-        this.isTurningLeft = false;
-        this.isTurningRight = false;
         this.dead = true;
     }
 
     look(){
-        if(this.staleness%10 == 0)
+        if(this.moves > 100){
             this.oldScore = this.checkpoints.size;
+            this.moves = 0;
+        }
         let boundaries = innerTrack.concat(outerTrack);
         for(let b of boundaries){
             for(let ray of this.rays){
@@ -92,22 +100,52 @@ class Car {
     think() {
 
         if(!this.dead){
-            const canTurn = this.power > 0.0025 || this.reverse;
-
             let outputs = this.brain.feedForward(this.inputs);
-            this.isThrottling = outputs[0] >= 0.66;
-            this.isReversing = outputs[0] < 0.33;
             
-            this.isTurningLeft = canTurn && outputs[1] >= 0.33;
-            this.isTurningRight = canTurn && outputs[1] < 0.33;
+            if(outputs[0] < 0.33){
+                //accelerating
+                this.power += powerFactor * outputs[0]*3;
+            }else if(outputs[0] > 0.66){
+                //decelerating
+                this.reverse += reverseFactor * (outputs[0]-0.66)*3;
+            }
+            this.power = Math.max(0, Math.min(maxPower, this.power));
+            this.reverse = Math.max(0, Math.min(maxReverse, this.reverse));
+
+            const direction = this.power > this.reverse ? 1 : -1;
+
+            const canTurn = this.power > 0.0025 || this.reverse;
+            if(canTurn){
+                if(outputs[1] < 0.33){
+                    //turning right
+                    this.angularVelocity += direction * turnSpeed * outputs[1]*3;
+                }else{
+                    //turning left
+                    this.angularVelocity -= direction * turnSpeed * (outputs[1]-0.66)*3;
+                }
+            }
+            // const canTurn = this.power > 0.0025 || this.reverse;
+            // this.isThrottling = outputs[0] >= 0.66;
+            // this.isReversing = outputs[0] < 0.33;
+            
+            // this.isTurningLeft = canTurn && outputs[1] >= 0.33;
+            // this.isTurningRight = canTurn && outputs[1] < 0.33;
+            this.moves++;
         }
     }
 
     clone() {
-        var clone = new Car();
-        clone.brain = this.brain.clone();
+        var clone = new Car(this.brain);
         clone.fitness = this.fitness;
         clone.bestScore = this.score;
+        return clone;
+    }
+
+    cloneForReplay(){
+        var clone = new Car(this.brain);
+        clone.score = this.score;
+        clone.bestScore = this.score;
+        clone.fitness = this.fitness;
         return clone;
     }
 
@@ -117,19 +155,26 @@ class Car {
 
     addCheckpoint(c){
         this.checkpoints.add(c);
-        this.score = this.checkpoints.size;
+        if(this.checkpoints == this.checkpoints.length){
+            this.checkpoints = new Map();
+            this.laps++;
+        }
+        this.score = this.checkpoints.size + this.laps*checkpoints.length;
     }
 
     computeRays(){
-        let offset = -Math.PI/6;
-        for (let i = 0; i < 3; i++) {
-            this.rays[i] = new Ray(createVector(this.x, this.y), this.angle-Math.PI/2+offset, 50);
-            offset += Math.PI /6;
+        let offsetAdd = this.numRays > 8 ? Math.PI/((this.numRays/8)*(4%this.numRays)) : Math.PI/4;
+        let offset = this.numRays%2 == 0 ? -(this.numRays-1)*(offsetAdd/2) : -((this.numRays-1)/2)*offsetAdd;
+        for (let i = 0; i < this.numRays; i++) {
+            // this.rays[i] = new Ray(createVector(this.x+this.height/2*Math.cos(this.angle-Math.PI/2), this.y+this.height/2*Math.sin(this.angle-Math.PI/2)), this.angle-Math.PI/2+offset, 50);
+            this.rays[i] = new Ray(createVector(this.x, this.y), this.angle-Math.PI/2+offset, 70);
+            offset += offsetAdd;
         }
     }
 
-    changeNumRays(numRays){
-
+    changeNumRays(newNumRays){
+        this.rays = [];
+        this.numRays = newNumRays;
     }
     
     recomputeCorners(){
@@ -156,15 +201,11 @@ class Car {
     }
 
     display(color = [255,0,0]) {
-        for (let ray of this.rays) {
-            let p2 = ray.getPoint2();
-            line(this.x, this.y, p2.x, p2.y);
-            // push()
-            // noStroke()
-            // fill(60, 50, 90);
-            // ellipse(p2.x, p2.y ,6 , 6);
-            // pop()
-        }
+        // for (let ray of this.rays) {
+        //     let p2 = ray.getPoint2();
+        //     line(ray.tail.x, ray.tail.y, p2.x, p2.y);
+    
+        // }
 
         push();
         noStroke();
@@ -174,16 +215,10 @@ class Car {
         fill(color[0], color[1], color[2]);
         rect(-this.width/2, -this.height/2, this.width, this.height, 2);
         pop();
-
-    
-        // fill(255)
-        // for(let c of this.corners)
-        //     ellipse(c.x, c.y, 5, 5);
        
     }
 
-    update() {
-
+    updateMoves(){
         if (this.isThrottling) {
             this.power += powerFactor * this.isThrottling;
         } else {
@@ -206,6 +241,14 @@ class Car {
         if (this.isTurningRight) {
             this.angularVelocity += direction * turnSpeed * this.isTurningRight;
         }
+
+        this.update();
+    }
+
+    update() {
+        if(this.dead){
+            return
+        }
         
         this.xVelocity += Math.sin(this.angle) * (this.power - this.reverse);
         this.yVelocity += Math.cos(this.angle) * (this.power - this.reverse);
@@ -227,7 +270,7 @@ class Car {
             this.staleness = 0;
         }
 
-        if(this.staleness > 1000){
+        if(this.staleness > 100){
             this.died();
         }
     }

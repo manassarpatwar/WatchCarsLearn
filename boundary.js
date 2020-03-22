@@ -11,7 +11,7 @@ class Boundary{
         this.y2 = y2;
     }
 
-    length(){
+    getLength(){
         return dist(this.x1, this.y1, this.x2, this.y2);
     }
     
@@ -26,7 +26,11 @@ class Boundary{
     }
     
     display(){
+        push();
+        stroke(100);
+        strokeWeight(4);
         line(this.x1, this.y1, this.x2, this.y2); 
+        pop();
     }
     
     static getIntersection(boundary1, boundary2){
@@ -47,6 +51,11 @@ class Boundary{
         ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3))/denom;
         return createVector(x1 + ua * (x2 - x1), y1 + ua * (y2 - y1));
         
+    }
+
+    getAngle(){
+        let a = Math.atan2(this.y2 - this.y1, this.x2 - this.x1);
+        return a;
     }
     
     static intersects(boundary1, boundary2) {

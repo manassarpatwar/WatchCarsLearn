@@ -2,21 +2,17 @@ class Species{
     constructor(mascot){
         this.members = [];
         this.members.push(mascot);
-        this.mascot = mascot.clone();
+        this.mascot = mascot;
 
-        this.bestFitness = 0;
+        this.bestFitness = mascot.fitness;
         this.averageFitness = 0;
         this.staleness = 0;
 
         this.c1 = 1;
         this.c2 = 0.5;
         this.D = 3;
-    }
 
-    reset(){
-        this.bestFitness = 0;
-        this.averageFitness = 0;
-        this.staleness = 0;
+        this.color = [50+Math.random()*150, 50+Math.random()*150,50+Math.random()*150]
     }
 
     addMember(member){
@@ -28,18 +24,26 @@ class Species{
     }
 
     sameSpecies(g){
+        var compatibility;
+
+        var excessAndDisjoint = Genome.getExcessDisjoint(g, this.mascot.brain); //get the number of excess and disjoint genes between this player and the current species this.rep
+        var averageWeightDiff = Genome.averageWeightDiff(g, this.mascot.brain); //get the average weight difference between matching genes
+    
         var largeGenomeNormaliser = g.connections.size - 20;
         if (largeGenomeNormaliser < 1) {
-            largeGenomeNormaliser = 1;
+          largeGenomeNormaliser = 1;
         }
-        return Genome.compatibilityDistance(g, this.getMascot().brain, largeGenomeNormaliser, this.c1, this.c2) < this.D
+    
+        compatibility = (this.c1 * excessAndDisjoint / largeGenomeNormaliser) + (this.c2 * averageWeightDiff); //compatibility formula
+        return (this.D > compatibility);
+
         
     }
 
 
     cull() {
         if (this.members.length > 2) {
-            for (var i = this.members.length / 2; i < this.members.length; i++) {
+            for (var i = this.members.length/2; i < this.members.length; i++) {
                 // this.members.remove(i);
                 this.members.splice(i, 1);
                 i--;
@@ -56,19 +60,19 @@ class Species{
     }
 
 
-
     fitnessSharing() {
         for (var i = 0; i < this.members.length; i++) {
-            this.members[i].fitness /= this.members.length;
+            this.members[i].fitness = this.members[i].fitness/this.members.length;
         }
     }
 
     sortSpecies(){
-        this.members = this.members.sort((a, b) => (a.fitness < b.fitness) ? 1 : -1)
 
         if (this.members.length == 0) {
             this.staleness = 200;
             return;
+        }else{
+            this.members.sort((a,b) => a.fitness > b.fitness ? -1 : 1);
         }
         //if new best player
         if (this.members[0].fitness > this.bestFitness) {
@@ -82,38 +86,32 @@ class Species{
 
     crossover(innovationHistory){
         let child;
-        let childBrain;
         if (random(1) < 0.25 || this.members.length == 1) { //25% of the time there is no crossover and the child is simply a clone of a random(ish) player
             child = this.members[this.selectPlayer()].clone();
         }else{
             let parent1Index = this.selectPlayer();
             let parent1 = this.members[parent1Index];
 
-            let parent2 = this.members[this.selectPlayer(parent1Index)];
+            let parent2 = this.members[this.selectPlayer()];
             if(parent1.fitness > parent2.fitness){
-                childBrain = parent1.brain.crossover(parent2.brain);
+                child = parent1.crossover(parent2);
             }else{
-                childBrain = parent2.brain.crossover(parent1.brain);
-            }
-            child = new Car(childBrain);
+                child = parent2.crossover(parent1);
+            };
         }
         child.brain.mutate(innovationHistory);
         return child;
     }
 
-    selectPlayer(skip) {
+    selectPlayer() {
         var fitnessSum = 0;
         for (var i = 0; i < this.members.length; i++) {
-            if(skip && skip == i)
-                continue
             fitnessSum += this.members[i].fitness;
         }
         var rand = random(fitnessSum);
         var runningSum = 0;
   
         for (var i = 0; i < this.members.length; i++) {
-            if(skip && skip == i)
-                continue
 
             runningSum += this.members[i].fitness;
             if (runningSum > rand) {
@@ -124,5 +122,16 @@ class Species{
         return 0;
     }
 
+    clone(){
+        let s = new Species(this.mascot.clone());
+        s.bestFitness = this.bestFitness;
+        s.averageFitness = this.averageFitness;
+        s.color = this.color;
+        s.staleness = this.staleness;
+        return s;
+    }
+
 
 }
+Species.drawWidth = window.innerWidth > 700 ? 300 : 100 
+Species.drawHeight = 300;
