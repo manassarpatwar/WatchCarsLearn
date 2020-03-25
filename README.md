@@ -1,6 +1,6 @@
 # Self-driving-AI
 
-Cars learn to drive around user drawn Boundary by [Neuroevolution of Augmenting Topologies](https://en.wikipedia.org/wiki/Neuroevolution_of_augmenting_topologies) (NEAT)
+Cars learn to drive around user drawn track by [Neuroevolution of Augmenting Topologies](https://en.wikipedia.org/wiki/Neuroevolution_of_augmenting_topologies) (NEAT)
 
 [Check It Out!](https://manassarpatwar.github.io/Self-driving-AI/)
 
@@ -8,14 +8,14 @@ Used HTML5 Canvas and Javascript
 
 Instructions:
 * Press (?) for the description of icons
-* Draw a Boundary of any shape using the drawBoundary button (pencil icon), example Boundary below.
+* Draw a track of any shape using the drawTrack button (pencil icon), example track below.
 
-![Sample Boundary](https://user-images.githubusercontent.com/44678221/71773884-117ba000-2f5d-11ea-929d-5d46a0dcd7be.png)
+![Sample track](https://user-images.githubusercontent.com/44678221/71773884-117ba000-2f5d-11ea-929d-5d46a0dcd7be.png)
 
-* The Boundary is self enclosing, i.e. the Boundary closes itself when you double click to stop drawing.
+* The track is self enclosing, i.e. the track closes itself when you double click to stop drawing.
 * Run the cars by pressing the play button
 * Tweak parameters, such as number of cars, number of sensors, turn type and Enjoy!
-* If the cars fail to learn a Boundary try tweaking the parameters, or it may simply be the case that the Boundary has very sharp turns.
+* If the cars fail to learn a track try tweaking the parameters, or it may simply be the case that the track has very sharp turns.
 
 ## Neural network visualisation
 The changes in the "brain" of the best car, or its Neural Network are shown in the bottom right corner of the screen.
