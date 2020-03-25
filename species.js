@@ -13,9 +13,11 @@ class Species{
         this.D = 3;
 
         this.color = [50+Math.random()*150, 50+Math.random()*150,50+Math.random()*150]
+        this.mascot.color = this.color;
     }
 
     addMember(member){
+        member.color = this.color;
         this.members.push(member);
     }
 
@@ -133,5 +135,5 @@ class Species{
 
 
 }
-Species.drawWidth = window.innerWidth > 700 ? 300 : 100 
+Species.drawWidth = window.innerWidth > 700 ? 150 : 100 
 Species.drawHeight = 300;

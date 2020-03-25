@@ -12,7 +12,7 @@ class Boundary{
     }
 
     getLength(){
-        return dist(this.x1, this.y1, this.x2, this.y2);
+        return Math.round(dist(this.x1, this.y1, this.x2, this.y2));
     }
     
     setStart(p){
@@ -24,11 +24,27 @@ class Boundary{
         this.x2 = p.x;
         this.y2 = p.y;
     }
+
+    getLeftPoint(point){
+        let a = Math.atan2(this.y2-this.y1, this.x2-this.x1)
+        if(point == "END")
+            return createVector(this.x2+TRACKWIDTH*Math.cos(a-Math.PI/2), this.y2+TRACKWIDTH*Math.sin(a-Math.PI/2))
+        else
+            return createVector(this.x1+TRACKWIDTH*Math.cos(a-Math.PI/2), this.y1+TRACKWIDTH*Math.sin(a-Math.PI/2))
+    }
+
+    getRightPoint(point){
+        let a = Math.atan2(this.y2-this.y1, this.x2-this.x1)
+        if(point == "END")
+            return createVector(this.x2+TRACKWIDTH*Math.cos(a+Math.PI/2), this.y2+TRACKWIDTH*Math.sin(a+Math.PI/2));
+        else
+            return createVector(this.x1+TRACKWIDTH*Math.cos(a+Math.PI/2), this.y1+TRACKWIDTH*Math.sin(a+Math.PI/2));
+    }
     
     display(){
         push();
         stroke(100);
-        strokeWeight(4);
+        strokeWeight(2);
         line(this.x1, this.y1, this.x2, this.y2); 
         pop();
     }
@@ -56,6 +72,24 @@ class Boundary{
     getAngle(){
         let a = Math.atan2(this.y2 - this.y1, this.x2 - this.x1);
         return a;
+    }
+
+    static distance(boundary, x0, y0) {
+        const x1 = boundary.x1;
+        const x2 = boundary.x2;
+        const y1 = boundary.y1;
+        const y2 = boundary.y2;
+
+        return Math.round(((Math.abs((y1 - y2) * x0 -
+                         (x1 - x2) * y0 - 
+                         x1*(y1-y2)+y1*(x1-x2))) /
+                (Math.pow((Math.pow(y2 - y1, 2) + 
+                           Math.pow(x1 - x2, 2)), 
+                          0.5))));
+    }
+
+    static getAreaWithPoint(boundary, x, y){
+        return (1/2)*boundary.getLength()*Boundary.distance(boundary, x, y);
     }
     
     static intersects(boundary1, boundary2) {

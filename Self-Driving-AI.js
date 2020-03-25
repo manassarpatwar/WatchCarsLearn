@@ -3,21 +3,21 @@ var innovationCounter = new InnovationCounter(1);
 let paths;
 let innerTrack;
 let outerTrack;
-let tempInnerB;
-let tempOuterB;
+
 let tempPath;
 let checkpoints;
 let humanPlaying = true;
+
 let localCar = null;
 let zoomCar = null;
 let carSettings;
-let populationSize = 100;
+let populationSize = 50;
 
-const TRACKWIDTH = 20;
-const maxPower = 0.08;
-const maxReverse = 0.0375;
-const powerFactor = 0.001;
-const reverseFactor = 0.0005;
+const TRACKWIDTH = 10;
+const maxPower = 0.08/2;
+const maxReverse = 0.0375/2;
+const powerFactor = 0.001/2;
+const reverseFactor = 0.0005/2;
 
 const drag = 0.95;
 const angularDrag = 0.95;
@@ -25,7 +25,9 @@ const turnSpeed = 0.002;
 
 let population;
 
-let startReplay = false;
+let GLOBALSPEED = 120;
+
+let startEvolution = false;
 let raySlider;
 
 function windowResized() {
@@ -42,48 +44,21 @@ function zoomInCanvas(){
 }
 
 function zoomOutCanvas(){
-    if(zoom == 3){
+    if(zoom == 2){
         zoom = 0;
-    }else if(zoom > 3)
+    }else if(zoom > 2)
         zoom -= 1;
 }
 
 let initPos = null;
+let initLeft = null;
+let initRight = null;
 let startDrawingBoundary = false;
 let clicks = 0;
 let drawingTrack = false;
 
-function getBoundaries(x1, y1, x2, y2){
-    let alpha = Math.atan2(y2 - y1, x2 - x1);
-    
-    let innerB = new Boundary(x1-TRACKWIDTH*Math.sin(alpha), y1+TRACKWIDTH*Math.cos(alpha), x2-TRACKWIDTH*Math.sin(alpha), y2+TRACKWIDTH*Math.cos(alpha));
-    let outerB = new Boundary(x1+TRACKWIDTH*Math.sin(alpha), y1-TRACKWIDTH*Math.cos(alpha), x2+TRACKWIDTH*Math.sin(alpha), y2-TRACKWIDTH*Math.cos(alpha));
-    
-    if(innerTrack.length > 0){
-        let int = Boundary.getIntersection(innerB, innerTrack[innerTrack.length-1]);
-        if(int == null)
-            return;
-        innerB.setStart(int);
-        innerTrack[innerTrack.length-1].setEnd(int);
-    }
-    
-    if(outerTrack.length > 0){
-        let int = Boundary.getIntersection(outerB, outerTrack[outerTrack.length-1]);
-        if(int == null)
-            return;
-        outerB.setStart(int);
-        outerTrack[outerTrack.length-1].setEnd(int);
-    }
-
-    return {inner : innerB, outer : outerB, alpha : alpha};
-}
-
-function drawRandomTrack(){
-    ellipse(noise(xOff)*windowWidth, noise(yOff)*windowHeight, 10, 10);
-}
 
 let textAlpha = 0;
-
 function drawTracks(){
     zoom = 0;
     if (startDrawingBoundary) {
@@ -99,46 +74,37 @@ function drawTracks(){
         let t = new Boundary(initX, initY, newX, newY);
         let diffAngle = 0;
         if(paths.length > 0){
-            diffAngle = Math.abs(Math.abs(t.getAngle()) - Math.abs(paths[paths.length-1].getAngle()));
+            diffAngle = Math.abs(t.getAngle() - paths[paths.length-1].getAngle());
+            diffAngle = diffAngle > Math.PI ? Math.PI*2-diffAngle : diffAngle;
             textAlpha = diffAngle;
         }
 
-
-        let boundaryData = getBoundaries(initX, initY, newX, newY);
-        let alpha = boundaryData['alpha'];
-
-        
-        let length = dist(newX, newY, initX, initY);
-        
-        let innerB = boundaryData['inner']
-        let outerB = boundaryData['outer']
-        tempInnerB = innerB;
-        tempOuterB = outerB;
         tempPath = t;
+        let length = dist(newX, newY, initX, initY);
 
-        if(initPos != null && length > 20 && diffAngle < Math.PI/4){
+        if(initPos != null && length > 10 && diffAngle < Math.PI/4){
             paths.push(t);
-        
-            innerTrack.push(innerB);
-            outerTrack.push(outerB);
+            if(paths.length > 1){
+                let p0 = paths[paths.length-2];
+                let p1 = paths[paths.length-1];
+                let a =Math.atan2(p1.y2-p0.y1, p1.x2-p0.x1);
+                let leftPoint = createVector(p0.x2+TRACKWIDTH*Math.cos(a-Math.PI/2), p0.y2+TRACKWIDTH*Math.sin(a-Math.PI/2));
+                let rightPoint = createVector(p0.x2+TRACKWIDTH*Math.cos(a+Math.PI/2), p0.y2+TRACKWIDTH*Math.sin(a+Math.PI/2));
+
+                innerTrack.push(new Boundary(initLeft.x, initLeft.y, leftPoint.x, leftPoint.y));
+                outerTrack.push(new Boundary(initRight.x, initRight.y, rightPoint.x, rightPoint.y));
+
+               
+                initLeft = leftPoint;
+                initRight = rightPoint;
+            }else{
+                initLeft = t.getLeftPoint();
+                initRight = t.getRightPoint();
+            }
             
-            addFillerCheckpoints(initX, initY, Math.max(tempInnerB.getLength(), tempOuterB.getLength()), alpha)
 
             initPos = createVector(newX, newY);
         }
-    }
-}
-
-function addFillerCheckpoints(initX, initY, checkpointLength, alpha){
-    let checkpointDist = 5;
-    let fillerLength = checkpointDist;
-
-    while(fillerLength < checkpointLength){
-        checkpoints.push(new Boundary(initX-TRACKWIDTH*Math.sin(alpha), initY+TRACKWIDTH*Math.cos(alpha), initX+TRACKWIDTH*Math.sin(alpha), initY-TRACKWIDTH*Math.cos(alpha)));
-        initX += checkpointDist*Math.cos(alpha);
-        initY += checkpointDist*Math.sin(alpha);
-        
-        fillerLength += checkpointDist;
     }
 }
 
@@ -159,17 +125,6 @@ function drawTrack(){
             startDrawingBoundary = !startDrawingBoundary;
         if(startDrawingBoundary == false && clicks > 0){
             paths.push(tempPath);
-            innerTrack.push(tempInnerB);
-            outerTrack.push(tempOuterB);
-
-            let initX = paths[paths.length-1].x2;
-            let initY = paths[paths.length-1].y2;
-            
-            let alpha = Math.atan2(tempPath.y2 - tempPath.y1, tempPath.x2 - tempPath.x1);
-            addFillerCheckpoints(initX, initY, Math.max(tempInnerB.getLength(), tempOuterB.getLength()), alpha)
-
-            tempInnerB = null;
-            tempOuterB = null;
             tempPath = null;
             this.removeEventListener('click', arguments.callee, false);
             this.removeEventListener('mousemove', drawTracks);
@@ -227,7 +182,6 @@ window.addEventListener('keyup', e => {
 
 let lastTime;
 let acc = 0;
-const step = 1 / 120;
 
 function update(){
     if(humanPlaying){
@@ -257,39 +211,36 @@ function update(){
     if (lastTime) {
         acc += (ms - lastTime) / 1000;
         
-        while (acc > step) {
-            if(humanPlaying)
+        while (acc > 1/GLOBALSPEED) {
+            if(humanPlaying){
+                if(startEvolution)
+                    localCar.checkHasCrashed();
                 localCar.updateMoves()
+            }
 
-            if(startReplay && population.replayGenerations.length > 0){
+            if(startEvolution){
+                for(let p of population.population){
+                    p.checkHasCrashed();
+                    p.update();
+                }
+            }
+            
+            if(runBest && bestCar){
+                bestCar.checkHasCrashed();
+                bestCar.update();
+            }
+
+            if(startEvolution && replayGen && population.replayGenerations.length > 0){
                 for(let replaySpecies of population.replayGenerations[population.replayGenerationNo].species){
+                    replaySpecies.mascot.checkHasCrashed();
                     replaySpecies.mascot.update();
                 }
             }
-            acc -= step;
+            acc -= 1/GLOBALSPEED;
         }
     }
 
     lastTime = ms;
-}
-
-let lastTimePopulation;
-let accPopulation = 0;
-const stepPopulation = 1 / 1200;
-
-function updatePopulation(){
-    const ms = Date.now();
-    
-    if (lastTimePopulation) {
-        accPopulation += (ms - lastTimePopulation) / 1000;
-        
-        while (accPopulation > stepPopulation) {
-            population.update();
-            accPopulation -= stepPopulation;
-        }
-    }
-
-    lastTimePopulation = ms;
 }
 
 function checkOverlap(car){
@@ -328,26 +279,26 @@ function calculateCheckpoints(car){
 function start(){
     carSettings = [localCar.x, localCar.y, localCar.angle];
     localStorage.setItem("carSettings", JSON.stringify([localCar.x, localCar.y, localCar.angle]));
-    startReplay = true;
+    if(!startEvolution){
+        for(let p of population.population){
+            p.reset();
+        }
+    }
+    startEvolution = true;
     humanPlaying = false;
 }
 
 function reset(){
     population = new Population(populationSize, raySlider.value(), 2);
-    startReplay = false;
+    startEvolution = false;
 }
 
 function displayTracks(){
     for (let t of innerTrack) {
         t.display();
     }
-    if(tempInnerB)
-        tempInnerB.display();
 
     for (let t of outerTrack) {
         t.display();
     }
-
-    if(tempOuterB)
-        tempOuterB.display();
 }

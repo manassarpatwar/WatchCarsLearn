@@ -21,12 +21,6 @@ class Population{
 
     }
 
-    update(){
-        for(let p of this.population){
-            p.update();
-        }
-    }
-
     done() {
         for (var i = 0; i < this.populationSize; i++) {
             if (!this.population[i].dead) {
@@ -53,6 +47,7 @@ class Population{
         if (tempBest.score >= this.bestScore) {
           this.bestScore = tempBest.score;
           this.best = tempBest.clone();
+          arrayCopy(this.species[0].color, this.best.color);
         }
         
     }

@@ -44,7 +44,8 @@ class Genome{
     }
 
     clone(){
-        let g = new Genome();
+        let g = new Genome(this.numInputs, this.numOutputs, true);
+
         for(let n of this.nodes.values()){
             g.addNode(n.copy());
         }
@@ -61,12 +62,12 @@ class Genome{
     }
 
     feedForward(inputs){
+        
+        this.nodes.get(0).outputValue = 1;
 
         for(let i = 0; i < this.numInputs; i++){
             this.nodes.get(i+1).outputValue = inputs[i];
         }
-
-        this.biasNode.outputValue = 1;
 
 
         //for each layer add the node in that layer, since layers cannot connect to themselves there is no need to order the this.nodes within a layer

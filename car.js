@@ -13,8 +13,8 @@ class Car {
         this.isReversing = false
         this.rays = [];
         this.corners = [];
-        this.width = 10;
-        this.height = 20;
+        this.width = 6;
+        this.height = 12;
         this.borders = [];
         this.dead = false;
         this.oldScore = 0;
@@ -27,6 +27,7 @@ class Car {
         this.gen = 0;
         this.moves = 0;
         this.fitness = 0;
+        this.color = [70,70,70];
 
         if(inputs instanceof Genome){
             this.genomeInputs = inputs.numInputs;
@@ -43,10 +44,19 @@ class Car {
 
     }
 
+    isPointInside(x, y){
+        let rectArea = this.width*this.height;
+        let triangleAreas = 0;
+        for(let b of this.borders){
+            triangleAreas += Boundary.getAreaWithPoint(b, x, y);
+        }
+        return rectArea == triangleAreas;
+    }
+
     crossover(parent2){
-        let child = new Car();
-        child.brain = this.brain.crossover(parent2.brain);
+        let child = new Car(this.brain.crossover(parent2.brain));
         child.bestScore = Math.max(this.bestScore, parent2.bestScore);
+        child.color = this.color;
         return child;
     }
 
@@ -60,8 +70,6 @@ class Car {
         this.angle = carSettings[2],
         this.angularVelocity = 0,
         this.corners = [];
-        this.width = 10;
-        this.height = 20;
         this.borders = [];
         this.dead = false;
         this.oldScore = 0;
@@ -79,10 +87,8 @@ class Car {
     }
 
     look(){
-        if(this.moves > 100){
-            this.oldScore = this.checkpoints.size;
-            this.moves = 0;
-        }
+        this.oldScore = this.checkpoints.size;
+
         let boundaries = innerTrack.concat(outerTrack);
         for(let b of boundaries){
             for(let ray of this.rays){
@@ -102,12 +108,12 @@ class Car {
         if(!this.dead){
             let outputs = this.brain.feedForward(this.inputs);
             
-            if(outputs[0] < 0.33){
+            if(outputs[0] < 0.5){
                 //accelerating
-                this.power += powerFactor * outputs[0]*3;
-            }else if(outputs[0] > 0.66){
+                this.power += powerFactor * outputs[0]*2;
+            }else{
                 //decelerating
-                this.reverse += reverseFactor * (outputs[0]-0.66)*3;
+                this.reverse += reverseFactor * (outputs[0]-0.5)*2;
             }
             this.power = Math.max(0, Math.min(maxPower, this.power));
             this.reverse = Math.max(0, Math.min(maxReverse, this.reverse));
@@ -116,12 +122,12 @@ class Car {
 
             const canTurn = this.power > 0.0025 || this.reverse;
             if(canTurn){
-                if(outputs[1] < 0.33){
+                if(outputs[1] < 0.5){
                     //turning right
-                    this.angularVelocity += direction * turnSpeed * outputs[1]*3;
+                    this.angularVelocity += direction * turnSpeed * outputs[1]*2;
                 }else{
                     //turning left
-                    this.angularVelocity -= direction * turnSpeed * (outputs[1]-0.66)*3;
+                    this.angularVelocity -= direction * turnSpeed * (outputs[1]-0.5)*2;
                 }
             }
             // const canTurn = this.power > 0.0025 || this.reverse;
@@ -138,6 +144,7 @@ class Car {
         var clone = new Car(this.brain);
         clone.fitness = this.fitness;
         clone.bestScore = this.score;
+        clone.color = this.color;
         return clone;
     }
 
@@ -150,13 +157,13 @@ class Car {
     }
 
     calculateFitness() {
-        this.fitness = this.checkpoints.size/checkpoints.length;;
+        this.fitness = this.laps > 0 ? 1 : this.checkpoints.size/checkpoints.length;;
     }
 
     addCheckpoint(c){
         this.checkpoints.add(c);
-        if(this.checkpoints == this.checkpoints.length){
-            this.checkpoints = new Map();
+        if(this.checkpoints.size == this.checkpoints.length){
+            this.checkpoints = new Set();
             this.laps++;
         }
         this.score = this.checkpoints.size + this.laps*checkpoints.length;
@@ -200,7 +207,7 @@ class Car {
 
     }
 
-    display(color = [255,0,0]) {
+    display(color = [70,70,70]) {
         // for (let ray of this.rays) {
         //     let p2 = ray.getPoint2();
         //     line(ray.tail.x, ray.tail.y, p2.x, p2.y);
@@ -213,7 +220,7 @@ class Car {
         rotate(this.angle);
 
         fill(color[0], color[1], color[2]);
-        rect(-this.width/2, -this.height/2, this.width, this.height, 2);
+        rect(-this.width/2, -this.height/2, this.width, this.height, 1.5);
         pop();
        
     }
@@ -245,11 +252,16 @@ class Car {
         this.update();
     }
 
+    checkHasCrashed(){
+        if(checkOverlap(this))
+            this.died();
+    }
+
     update() {
         if(this.dead){
-            return
+            return;
         }
-        
+     
         this.xVelocity += Math.sin(this.angle) * (this.power - this.reverse);
         this.yVelocity += Math.cos(this.angle) * (this.power - this.reverse);
         
