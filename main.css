@@ -1,8 +1,5 @@
-#canvas {
-    position: absolute;
-    background: transparent;
-    left: 0;
-    z-index: 0;
+canvas {
+    display: block;
 }
 
 #help-splash {
@@ -57,7 +54,7 @@
 
 #help-splash.display-help{
     opacity: 1;
-     z-index: 1;
+    z-index: 1;
     height: auto;
     transition: opacity 400ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
 }
@@ -83,7 +80,7 @@
 
 #close-help:active {
     transform: scale(0.95);
-
+    
 }
 
 #NNcanvas {
@@ -100,6 +97,7 @@ body {
     padding: 0;
     margin: 0;
     background: black;
+    max-height: 100vh;
 }
 
 footer {
@@ -191,7 +189,7 @@ footer {
 
 #buttons button:active {
     transform: scale(0.95);
-
+    
 }
 
 /*Inputs*/

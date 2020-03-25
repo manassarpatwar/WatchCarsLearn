@@ -35,8 +35,8 @@ let storedBounds = JSON.parse(localStorage.getItem("boundaries"));
 let storedPath = JSON.parse(localStorage.getItem("path"));
 var boundaries = [];
 var path = [];
-var innerTrack = [];
-var outerTrack = [];
+var innerBoundary = [];
+var outerBoundary = [];
 
 if (storedBounds) {
     for (let b of storedBounds)
@@ -52,10 +52,10 @@ function drawBoundaries() {
     for (let boundary of boundaries)
         boundary.drawBoundary();
 
-    for (let boundary of innerTrack)
+    for (let boundary of innerBoundary)
         boundary.drawBoundary();
     
-    for (let boundary of outerTrack)
+    for (let boundary of outerBoundary)
         boundary.drawBoundary();
 
     // for (let i = 0; i < path.length; i+=2)
@@ -114,7 +114,7 @@ let initEraseY = 0;
 let initX = 0;
 let initY = 0;
 
-const TRACKWIDTH = 35;
+const BoundaryWIDTH = 35;
 
 function initBounds() {
     setup();
@@ -135,8 +135,8 @@ function clearBounds() {
     startDraw = false;
     startErase = false;
     boundaries = [];
-    innerTrack = [];
-    outerTrack = [];
+    innerBoundary = [];
+    outerBoundary = [];
     path = [];
     setup();
 }
@@ -152,26 +152,26 @@ canvas.addEventListener("mousedown", function(){
                 let alpha = Math.atan2(newY - initY, newX - initX);
                 let newPath = new Boundary(initX, initY, newX, newY);
                 path.push(newPath);
-                let innerB = new Boundary(initX-TRACKWIDTH*Math.sin(alpha), initY+TRACKWIDTH*Math.cos(alpha), newX-TRACKWIDTH*Math.sin(alpha), newY+TRACKWIDTH*Math.cos(alpha));
-                let outerB = new Boundary(initX+TRACKWIDTH*Math.sin(alpha), initY-TRACKWIDTH*Math.cos(alpha), newX+TRACKWIDTH*Math.sin(alpha), newY-TRACKWIDTH*Math.cos(alpha));
+                let innerB = new Boundary(initX-BoundaryWIDTH*Math.sin(alpha), initY+BoundaryWIDTH*Math.cos(alpha), newX-BoundaryWIDTH*Math.sin(alpha), newY+BoundaryWIDTH*Math.cos(alpha));
+                let outerB = new Boundary(initX+BoundaryWIDTH*Math.sin(alpha), initY-BoundaryWIDTH*Math.cos(alpha), newX+BoundaryWIDTH*Math.sin(alpha), newY-BoundaryWIDTH*Math.cos(alpha));
 
-                if(innerTrack.length > 0){
-                    let int = Boundary.getIntersection(innerB, innerTrack[innerTrack.length-1]);
+                if(innerBoundary.length > 0){
+                    let int = Boundary.getIntersection(innerB, innerBoundary[innerBoundary.length-1]);
                     if(int == null)
                         return;
                     innerB.setStart(int);
-                    innerTrack[innerTrack.length-1].setEnd(int);
+                    innerBoundary[innerBoundary.length-1].setEnd(int);
                 }
 
-                if(outerTrack.length > 0){
-                    let int = Boundary.getIntersection(outerB, outerTrack[outerTrack.length-1]);
+                if(outerBoundary.length > 0){
+                    let int = Boundary.getIntersection(outerB, outerBoundary[outerBoundary.length-1]);
                     if(int == null)
                         return;
                     outerB.setStart(int);
-                    outerTrack[outerTrack.length-1].setEnd(int);
+                    outerBoundary[outerBoundary.length-1].setEnd(int);
                 }
-                innerTrack.push(innerB);
-                outerTrack.push(outerB);
+                innerBoundary.push(innerB);
+                outerBoundary.push(outerB);
                 initX = newX;
                 initY = newY;
             }
@@ -187,19 +187,19 @@ canvas.addEventListener("dblclick", function (e) {
         let moveY = canvasFactor * e.clientY - h / 2;
         initX = null;
         initY = null;
-        if(innerTrack.length > 0){
-            let int = Boundary.getIntersection(innerTrack[0], innerTrack[innerTrack.length-1]);
+        if(innerBoundary.length > 0){
+            let int = Boundary.getIntersection(innerBoundary[0], innerBoundary[innerBoundary.length-1]);
             if(int != null){
-                innerTrack[0].setStart(int);
-                innerTrack[innerTrack.length-1].setEnd(int);
+                innerBoundary[0].setStart(int);
+                innerBoundary[innerBoundary.length-1].setEnd(int);
             }
         }
 
-        if(outerTrack.length > 0){
-            let int = Boundary.getIntersection(outerTrack[0], outerTrack[outerTrack.length-1]);
+        if(outerBoundary.length > 0){
+            let int = Boundary.getIntersection(outerBoundary[0], outerBoundary[outerBoundary.length-1]);
             if(int != null){
-                outerTrack[0].setStart(int);
-                outerTrack[outerTrack.length-1].setEnd(int);
+                outerBoundary[0].setStart(int);
+                outerBoundary[outerBoundary.length-1].setEnd(int);
             }
         }
         let int = Boundary.getIntersection(path[0], path[path.length-1]);
@@ -207,9 +207,9 @@ canvas.addEventListener("dblclick", function (e) {
             path[0].setStart(int);
             path[path.length-1].setEnd(int);
         }
-        boundaries = boundaries.concat(innerTrack.concat(outerTrack));
-        innerTrack = [];
-        outerTrack = [];
+        boundaries = boundaries.concat(innerBoundary.concat(outerBoundary));
+        innerBoundary = [];
+        outerBoundary = [];
         localStorage.setItem("boundaries", JSON.stringify(boundaries));
         localStorage.setItem("path", JSON.stringify(path));
         setup();
