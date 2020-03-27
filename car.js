@@ -3,6 +3,9 @@ class Car {
     constructor(inputs, outputs) {
         this.x = carSettings[0];
         this.y = carSettings[1];
+        this.el = createDiv('');
+        // this.el.position(this.x, this.y);
+        this.el.addClass('car');
         this.xVelocity = 0,
         this.yVelocity =  0,
         this.power = 0,
@@ -13,8 +16,14 @@ class Car {
         this.isReversing = false
         this.rays = [];
         this.corners = [];
-        this.width = 6;
-        this.height = 12;
+        this.width = 20;
+        this.height = 10;
+
+        this.el.style('width', this.width+'px');
+        this.el.style('height', this.height+'px');
+        this.el.style('top', -this.height/2+'px');
+        this.el.style('left', -this.width/2+'px')
+
         this.borders = [];
         this.dead = false;
         this.oldScore = 0;
@@ -28,6 +37,7 @@ class Car {
         this.moves = 0;
         this.fitness = 0;
         this.color = [70,70,70];
+
 
         if(inputs instanceof Genome){
             this.genomeInputs = inputs.numInputs;
@@ -87,20 +97,43 @@ class Car {
     }
 
     look(){
-        this.oldScore = this.checkpoints.size;
+        if(this.moves > 100){
+            this.oldScore = this.checkpoints.size;
+            this.moves = 0;
+        }
 
         let boundaries = innerTrack.concat(outerTrack);
+        for(let ray of this.rays){
+            ray.reset();
+        }
+        
+        let overlap = false;
         for(let b of boundaries){
+            for(let border of this.borders){
+                if(Boundary.overlaps(border, b)){
+                    overlap = true;
+                    break
+                }
+            }
+            if(overlap){
+                this.died();
+                break;
+            }
             for(let ray of this.rays){
+                if(ray.done){
+                    continue;
+                }
                 let int = ray.isHitting(b)
                 let d = Infinity;
                 if(int != null)
                     d = dist(ray.tail.x, ray.tail.y, int.x, int.y);
-                if(int && d < ray.maxlength)
+                if(int && d < ray.maxlength){
                     ray.setLength(d);
+                    ray.done = true;
+                }
             }
         }
-        this.inputs = this.rays.map(x => x.length/x.maxlength);
+        this.inputs = this.rays.map(x => 1-x.length/x.maxlength);
     }
 
     think() {
@@ -108,34 +141,11 @@ class Car {
         if(!this.dead){
             let outputs = this.brain.feedForward(this.inputs);
             
-            if(outputs[0] < 0.5){
-                //accelerating
-                this.power += powerFactor * outputs[0]*2;
-            }else{
-                //decelerating
-                this.reverse += reverseFactor * (outputs[0]-0.5)*2;
-            }
-            this.power = Math.max(0, Math.min(maxPower, this.power));
-            this.reverse = Math.max(0, Math.min(maxReverse, this.reverse));
-
-            const direction = this.power > this.reverse ? 1 : -1;
-
-            const canTurn = this.power > 0.0025 || this.reverse;
-            if(canTurn){
-                if(outputs[1] < 0.5){
-                    //turning right
-                    this.angularVelocity += direction * turnSpeed * outputs[1]*2;
-                }else{
-                    //turning left
-                    this.angularVelocity -= direction * turnSpeed * (outputs[1]-0.5)*2;
-                }
-            }
-            // const canTurn = this.power > 0.0025 || this.reverse;
-            // this.isThrottling = outputs[0] >= 0.66;
-            // this.isReversing = outputs[0] < 0.33;
+            this.isThrottling = outputs[0] >= 0.66;
+            this.isReversing = outputs[0] < 0.33;
             
-            // this.isTurningLeft = canTurn && outputs[1] >= 0.33;
-            // this.isTurningRight = canTurn && outputs[1] < 0.33;
+            this.isTurningLeft = outputs[1] >= 0.66;
+            this.isTurningRight = outputs[1] < 0.33;
             this.moves++;
         }
     }
@@ -148,23 +158,16 @@ class Car {
         return clone;
     }
 
-    cloneForReplay(){
-        var clone = new Car(this.brain);
-        clone.score = this.score;
-        clone.bestScore = this.score;
-        clone.fitness = this.fitness;
-        return clone;
-    }
-
     calculateFitness() {
         this.fitness = this.laps > 0 ? 1 : this.checkpoints.size/checkpoints.length;;
     }
 
     addCheckpoint(c){
         this.checkpoints.add(c);
-        if(this.checkpoints.size == this.checkpoints.length){
+        if(this.checkpoints.size == checkpoints.length){
             this.checkpoints = new Set();
             this.laps++;
+            this.oldScore = 0;
         }
         this.score = this.checkpoints.size + this.laps*checkpoints.length;
     }
@@ -173,8 +176,16 @@ class Car {
         let offsetAdd = this.numRays > 8 ? Math.PI/((this.numRays/8)*(4%this.numRays)) : Math.PI/4;
         let offset = this.numRays%2 == 0 ? -(this.numRays-1)*(offsetAdd/2) : -((this.numRays-1)/2)*offsetAdd;
         for (let i = 0; i < this.numRays; i++) {
-            // this.rays[i] = new Ray(createVector(this.x+this.height/2*Math.cos(this.angle-Math.PI/2), this.y+this.height/2*Math.sin(this.angle-Math.PI/2)), this.angle-Math.PI/2+offset, 50);
-            this.rays[i] = new Ray(createVector(this.x, this.y), this.angle-Math.PI/2+offset, 70);
+            this.rays[i] = new Ray(createVector(this.x, this.y), this.angle+offset, 50);
+            offset += offsetAdd;
+        }
+    }
+
+    recomputeRays(){
+        let offsetAdd = this.numRays > 8 ? Math.PI/((this.numRays/8)*(4%this.numRays)) : Math.PI/4;
+        let offset = this.numRays%2 == 0 ? -(this.numRays-1)*(offsetAdd/2) : -((this.numRays-1)/2)*offsetAdd;
+        for (let i = 0; i < this.numRays; i++) {
+            this.rays[i].setTailAndHeading(this.x, this.y, this.angle+offset);
             offset += offsetAdd;
         }
     }
@@ -182,6 +193,7 @@ class Car {
     changeNumRays(newNumRays){
         this.rays = [];
         this.numRays = newNumRays;
+        this.computeRays();
     }
     
     recomputeCorners(){
@@ -207,71 +219,62 @@ class Car {
 
     }
 
-    display(color = [70,70,70]) {
-        // for (let ray of this.rays) {
-        //     let p2 = ray.getPoint2();
-        //     line(ray.tail.x, ray.tail.y, p2.x, p2.y);
-    
+    display(color = [70,70,70], drawRays = false) {
+        // if(drawRays){
+        //     for (let ray of this.rays) {
+        //         let p2 = ray.getPoint2();
+        //         line(this.x, this.y, p2.x, p2.y);
+        //     }
         // }
 
-        push();
-        noStroke();
-        translate(this.x, this.y)
-        rotate(this.angle);
-
-        fill(color[0], color[1], color[2]);
-        rect(-this.width/2, -this.height/2, this.width, this.height, 1.5);
-        pop();
-       
+        this.el.style('transform', `translate(${this.x}px, ${this.y}px) rotate(${this.angle * 180 / Math.PI}deg)`);
+        this.el.style('background', "rgb("+color[0]+", "+color[1]+", "+color[2]+")");
+        this.el.style('opacity', 1);
     }
 
-    updateMoves(){
-        if (this.isThrottling) {
-            this.power += powerFactor * this.isThrottling;
-        } else {
-            this.power -= powerFactor;
-        }
-        if (this.isReversing) {
-            this.reverse += reverseFactor;
-        } else {
-            this.reverse -= reverseFactor;
-        }
-        
-        this.power = Math.max(0, Math.min(maxPower, this.power));
-        this.reverse = Math.max(0, Math.min(maxReverse, this.reverse));
-        
-        const direction = this.power > this.reverse ? 1 : -1;
-        
-        if (this.isTurningLeft) {
-            this.angularVelocity -= direction * turnSpeed * this.isTurningLeft;
-        }
-        if (this.isTurningRight) {
-            this.angularVelocity += direction * turnSpeed * this.isTurningRight;
-        }
-
-        this.update();
+    noShow(){
+        if(this.el.elt.style.opacity == 1);
+            this.el.style('opacity', 0);
     }
 
-    checkHasCrashed(){
-        if(checkOverlap(this))
-            this.died();
-    }
 
     update() {
         if(this.dead){
             return;
         }
+
+        if (this.isThrottling) {
+            this.power += powerFactor * this.isThrottling;
+        } else {
+            this.power -= powerFactor/4;
+        }
+        if (this.isReversing) {
+            this.reverse += reverseFactor;
+        } else {
+            this.reverse -= reverseFactor/4;
+        }
+        
+        this.power = Math.max(0, Math.min(maxPower, this.power));
+        this.reverse = Math.max(0, Math.min(maxReverse, this.reverse));
+        
+
+        if (this.isTurningLeft) {
+            this.angularVelocity -= turnSpeed * this.isTurningLeft*(map(this.power - this.reverse, 0, maxPower-maxReverse, 0, 0.1));
+        }
+        if (this.isTurningRight) {
+            this.angularVelocity += turnSpeed * this.isTurningRight*(map(this.power - this.reverse, 0, maxPower-maxReverse, 0, 0.1));
+        }
      
-        this.xVelocity += Math.sin(this.angle) * (this.power - this.reverse);
-        this.yVelocity += Math.cos(this.angle) * (this.power - this.reverse);
+        this.xVelocity += Math.cos(this.angle) * (this.power - this.reverse);
+        this.yVelocity += Math.sin(this.angle) * (this.power - this.reverse);
         
         this.x += this.xVelocity;
-        this.y -= this.yVelocity;
+        this.y += this.yVelocity;
         this.xVelocity *= drag;
         this.yVelocity *= drag;
         this.angle += this.angularVelocity;
         this.angularVelocity *= angularDrag;
-        this.computeRays();
+        this.recomputeRays();
         this.recomputeCorners();
     }
 

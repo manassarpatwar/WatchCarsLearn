@@ -135,5 +135,5 @@ class Species{
 
 
 }
-Species.drawWidth = window.innerWidth > 700 ? 150 : 100 
+Species.drawWidth = 250;
 Species.drawHeight = 300;

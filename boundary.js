@@ -41,9 +41,9 @@ class Boundary{
             return createVector(this.x1+TRACKWIDTH*Math.cos(a+Math.PI/2), this.y1+TRACKWIDTH*Math.sin(a+Math.PI/2));
     }
     
-    display(){
+    display(str = [100, 100, 100]){
         push();
-        stroke(100);
+        stroke(str[0], str[1], str[2]);
         strokeWeight(2);
         line(this.x1, this.y1, this.x2, this.y2); 
         pop();

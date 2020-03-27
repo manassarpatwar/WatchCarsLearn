@@ -6,6 +6,7 @@ class Node{
     outputValue;
     vector;
     radius;
+    drawOutput;
 
     constructor(n, type){
         this.number = n;
@@ -13,11 +14,11 @@ class Node{
         this.layer = 0;
         this.inputSum = 0;
         this.outputValue = 0;
+        this.drawOutput = 1;
     }
 
     reset(){
         this.inputSum = 0;
-        this.outputValue = 0;
     }
 
     activate(){

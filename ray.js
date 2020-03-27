@@ -5,6 +5,16 @@ class Ray{
         this.heading = heading;
         this.length = length;
         this.maxlength = length;
+        this.done = false;
+    }
+
+    setTailAndHeading(tailX, tailY, heading){
+        this.tail.set(tailX, tailY);
+        this.heading = heading;
+    }
+
+    reset(){
+        this.done = false;
     }
 
     setLength(l){

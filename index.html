@@ -3,7 +3,9 @@
 
 <head>
     <title></title>
+    <link rel="stylesheet" href="balloon.css">
     <link rel="stylesheet" href="main.css">
+
     <meta name="viewport" content="width=device-width, 
     initial-scale=1, maximum-scale=1" />
     <script language="javascript" type="text/javascript" src="lib/p5.js"></script>
@@ -25,50 +27,122 @@
 
 <body>
 
-    <main id = "main">
-        <div id="NNcanvas"></div>
-        <div id="fitnessCanvas"></div>
-        <section id="help-splash">
-            <button id="close-help" onclick="viewHelp()"><img alt="Close" title="Close" class="button-icons" src="img/cross.png"></button>
-            <div class="title">
-                <h1>Legend</h1>
-            </div>
-            <div class="info">
-                <ul>
-                    <li><img alt="Draw Boundary" title="Draw Boundary" class="button-icons" src="img/draw.png"><p>Draw Boundary: Click once on screen to start drawing, double click to stop (Erases the current Boundary)</p></li>
-                    <li><img alt="Erase Boundary" title="Erase Boundary" class="button-icons" src="img/erase.png"><p>Erase Boundary: Erases the Boundary</p></li>
-                    <li><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"><p>Reset: Resets the environment</p></li>
-                    <li><img alt="Start" title="Start" class="button-icons" src="img/start.png"><p>Start: Start evolution</p></li>
-                    <li><img alt="Help" title="Help" class="button-icons" src="img/help.png"><p>Help</p></li>
-                    <li><img alt="Set car position" title="Set car position" class="button-icons" src="img/place.png"><p>Set Car Position: Click anywhere on screen to place cars</p></li>
-                    <li><img alt="Start next generation" title="Start next generation" class="button-icons" src="img/nextGen.png"><p>Start Next Genertion: Kills every car alive and moves on to next generation</p></li>
-                    <li><img alt="Set turn type: Ackerman" title="Set turn type: Ackerman" class="button-icons" src="img/ackerman.png"><p>Set Turn Type-Ackerman: Sets ackerman steering</p></li>
-                    <li><img alt="Set turn type: Tank" title="Set turn type: Tank" class="button-icons" src="img/tank.png"><p>Set Turn Type-Tank: Sets tank steering</p></li>
-                    <li><img alt="Zoom in" title="Zoom in" class="button-icons" src="img/zoomIn.png"><p>Zoom in: Zooms in on the best car</p></li>
-                    <li><img alt="Zoom out" title="Zoom out" class="button-icons" src="img/zoomOut.png"><p>Zoom out</p></li>
-                </ul>
-            </div>
-        </section>
-        <section id="buttons">
-            <div class="buttons buttonsLeft">
-                <div>
-                    <button onclick="drawTrack()"><img alt="Draw Boundary" title="Start drawing Boundary" class="button-icons" src="img/draw.png"></button>
-                    <button onclick="viewHelp()"><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
-                    <button onclick="zoomInCanvas()"><img alt="Zoom in" title="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
-                </div>
-                <div>
-                    <button onclick="zoomOutCanvas()"><img alt="Zoom out" title="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
-                    <button onclick="start()"><img alt="Start" title="Start" class="button-icons" src="img/start.png"></button>
-                    <button onclick="reset()"><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"></button>
-                </div>
-            </div>
-        </section>
-    </main>
-    <script>
-        var help = document.getElementById("help-splash")
+    <div id="NNcanvas"></div>
+    <div id="fitnessCanvas"></div>
 
-        function viewHelp() {
-            help.classList.toggle('display-help');
+    <section id="buttons">
+        <div class="buttons buttonsLeft">
+            <div>
+                <button onclick="drawTrack()" aria-label="Click once on screen to start drawing track, click again to stop" data-balloon-pos="down-left" ><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
+                <button onclick="start()" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>
+                <button onclick="reset()" aria-label="Reset the environment" data-balloon-pos="down-left"><img alt="Reset" class="button-icons" src="img/reset.png"></button>
+            </div>
+            <div>
+                <button onclick="zoomOutCanvas()" aria-label="Zoom out" data-balloon-pos="down-left"><img alt="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
+                <button onclick="zoomInCanvas()" aria-label="Zoom in" data-balloon-pos="down-left"><img alt="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
+                <button onclick="population.nextGen()" aria-label="Start next generation" data-balloon-pos="down-left"><img alt="Start next generation" class="button-icons" src="img/nextGen.png"></button>
+            </div>
+        </div>
+        <div class="buttons buttonsRight">
+            <div>
+                <button onclick="tutorial(false, 0)" aria-label=''><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
+            </div>
+            
+        </div>
+    </section>
+    <script>
+        var tutorialDone = JSON.parse(localStorage.getItem("tutorial"));
+        console.log(tutorialDone);
+        function tutorial(tutorialDone, startTime = 1000){
+            var buttons = document.getElementsByTagName("button");
+            var tutorialElements = document.getElementsByClassName('tutorial');
+            var tutorialImages = document.getElementsByClassName('tutorialImages');
+            if(!tutorialDone){
+                humanPlaying = true;
+                var graphImg = "Graph.png";
+                var NNImg = "NN.png";
+                var images = [];
+                if(population && population.gen == 0){
+                    let img = document.createElement('img'); 
+                    img.src = graphImg;
+                    img.style.position = "absolute";
+                    img.style.left = 0;
+                    img.style.bottom = 0;
+                    img.style.opacity = 0;
+                    img.style.transition = "opacity 1s ease";
+                    
+                    images.push(img);
+                    document.getElementsByTagName('body')[0].appendChild(img); 
+
+                    img = document.createElement('img');
+                    img.src = NNImg;
+                    img.style.position = "absolute";
+                    img.style.right = 0;
+                    img.style.bottom = 0;
+                    img.style.opacity = 0;
+                    img.style.transition = "opacity 1s ease";
+                    images.push(img);
+                    document.getElementsByTagName('body')[0].appendChild(img); 
+                }
+                
+                let buffer = 500;
+                for(let b of buttons){
+                    let offset = 200*b.getAttribute('aria-label').length;
+                    setTimeout(() => {
+                        b.setAttribute('data-balloon-visible', '');
+                    },startTime)
+
+                    startTime += offset
+                    setTimeout(() =>{
+                        b.removeAttribute('data-balloon-visible');
+                    }, startTime);
+
+                    startTime += buffer;
+                }
+
+                for(let t of tutorialElements){
+                    let offset = 200*t.getAttribute('aria-label').length;
+                    setTimeout(() => {
+                        t.setAttribute('data-balloon-visible', '');
+                    },startTime)
+
+                    startTime += offset
+                    setTimeout(() =>{
+                        t.removeAttribute('data-balloon-visible');
+                    }, startTime);
+
+                    startTime += buffer;
+                }
+
+                for(let i = 0; i < tutorialImages.length; i++){
+                    let offset = 200*tutorialImages[i].getAttribute('aria-label').length;
+                    let img = images[i];
+                    setTimeout(() => {img.style.opacity = 1}, startTime)
+
+                    setTimeout(() => {
+                        tutorialImages[i].setAttribute('data-balloon-visible', '');
+                    },startTime)
+                    startTime += offset;
+                    setTimeout(() =>{
+                        tutorialImages[i].removeAttribute('data-balloon-visible');
+                    }, startTime);
+                    startTime += buffer;
+                }
+                for(let i = tutorialImages.length-1; i >= 0; i--){
+                    let offset = 1000;
+                    let img = images[i];
+                    setTimeout(() => {img.style.opacity = 0}, startTime)
+                    startTime += offset;
+                }
+
+                setTimeout(() => {
+                    localStorage.setItem('tutorial', true);
+                    for(let i = tutorialImages.length-1; i >= 0; i--){
+                        i.remove();
+                    }
+                }, startTime+buffer);
+            }
         }
+        tutorial(tutorialDone);
     </script>
 </body></html>

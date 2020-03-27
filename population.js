@@ -8,6 +8,7 @@ class Population{
         this.innovationHistory = [];
         this.species = [];
         this.gen = 0;
+        this.bestGen = 0;
         this.best = null;
 
         this.replayGenerations = [];
@@ -21,11 +22,17 @@ class Population{
 
     }
 
+    nextGen(){
+        for(let p of this.population){
+            if(!p.dead)
+                p.died();
+        }
+    }
+
     done() {
-        for (var i = 0; i < this.populationSize; i++) {
-            if (!this.population[i].dead) {
+        for (var i = 0; i < this.population.length; i++) {
+            if (!this.population[i].dead)
                 return false;
-            }
         }
         return true;
     }
@@ -42,11 +49,11 @@ class Population{
     setBestPlayer(){
 
         var tempBest = this.species[0].members[0];
-        tempBest.gen = this.gen;
     
         if (tempBest.score >= this.bestScore) {
           this.bestScore = tempBest.score;
           this.best = tempBest.clone();
+          this.bestGen = this.gen+1;
           arrayCopy(this.species[0].color, this.best.color);
         }
         

@@ -5,34 +5,36 @@ let innerTrack;
 let outerTrack;
 
 let tempPath;
+let tempInner1;
+let tempOuter1;
+let tempInner2;
+let tempOuter2;
+
 let checkpoints;
 let humanPlaying = true;
 
 let localCar = null;
 let zoomCar = null;
 let carSettings;
-let populationSize = 50;
+let populationSize = 100;
 
-const TRACKWIDTH = 10;
-const maxPower = 0.08/2;
-const maxReverse = 0.0375/2;
-const powerFactor = 0.001/2;
-const reverseFactor = 0.0005/2;
+const TRACKWIDTH = 20;
+
+const maxPower = 0.04;
+const maxReverse = 0.0375;
+const powerFactor = 0.001;
+const reverseFactor = 0.0001;
 
 const drag = 0.95;
 const angularDrag = 0.95;
-const turnSpeed = 0.002;
+const turnSpeed = 0.001;
 
 let population;
 
-let GLOBALSPEED = 120;
+let GLOBALSPEED = 1;
 
 let startEvolution = false;
-let raySlider;
 
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
-}
 
 let zoom = 0;
 let maxZoom = 7;
@@ -57,8 +59,20 @@ let startDrawingBoundary = false;
 let clicks = 0;
 let drawingTrack = false;
 
+function addFillerCheckpoints(initX, initY, checkpointLength, alpha){
+    let checkpointDist = 30;
+    let fillerLength = checkpointDist;
 
-let textAlpha = 0;
+    while(fillerLength < checkpointLength){
+        checkpoints.push(new Boundary(initX-TRACKWIDTH*Math.sin(alpha), initY+TRACKWIDTH*Math.cos(alpha), initX+TRACKWIDTH*Math.sin(alpha), initY-TRACKWIDTH*Math.cos(alpha)));
+        initX += checkpointDist*Math.cos(alpha);
+        initY += checkpointDist*Math.sin(alpha);
+        
+        fillerLength += checkpointDist;
+    }
+}
+
+
 function drawTracks(){
     zoom = 0;
     if (startDrawingBoundary) {
@@ -82,7 +96,14 @@ function drawTracks(){
         tempPath = t;
         let length = dist(newX, newY, initX, initY);
 
-        if(initPos != null && length > 10 && diffAngle < Math.PI/4){
+
+        if(innerTrack.length > 0 && outerTrack.length > 0){
+            tempInner1 = new Boundary(innerTrack[innerTrack.length-1].x2, innerTrack[innerTrack.length-1].y2,t.getLeftPoint().x, t.getLeftPoint().y);
+            tempOuter1 = new Boundary(outerTrack[outerTrack.length-1].x2, outerTrack[outerTrack.length-1].y2, t.getRightPoint().x, t.getRightPoint().y);
+            tempInner2 = new Boundary(tempInner1.x2, tempInner1.y2, t.getLeftPoint("END").x, t.getLeftPoint("END").y);
+            tempOuter2 = new Boundary(tempOuter1.x2, tempOuter1.y2, t.getRightPoint("END").x, t.getRightPoint("END").y);
+        }
+        if(initPos != null && length > 30){
             paths.push(t);
             if(paths.length > 1){
                 let p0 = paths[paths.length-2];
@@ -100,6 +121,10 @@ function drawTracks(){
             }else{
                 initLeft = t.getLeftPoint();
                 initRight = t.getRightPoint();
+            }
+
+            if(length > 40){
+                addFillerCheckpoints(t.x1, t.y1, t.getLength(), t.getAngle());
             }
             
 
@@ -125,7 +150,16 @@ function drawTrack(){
             startDrawingBoundary = !startDrawingBoundary;
         if(startDrawingBoundary == false && clicks > 0){
             paths.push(tempPath);
+            innerTrack.push(tempInner1);
+            innerTrack.push(tempInner2);
+            outerTrack.push(tempOuter1);
+            outerTrack.push(tempOuter2);
+
             tempPath = null;
+            tempInner1 = null;
+            tempInner2 = null;
+            tempOuter1 = null;
+            tempOuter2 = null;
             this.removeEventListener('click', arguments.callee, false);
             this.removeEventListener('mousemove', drawTracks);
             localStorage.setItem("innerTrack", JSON.stringify(innerTrack));
@@ -170,78 +204,12 @@ let needResize;
 let resizing;
 
 window.addEventListener('keydown', e => {
-    if(e.which == 80){
-        humanPlaying = !humanPlaying;
-    }
     keysDown[e.which] = true;
 });
 
 window.addEventListener('keyup', e => {
     keysDown[e.which] = false;
 });
-
-let lastTime;
-let acc = 0;
-
-function update(){
-    if(humanPlaying){
-        const canTurn = localCar.power > 0.0025 || localCar.reverse;
-        
-        localCar.isThrottling = keyActive('up');
-        localCar.isReversing = keyActive('down');
-        
-        localCar.isTurningLeft = canTurn && keyActive('left');
-        localCar.isTurningRight = canTurn && keyActive('right');
-
-        if (localCar.x > windowWidth) {
-            localCar.x -= windowWidth;
-        } else if (localCar.x < 0) {
-            localCar.x += windowWidth;
-        }
-        
-        if (localCar.y > windowHeight) {
-            localCar.y -= windowHeight;
-        } else if (localCar.y < 0) {
-            localCar.y += windowHeight;
-        }
-    }
-    
-    const ms = Date.now();
-    
-    if (lastTime) {
-        acc += (ms - lastTime) / 1000;
-        
-        while (acc > 1/GLOBALSPEED) {
-            if(humanPlaying){
-                if(startEvolution)
-                    localCar.checkHasCrashed();
-                localCar.updateMoves()
-            }
-
-            if(startEvolution){
-                for(let p of population.population){
-                    p.checkHasCrashed();
-                    p.update();
-                }
-            }
-            
-            if(runBest && bestCar){
-                bestCar.checkHasCrashed();
-                bestCar.update();
-            }
-
-            if(startEvolution && replayGen && population.replayGenerations.length > 0){
-                for(let replaySpecies of population.replayGenerations[population.replayGenerationNo].species){
-                    replaySpecies.mascot.checkHasCrashed();
-                    replaySpecies.mascot.update();
-                }
-            }
-            acc -= 1/GLOBALSPEED;
-        }
-    }
-
-    lastTime = ms;
-}
 
 function checkOverlap(car){
     let boundaries = innerTrack.concat(outerTrack);
@@ -276,26 +244,23 @@ function calculateCheckpoints(car){
     }
 }
 
-function start(){
-    carSettings = [localCar.x, localCar.y, localCar.angle];
-    localStorage.setItem("carSettings", JSON.stringify([localCar.x, localCar.y, localCar.angle]));
-    if(!startEvolution){
-        for(let p of population.population){
-            p.reset();
-        }
-    }
-    startEvolution = true;
-    humanPlaying = false;
-}
-
-function reset(){
-    population = new Population(populationSize, raySlider.value(), 2);
-    startEvolution = false;
-}
-
 function displayTracks(){
     for (let t of innerTrack) {
         t.display();
+    }
+
+    for(let t of paths){
+        t.display();
+    }
+
+    if(tempPath)
+        tempPath.display();
+    
+    if(tempInner1 && tempInner2 && tempOuter1 && tempOuter2){
+        tempInner1.display();
+        tempInner2.display();
+        tempOuter1.display();
+        tempOuter2.display();
     }
 
     for (let t of outerTrack) {
