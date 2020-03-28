@@ -7,15 +7,25 @@ canvas{
 
 html, body{
     font-family: 'Helvetica', 'Arial', sans-serif;
-    color: white;
+    color:black;
     padding: 0;
     margin: 0;
     max-height: 100vh;
+    transform: translateZ(0);
 }
 
-.car, #localCar {
+body{
+    overflow: hidden;
+    background: #eee;
+}
+
+.bodyNightMode{
+    color:white;
+    background: #000;
+}
+
+.car, .replay, .best, #localCar {
     position: absolute;
-    border-radius: 3px;
     background: white;
     opacity: 0;
     will-change: transform;
@@ -27,7 +37,14 @@ html, body{
 
 
 .button-icons {
-    width: 40px;
+    width: 30px;
+    filter: invert(100%);
+    padding: 0;
+    margin: 0;
+}
+
+button.nightMode .button-icons {
+    filter: none;
 }
 
 #buttons {
@@ -41,31 +58,42 @@ html, body{
 }
 
 .buttonsRight div {
-    flex-direction: row;
-    justify-content: flex-end;
+    display: inline-flex;
+    margin : 0px;
+}
+
+.buttonsLeft div {
+    display: inline-flex;
+    margin : 0px;
 }
 
 .buttonsLeft {
     position: absolute;
-    left: 0;
-    margin-top: 10px;
+    left: 0px;
+    margin-top: 0px;
+    display: flex;
+    flex-direction: column;
 }
 
 .buttonsRight {
     position: absolute;
     right: 0;
+    margin-top: 0px;
+    display: flex;
+    flex-direction: column;
 }
 
 #buttons button {
-    -webkit-transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
-    -moz-transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
-    -ms-transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
-    -o-transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
-    transition: all 200ms cubic-bezier(0.390, 0.500, 0.150, 1.360);
-    margin: 2px 2px;
+    margin: 0px;
+    padding: 10px;
     text-decoration: none;
     border: none;
-    background: transparent;
+    background-color: transparent;
+    -webkit-transition: background-color 0.2s ease-in-out;
+    -moz-transition: background-color 0.2s ease-in-out;
+    -ms-transition: background-color 0.2s ease-in-out;
+    -o-transition: background-color 0.2s ease-in-out;
+    transition: background-color 0.2s ease-in-out;
     color: white;
 }
 
@@ -75,10 +103,20 @@ html, body{
 
 #buttons button:hover {
     cursor: pointer;
+    background-color:#000;
 }
 
-#buttons button:active {
-    transform: scale(0.95);
+#buttons button.nightMode:hover {
+    cursor: pointer;
+    background-color:#eee;
+}
+
+#buttons button:hover .button-icons {
+    filter: none;
+}
+
+#buttons button.nightMode:hover .button-icons {
+    filter: invert(100%);
 }
 
 :root{

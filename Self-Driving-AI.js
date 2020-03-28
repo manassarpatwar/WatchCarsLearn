@@ -14,43 +14,19 @@ let checkpoints;
 let humanPlaying = true;
 
 let localCar = null;
-let zoomCar = null;
 let carSettings;
 let populationSize = 100;
 
-const TRACKWIDTH = 20;
+const TRACKWIDTH = 16;
 
-const maxPower = 0.04;
-const maxReverse = 0.0375;
-const powerFactor = 0.001;
-const reverseFactor = 0.0001;
+const maxPower = 0.075/2;
+const maxReverse = 0.0375/2;
+const powerFactor = 0.001/2;
+const reverseFactor = 0.0005/2;
 
 const drag = 0.95;
 const angularDrag = 0.95;
-const turnSpeed = 0.001;
-
-let population;
-
-let GLOBALSPEED = 1;
-
-let startEvolution = false;
-
-
-let zoom = 0;
-let maxZoom = 7;
-function zoomInCanvas(){
-    if(zoom == 0){
-        zoom = 3;
-    }else if(zoom < maxZoom)
-        zoom += 1;
-}
-
-function zoomOutCanvas(){
-    if(zoom == 2){
-        zoom = 0;
-    }else if(zoom > 2)
-        zoom -= 1;
-}
+const turnSpeed = 0.002/2;
 
 let initPos = null;
 let initLeft = null;
@@ -60,7 +36,7 @@ let clicks = 0;
 let drawingTrack = false;
 
 function addFillerCheckpoints(initX, initY, checkpointLength, alpha){
-    let checkpointDist = 30;
+    let checkpointDist = 15;
     let fillerLength = checkpointDist;
 
     while(fillerLength < checkpointLength){
@@ -74,7 +50,7 @@ function addFillerCheckpoints(initX, initY, checkpointLength, alpha){
 
 
 function drawTracks(){
-    zoom = 0;
+
     if (startDrawingBoundary) {
         let mouseVector =  createVector(mouseX, mouseY);
         if (initPos == null)
@@ -123,9 +99,8 @@ function drawTracks(){
                 initRight = t.getRightPoint();
             }
 
-            if(length > 40){
-                addFillerCheckpoints(t.x1, t.y1, t.getLength(), t.getAngle());
-            }
+            // addFillerCheckpoints(t.x1, t.y1, t.getLength(), t.getAngle());
+
             
 
             initPos = createVector(newX, newY);
@@ -249,12 +224,16 @@ function displayTracks(){
         t.display();
     }
 
-    for(let t of paths){
-        t.display();
-    }
+    // for(let t of paths){
+    //     t.display();
+    // }
 
-    if(tempPath)
-        tempPath.display();
+    // if(tempPath)
+    //     tempPath.display();
+
+    // for(let c of checkpoints){
+    //     c.display();
+    // }
     
     if(tempInner1 && tempInner2 && tempOuter1 && tempOuter2){
         tempInner1.display();

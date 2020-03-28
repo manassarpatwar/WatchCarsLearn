@@ -1,11 +1,9 @@
 class Car {
     
-    constructor(inputs, outputs) {
+    constructor(inputs, outputs, elClass = "car") {
         this.x = carSettings[0];
         this.y = carSettings[1];
-        this.el = createDiv('');
-        // this.el.position(this.x, this.y);
-        this.el.addClass('car');
+
         this.xVelocity = 0,
         this.yVelocity =  0,
         this.power = 0,
@@ -16,13 +14,9 @@ class Car {
         this.isReversing = false
         this.rays = [];
         this.corners = [];
-        this.width = 20;
-        this.height = 10;
-
-        this.el.style('width', this.width+'px');
-        this.el.style('height', this.height+'px');
-        this.el.style('top', -this.height/2+'px');
-        this.el.style('left', -this.width/2+'px')
+        this.width = 16;
+        this.height = 8;
+        this.borderRadius = 2;
 
         this.borders = [];
         this.dead = false;
@@ -52,6 +46,14 @@ class Car {
         this.numRays = this.genomeInputs;
         this.computeRays();
 
+    }
+
+    setUpDiv(){
+        this.el.style('width', this.width+'px');
+        this.el.style('height', this.height+'px');
+        this.el.style('top', -this.height/2+'px');
+        this.el.style('left', -this.width/2+'px')
+        this.el.style('border-radius', 2+'px');
     }
 
     isPointInside(x, y){
@@ -90,6 +92,7 @@ class Car {
         this.gen = 0;
         this.laps = 0;
         this.moves = 0;
+
     }
 
     died(){
@@ -140,18 +143,28 @@ class Car {
 
         if(!this.dead){
             let outputs = this.brain.feedForward(this.inputs);
-            
+
+            const canTurn = this.power > 0.0025 || this.reverse;
+
             this.isThrottling = outputs[0] >= 0.66;
             this.isReversing = outputs[0] < 0.33;
             
-            this.isTurningLeft = outputs[1] >= 0.66;
-            this.isTurningRight = outputs[1] < 0.33;
+            this.isTurningLeft = canTurn && outputs[1] >= 0.66;
+            this.isTurningRight = canTurn && outputs[1] < 0.33;
             this.moves++;
         }
     }
 
     clone() {
         var clone = new Car(this.brain);
+        clone.fitness = this.fitness;
+        clone.bestScore = this.score;
+        clone.color = this.color;
+        return clone;
+    }
+
+    cloneForReplay(elClass) {
+        var clone = new Car(this.brain, null, elClass);
         clone.fitness = this.fitness;
         clone.bestScore = this.score;
         clone.color = this.color;
@@ -197,21 +210,26 @@ class Car {
     }
     
     recomputeCorners(){
-        let x = this.x + this.width/2 * Math.cos(this.angle) - this.height/2 * Math.sin(this.angle)
-        let y = this.y + this.width/2 * Math.sin(this.angle) + this.height/2 * Math.cos(this.angle)
-        this.corners[0] = createVector(x,y)
-
-        x = this.x - this.width/2 * Math.cos(this.angle) - this.height/2 * Math.sin(this.angle)
-        y = this.y - this.width/2 * Math.sin(this.angle) + this.height/2 * Math.cos(this.angle)
-        this.corners[1] = createVector(x,y)
-
-        x = this.x - this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
-        y = this.y - this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
-        this.corners[2] = createVector(x,y)
-
-        x = this.x + this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
-        y = this.y + this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
-        this.corners[3] = createVector(x,y)
+         //top right
+         let x = this.x + this.width/2 * Math.cos(this.angle) - this.height/2 * Math.sin(this.angle)
+         let y = this.y + this.width/2 * Math.sin(this.angle) + this.height/2 * Math.cos(this.angle)
+         this.corners[0] = createVector(x,y)
+ 
+         //bottom right
+         x = this.x - this.width/2 * Math.cos(this.angle) - this.height/2 * Math.sin(this.angle)
+         y = this.y - this.width/2 * Math.sin(this.angle) + this.height/2 * Math.cos(this.angle)
+         this.corners[1] = createVector(x,y)
+ 
+         //bottom left
+         x = this.x - this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
+         y = this.y - this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
+         this.corners[2] = createVector(x,y)
+ 
+         //top left
+         x = this.x + this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
+         y = this.y + this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
+         this.corners[3] = createVector(x,y)
+ 
         for(let i = 0; i < this.corners.length-1; i++){
             this.borders[i] = new Boundary(this.corners[i].x, this.corners[i].y, this.corners[i+1].x, this.corners[i+1].y)
         }
@@ -219,21 +237,36 @@ class Car {
 
     }
 
-    display(color = [70,70,70], drawRays = false) {
-        // if(drawRays){
-        //     for (let ray of this.rays) {
-        //         let p2 = ray.getPoint2();
-        //         line(this.x, this.y, p2.x, p2.y);
-        //     }
-        // }
+    display(color = [70,70,70], driftTracks = false) {
 
         this.el.style('transform', `translate(${this.x}px, ${this.y}px) rotate(${this.angle * 180 / Math.PI}deg)`);
         this.el.style('background', "rgb("+color[0]+", "+color[1]+", "+color[2]+")");
         this.el.style('opacity', 1);
+
+        if(driftTracks){
+            push();
+            if ((this.power > 0.005) || this.reverse) {
+                if (((maxReverse === this.reverse) || (maxPower === this.power)) && Math.abs(this.angularVelocity) < 0.002) {
+                return;
+                }
+                stroke(150);
+                push();
+                translate(this.corners[1].x, this.corners[1].y);
+                rotate(this.angle);
+                rect(3, -2, 0.1, 0.1);
+                pop();
+                push();
+                translate(this.corners[2].x, this.corners[2].y);
+                rotate(this.angle);
+                rect(3, +2, 0.1, 0.1);
+                pop();
+            }
+            pop();
+        }
     }
 
     noShow(){
-        if(this.el.elt.style.opacity == 1);
+        if(this.el.elt.style.opacity != 0);
             this.el.style('opacity', 0);
     }
 
@@ -246,28 +279,29 @@ class Car {
         if (this.isThrottling) {
             this.power += powerFactor * this.isThrottling;
         } else {
-            this.power -= powerFactor/4;
+            this.power -= powerFactor/2;
         }
         if (this.isReversing) {
             this.reverse += reverseFactor;
         } else {
-            this.reverse -= reverseFactor/4;
+            this.reverse -= reverseFactor/2;
         }
-        
+    
         this.power = Math.max(0, Math.min(maxPower, this.power));
         this.reverse = Math.max(0, Math.min(maxReverse, this.reverse));
-        
-
+    
+        const direction = this.power > this.reverse ? 1 : -1;
+    
         if (this.isTurningLeft) {
-            this.angularVelocity -= turnSpeed * this.isTurningLeft*(map(this.power - this.reverse, 0, maxPower-maxReverse, 0, 0.1));
+            this.angularVelocity -= direction * turnSpeed * this.isTurningLeft;
         }
         if (this.isTurningRight) {
-            this.angularVelocity += turnSpeed * this.isTurningRight*(map(this.power - this.reverse, 0, maxPower-maxReverse, 0, 0.1));
+            this.angularVelocity += direction * turnSpeed * this.isTurningRight;
         }
-     
+    
         this.xVelocity += Math.cos(this.angle) * (this.power - this.reverse);
         this.yVelocity += Math.sin(this.angle) * (this.power - this.reverse);
-        
+    
         this.x += this.xVelocity;
         this.y += this.yVelocity;
         this.xVelocity *= drag;

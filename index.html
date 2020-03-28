@@ -35,11 +35,11 @@
             <div>
                 <button onclick="drawTrack()" aria-label="Click once on screen to start drawing track, click again to stop" data-balloon-pos="down-left" ><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
                 <button onclick="start()" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>
-                <button onclick="reset()" aria-label="Reset the environment" data-balloon-pos="down-left"><img alt="Reset" class="button-icons" src="img/reset.png"></button>
+                <button onclick="reset()" aria-label="Reset the environment" data-balloon-pos="down-left"><img alt="Reset" class="button-icons" src="img/reset.png"></button>                
             </div>
             <div>
-                <button onclick="zoomOutCanvas()" aria-label="Zoom out" data-balloon-pos="down-left"><img alt="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
-                <button onclick="zoomInCanvas()" aria-label="Zoom in" data-balloon-pos="down-left"><img alt="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
+                <button onclick="changeTheme()" aria-label="Change theme to light/dark" data-balloon-pos="down-left"><img alt="Change theme" class="button-icons" src="img/moon.png"></button>
+                <button onclick="clearScreen()" aria-label="Clear the drift marks off the screen" data-balloon-pos="down-left"><img alt="Clear drift marks" class="button-icons" src="img/erase.png"></button>
                 <button onclick="population.nextGen()" aria-label="Start next generation" data-balloon-pos="down-left"><img alt="Start next generation" class="button-icons" src="img/nextGen.png"></button>
             </div>
         </div>
@@ -52,15 +52,19 @@
     </section>
     <script>
         var tutorialDone = JSON.parse(localStorage.getItem("tutorial"));
-        console.log(tutorialDone);
+
         function tutorial(tutorialDone, startTime = 1000){
             var buttons = document.getElementsByTagName("button");
             var tutorialElements = document.getElementsByClassName('tutorial');
             var tutorialImages = document.getElementsByClassName('tutorialImages');
             if(!tutorialDone){
                 humanPlaying = true;
-                var graphImg = "Graph.png";
-                var NNImg = "NN.png";
+                var graphImg = "img/Graph.png";
+                var NNImg;
+                if(!NIGHTMODE)
+                    NNImg = "img/NNLight.png"
+                else
+                    NNImg = "img/NN.png";
                 var images = [];
                 if(population && population.gen == 0){
                     let img = document.createElement('img'); 
@@ -70,6 +74,9 @@
                     img.style.bottom = 0;
                     img.style.opacity = 0;
                     img.style.transition = "opacity 1s ease";
+                    if(!NIGHTMODE){
+                        img.style.filter = "invert(100%)";
+                    }
                     
                     images.push(img);
                     document.getElementsByTagName('body')[0].appendChild(img); 
@@ -81,6 +88,7 @@
                     img.style.bottom = 0;
                     img.style.opacity = 0;
                     img.style.transition = "opacity 1s ease";
+                    
                     images.push(img);
                     document.getElementsByTagName('body')[0].appendChild(img); 
                 }

@@ -14,8 +14,19 @@ class Population{
         this.replayGenerations = [];
         this.replayGenerationNo = 0;
 
+        this.bestPlayerDiv = createDiv('');
+        this.bestPlayerDiv.addClass('best');
+
+        this.playerDivs = [];
+        this.replayDivs = [];
+
         for(let i = 0; i < this.populationSize; i++){
+            let div = createDiv('');
+            div.addClass('car');
+            this.playerDivs[i] = div;
             this.population[i] = new Car(inputs, outputs);
+            this.population[i].el = this.playerDivs[i];
+            this.population[i].setUpDiv();
             this.population[this.population.length - 1].brain.fullyConnect(this.innovationHistory);
             this.population[this.population.length - 1].brain.mutate(this.innovationHistory);
         }
@@ -42,7 +53,16 @@ class Population{
         for(let s of this.species){
             replayGeneration.addSpecies(s.clone());
         }
-    
+        
+        while(this.replayDivs.length < replayGeneration.species.length){
+            let div = createDiv('');
+            div.addClass('replay');
+            this.replayDivs.push(div);
+        }
+        for(let i = 0; i < replayGeneration.species.length; i++){
+            replayGeneration.species[i].mascot.el = this.replayDivs[i];
+            replayGeneration.species[i].mascot.setUpDiv();
+        }
         this.replayGenerations.push(replayGeneration);
     }
 
@@ -52,7 +72,9 @@ class Population{
     
         if (tempBest.score >= this.bestScore) {
           this.bestScore = tempBest.score;
-          this.best = tempBest.clone();
+          this.best = tempBest.cloneForReplay('best');
+          this.best.el = this.bestPlayerDiv;
+          this.best.setUpDiv();
           this.bestGen = this.gen+1;
           arrayCopy(this.species[0].color, this.best.color);
         }
@@ -97,6 +119,11 @@ class Population{
         this.population = [];
 
         arrayCopy(children, this.population);
+
+        for(let i = 0; i < this.population.length; i++){
+            this.population[i].el = this.playerDivs[i];
+            this.population[i].setUpDiv();
+        }
 
         this.gen++;
     }

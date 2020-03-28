@@ -125,7 +125,7 @@ class Species{
     }
 
     clone(){
-        let s = new Species(this.mascot.clone());
+        let s = new Species(this.mascot.cloneForReplay('replay'));
         s.bestFitness = this.bestFitness;
         s.averageFitness = this.averageFitness;
         s.color = this.color;
