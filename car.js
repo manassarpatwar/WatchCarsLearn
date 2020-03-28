@@ -3,9 +3,7 @@ class Car {
     constructor(inputs, outputs) {
         this.x = carSettings[0];
         this.y = carSettings[1];
-        this.el = createDiv('');
-        // this.el.position(this.x, this.y);
-        this.el.addClass('car');
+
         this.xVelocity = 0,
         this.yVelocity =  0,
         this.power = 0,
@@ -18,11 +16,6 @@ class Car {
         this.corners = [];
         this.width = 20;
         this.height = 10;
-
-        this.el.style('width', this.width+'px');
-        this.el.style('height', this.height+'px');
-        this.el.style('top', -this.height/2+'px');
-        this.el.style('left', -this.width/2+'px')
 
         this.borders = [];
         this.dead = false;
@@ -227,14 +220,14 @@ class Car {
         //     }
         // }
 
-        this.el.style('transform', `translate(${this.x}px, ${this.y}px) rotate(${this.angle * 180 / Math.PI}deg)`);
-        this.el.style('background', "rgb("+color[0]+", "+color[1]+", "+color[2]+")");
-        this.el.style('opacity', 1);
-    }
+        push();
+        noStroke();
+        translate(this.x, this.y)
+        rotate(this.angle);
 
-    noShow(){
-        if(this.el.elt.style.opacity == 1);
-            this.el.style('opacity', 0);
+        fill(color[0], color[1], color[2]);
+        rect(-this.width/2, -this.height/2, this.width, this.height, 1.5);
+        pop();
     }
 
 

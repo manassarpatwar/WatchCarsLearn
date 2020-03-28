@@ -249,19 +249,16 @@ function setup() {
 
     population = new Population(populationSize, raySlider.value(), 2);
     localCar = new Car(raySlider.value(), 2);
-    localCar.el.id("localCar");
-    localCar.el.removeClass('car')
 
 
     zoomCar = localCar;
 
-    background(0);
-    displayTracks();
     setInterval(update, 1);
+    setInterval(updateHumanPlayer, 1);
 
 }
 
-function update(){
+function updateHumanPlayer(){
     if(humanPlaying && localCar){
         
         localCar.isThrottling = keyActive('up');
@@ -291,6 +288,9 @@ function update(){
         if(localCar.dead)
             localCar.reset();
     }
+}
+
+function update(){
     for(let i = 0; i < GLOBALSPEED; i++){
         if(startEvolution && population.gen < 1000){
             for(let car of population.population){
@@ -367,11 +367,17 @@ function update(){
 
 
 function draw() {
-    if(drawingTrack){
-        clear();
-        background(0);
-        displayTracks();
+
+    clear();
+    background(0);
+
+    if(zoom > 0 && zoomCar){
+        translate(-zoom * zoomCar.x+width/2, -zoom * zoomCar.y+height/2);
+        scale(zoom);
     }
+
+    displayTracks();
+
 
     if(keyIsDown(187) && GLOBALSPEED < 20){
         GLOBALSPEED += 1;
@@ -383,11 +389,6 @@ function draw() {
         GLOBALSPEED -= 1;
         speedPara.html("Speed: "+GLOBALSPEED);
         speedSlider.value(GLOBALSPEED);
-    }
-
-    if(zoom > 0 && zoomCar){
-        translate(-zoom * zoomCar.x+width/2, -zoom * zoomCar.y+height/2);
-        scale(zoom);
     }
 
 
@@ -408,43 +409,28 @@ function draw() {
         for(let p of population.population){
             p.display(p.color);
         }
-    }else{
-        for(let p of population.population){
-            p.noShow();
-        }
     }
 
-    if(bestCar){
-        if(runBest){
-            bestCar.display(bestCar.color);
-        }else{
-            bestCar.noShow();
-        }
+    if(bestCar && runBest){
+        bestCar.display(bestCar.color);
     }
     
-    if(population.replayGenerations.length > 0){
-        if(startEvolution && replayGen){
-            for(let replaySpecies of population.replayGenerations[population.replayGenerationNo].species){
-                // if(zoom > 1 && replaySpecies.mascot.isPointInside(Math.floor((mouseX-width/2+zoomCar.x*zoom)/zoom), Math.floor((mouseY-height/2+zoomCar.y*zoom)/zoom)))
-                //     brain = replaySpecies.mascot.brain;
-                if(replaySpecies.mascot.isPointInside(mouseX, mouseY))
-                    brain = replaySpecies.mascot.brain;
-                replaySpecies.mascot.display(replaySpecies.color);
-            }
-        }else{
-            for(let replaySpecies of population.replayGenerations[population.replayGenerationNo].species)
-                replaySpecies.mascot.noShow();
+    if(population.replayGenerations.length > 0 && startEvolution && replayGen){
+        for(let replaySpecies of population.replayGenerations[population.replayGenerationNo].species){
+            if(zoom > 1 && replaySpecies.mascot.isPointInside(Math.floor((mouseX-width/2+zoomCar.x*zoom)/zoom), Math.floor((mouseY-height/2+zoomCar.y*zoom)/zoom)))
+                brain = replaySpecies.mascot.brain;
+            if(replaySpecies.mascot.isPointInside(mouseX, mouseY))
+                brain = replaySpecies.mascot.brain;
+            replaySpecies.mascot.display(replaySpecies.color);
         }
     }
 
     if(humanPlaying && localCar){
-         let x = localCar.y < windowHeight/2 ? "down" : "up";
+        let x = localCar.y < windowHeight/2 ? "down" : "up";
         let y = localCar.x < windowWidth/2 ? "left" : "right";
         humanPlayingPara.attribute('data-balloon-pos', x+"-"+y);
         humanPlayingPara.position(localCar.x, localCar.y);
         localCar.display([230, 109, 100], drawRays);
-    }else{
-        localCar.noShow();
     }
 }
 
@@ -460,6 +446,9 @@ function keyPressed(e) {
             if(bestCar){
                 startEvolution = !startEvolution;
                 runBest = !runBest;
+                if(runBest){
+                    bestCar.reset();
+                }
             }
             break;
         case 13:
