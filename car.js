@@ -1,21 +1,23 @@
 class Car {
     
-    constructor(inputs, outputs, elClass = "car") {
-        this.x = carSettings[0];
-        this.y = carSettings[1];
+    constructor(inputs, outputs) {
+        this.pos = createVector(carSettings[0], carSettings[1]);
 
-        this.xVelocity = 0,
-        this.yVelocity =  0,
-        this.power = 0,
-        this.reverse = 0,
         this.angle = carSettings[2],
-        this.angularVelocity = 0,
+
+        this.velocity = 0;
+        this.acceleration = 0;
+        this.steer = 0;
+        this.steerAngle = 0;
+
         this.isThrottling = false,
-        this.isReversing = false
+        this.isReversing = false;
+        this.isBraking = false;
         this.rays = [];
         this.corners = [];
-        this.width = 16;
-        this.height = 8;
+        this.width = 20;
+        this.height = 10;
+        this.L = 3*this.width/4;
         this.borderRadius = 2;
 
         this.borders = [];
@@ -48,14 +50,6 @@ class Car {
 
     }
 
-    setUpDiv(){
-        this.el.style('width', this.width+'px');
-        this.el.style('height', this.height+'px');
-        this.el.style('top', -this.height/2+'px');
-        this.el.style('left', -this.width/2+'px')
-        this.el.style('border-radius', 2+'px');
-    }
-
     isPointInside(x, y){
         let rectArea = this.width*this.height;
         let triangleAreas = 0;
@@ -73,14 +67,15 @@ class Car {
     }
 
     reset(){
-        this.x = carSettings[0];
-        this.y = carSettings[1];
-        this.xVelocity = 0,
-        this.yVelocity =  0,
-        this.power = 0,
-        this.reverse = 0,
+        this.pos = createVector(carSettings[0], carSettings[1]);
         this.angle = carSettings[2],
-        this.angularVelocity = 0,
+        this.velocity = 0;
+        this.acceleration = 0;
+        this.steer = 0;
+        this.steerAngle = 0;
+        this.isThrottling = false,
+        this.isReversing = false;
+        this.isBraking = false;
         this.corners = [];
         this.borders = [];
         this.dead = false;
@@ -89,7 +84,6 @@ class Car {
         this.staleness = 0;
         this.checkpoints = new Set();
         this.inputs = [];
-        this.gen = 0;
         this.laps = 0;
         this.moves = 0;
 
@@ -101,14 +95,11 @@ class Car {
 
     look(){
         if(this.moves > 100){
-            this.oldScore = this.checkpoints.size;
+            this.oldScore = this.laps*checkpoints.length+this.checkpoints.size;
             this.moves = 0;
         }
 
         let boundaries = innerTrack.concat(outerTrack);
-        for(let ray of this.rays){
-            ray.reset();
-        }
         
         let overlap = false;
         for(let b of boundaries){
@@ -122,6 +113,13 @@ class Car {
                 this.died();
                 break;
             }
+        }
+
+        for(let ray of this.rays){
+            ray.reset();
+        }
+        let raysDone = 0;
+        for(let b of boundaries){
             for(let ray of this.rays){
                 if(ray.done){
                     continue;
@@ -133,7 +131,11 @@ class Car {
                 if(int && d < ray.maxlength){
                     ray.setLength(d);
                     ray.done = true;
+                    raysDone++;
                 }
+            }
+            if(raysDone == this.numRays){
+                break;
             }
         }
         this.inputs = this.rays.map(x => 1-x.length/x.maxlength);
@@ -144,13 +146,10 @@ class Car {
         if(!this.dead){
             let outputs = this.brain.feedForward(this.inputs);
 
-            const canTurn = this.power > 0.0025 || this.reverse;
-
             this.isThrottling = outputs[0] >= 0.66;
             this.isReversing = outputs[0] < 0.33;
-            
-            this.isTurningLeft = canTurn && outputs[1] >= 0.66;
-            this.isTurningRight = canTurn && outputs[1] < 0.33;
+            this.isTurningLeft = outputs[1] >= 0.66;
+            this.isTurningRight = outputs[1] < 0.33;
             this.moves++;
         }
     }
@@ -189,7 +188,7 @@ class Car {
         let offsetAdd = this.numRays > 8 ? Math.PI/((this.numRays/8)*(4%this.numRays)) : Math.PI/4;
         let offset = this.numRays%2 == 0 ? -(this.numRays-1)*(offsetAdd/2) : -((this.numRays-1)/2)*offsetAdd;
         for (let i = 0; i < this.numRays; i++) {
-            this.rays[i] = new Ray(createVector(this.x, this.y), this.angle+offset, 50);
+            this.rays[i] = new Ray(createVector(this.pos.x, this.pos.y), this.angle+offset, 50);
             offset += offsetAdd;
         }
     }
@@ -198,7 +197,7 @@ class Car {
         let offsetAdd = this.numRays > 8 ? Math.PI/((this.numRays/8)*(4%this.numRays)) : Math.PI/4;
         let offset = this.numRays%2 == 0 ? -(this.numRays-1)*(offsetAdd/2) : -((this.numRays-1)/2)*offsetAdd;
         for (let i = 0; i < this.numRays; i++) {
-            this.rays[i].setTailAndHeading(this.x, this.y, this.angle+offset);
+            this.rays[i].setTailAndHeading(this.pos.x, this.pos.y, this.angle+offset);
             offset += offsetAdd;
         }
     }
@@ -211,23 +210,23 @@ class Car {
     
     recomputeCorners(){
          //top right
-         let x = this.x + this.width/2 * Math.cos(this.angle) - this.height/2 * Math.sin(this.angle)
-         let y = this.y + this.width/2 * Math.sin(this.angle) + this.height/2 * Math.cos(this.angle)
+         let x = this.pos.x + this.width/2 * Math.cos(this.angle) - this.height/2 * Math.sin(this.angle)
+         let y = this.pos.y + this.width/2 * Math.sin(this.angle) + this.height/2 * Math.cos(this.angle)
          this.corners[0] = createVector(x,y)
  
          //bottom right
-         x = this.x - this.width/2 * Math.cos(this.angle) - this.height/2 * Math.sin(this.angle)
-         y = this.y - this.width/2 * Math.sin(this.angle) + this.height/2 * Math.cos(this.angle)
+         x = this.pos.x - this.width/2 * Math.cos(this.angle) - this.height/2 * Math.sin(this.angle)
+         y = this.pos.y - this.width/2 * Math.sin(this.angle) + this.height/2 * Math.cos(this.angle)
          this.corners[1] = createVector(x,y)
  
          //bottom left
-         x = this.x - this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
-         y = this.y - this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
+         x = this.pos.x - this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
+         y = this.pos.y - this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
          this.corners[2] = createVector(x,y)
  
          //top left
-         x = this.x + this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
-         y = this.y + this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
+         x = this.pos.x + this.width/2 * Math.cos(this.angle) + this.height/2 * Math.sin(this.angle)
+         y = this.pos.y + this.width/2 * Math.sin(this.angle) - this.height/2 * Math.cos(this.angle)
          this.corners[3] = createVector(x,y)
  
         for(let i = 0; i < this.corners.length-1; i++){
@@ -237,77 +236,78 @@ class Car {
 
     }
 
-    display(color = [70,70,70], driftTracks = false) {
+    display(color = [70,70,70], drawRays = false) {
+        // push()
+        // stroke(255);
+        // for(let r of this.rays){
+        //     line(r.tail.x, r.tail.y, r.getPoint2().x, r.getPoint2().y);
+        // }
+        // pop();
+        push();
+        noStroke();
+        fill(color[0], color[1], color[2]);
+        translate(this.pos.x, this.pos.y);
+        rotate(this.angle);
+        rectMode(CENTER);
+        rect(0,0,this.width,this.height, 3);
+        pop();
 
-        this.el.style('transform', `translate(${this.x}px, ${this.y}px) rotate(${this.angle * 180 / Math.PI}deg)`);
-        this.el.style('background', "rgb("+color[0]+", "+color[1]+", "+color[2]+")");
-        this.el.style('opacity', 1);
-
-        if(driftTracks){
-            push();
-            if ((this.power > 0.005) || this.reverse) {
-                if (((maxReverse === this.reverse) || (maxPower === this.power)) && Math.abs(this.angularVelocity) < 0.002) {
-                return;
-                }
-                stroke(150);
-                push();
-                translate(this.corners[1].x, this.corners[1].y);
-                rotate(this.angle);
-                rect(3, -2, 0.1, 0.1);
-                pop();
-                push();
-                translate(this.corners[2].x, this.corners[2].y);
-                rotate(this.angle);
-                rect(3, +2, 0.1, 0.1);
-                pop();
-            }
-            pop();
-        }
-    }
-
-    noShow(){
-        if(this.el.elt.style.opacity != 0);
-            this.el.style('opacity', 0);
     }
 
 
-    update() {
+    update(dt) {
         if(this.dead){
             return;
         }
 
-        if (this.isThrottling) {
-            this.power += powerFactor * this.isThrottling;
-        } else {
-            this.power -= powerFactor/2;
+        let throttle = this.isThrottling*Car.engineForce;
+        let reverse = this.isReversing*Car.reverseForce;
+        let sign = (this.velocity > 0 && this.isReversing)+((this.velocity < 0 && this.isThrottling)*-1)
+        let braking = (Math.abs(this.velocity) < 0.5 ? 0 : 1)*sign*Car.brakingForce;
+
+        let steerInput = 1*this.isTurningRight-1*this.isTurningLeft;
+
+        if( Math.abs(steerInput) > 0.001 ){
+            //  Move toward steering input
+            this.steer = Math.min(Math.max(this.steer + steerInput * dt * 2.0, -1.0), 1.0); // -inp.right, inp.left);
         }
-        if (this.isReversing) {
-            this.reverse += reverseFactor;
-        } else {
-            this.reverse -= reverseFactor/2;
+        else{
+            //  No steer input - move toward centre (0)
+            if( this.steer > 0 ){
+                this.steer = Math.max(this.steer - dt * 1.0, 0);
+            }
+            else if( this.steer < 0 ){
+                this.steer = Math.min(this.steer + dt * 1.0, 0);
+            }
         }
-    
-        this.power = Math.max(0, Math.min(maxPower, this.power));
-        this.reverse = Math.max(0, Math.min(maxReverse, this.reverse));
-    
-        const direction = this.power > this.reverse ? 1 : -1;
-    
-        if (this.isTurningLeft) {
-            this.angularVelocity -= direction * turnSpeed * this.isTurningLeft;
+
+        var avel = Math.min(Math.abs(this.velocity)/Car.scale, 250.0);  // m/s
+        this.steer = this.steer * (1.0 - (avel / 280.0));
+        
+        this.steerAngle = this.steer*Car.maxSteer;
+
+        let Ftraction = throttle-reverse-braking;
+
+        let Fdrag = -Car.Cdrag*Math.abs(this.velocity)*this.velocity;
+        let Frr = -Car.Crr*this.velocity;
+
+        let Flong = Ftraction+ Fdrag+Frr;
+        this.acceleration = Flong/Car.mass;
+        this.velocity += this.acceleration*dt;
+
+        if( Math.abs(this.velocity) < 0.5 && (!this.isThrottling && !this.isReversing)){
+            this.velocity = 0;
         }
-        if (this.isTurningRight) {
-            this.angularVelocity += direction * turnSpeed * this.isTurningRight;
-        }
-    
-        this.xVelocity += Math.cos(this.angle) * (this.power - this.reverse);
-        this.yVelocity += Math.sin(this.angle) * (this.power - this.reverse);
-    
-        this.x += this.xVelocity;
-        this.y += this.yVelocity;
-        this.xVelocity *= drag;
-        this.yVelocity *= drag;
-        this.angle += this.angularVelocity;
-        this.angularVelocity *= angularDrag;
+        let dist = this.velocity*dt;
+
+        this.pos = p5.Vector.fromAngle(this.angle).mult(dist).add(this.pos);
+
+
+        let R = this.L/Math.sin(this.steerAngle);
+        let angularVelocity = this.velocity/R;
+        this.angle += angularVelocity * dt;
+
+
         this.recomputeRays();
         this.recomputeCorners();
     }
@@ -325,3 +325,13 @@ class Car {
     }
 
 }
+
+Car.scale = 5;
+Car.engineForce = 8000*Car.scale;
+Car.reverseForce = 12000*Car.scale;
+Car.brakingForce = Car.reverseForce+Car.reverseForce/2.5;
+Car.Cdrag = 0.7;
+Car.Crr = 0;
+
+Car.mass = 1200;
+Car.maxSteer = 0.6;

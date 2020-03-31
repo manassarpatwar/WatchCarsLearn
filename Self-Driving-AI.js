@@ -19,14 +19,14 @@ let populationSize = 100;
 
 const TRACKWIDTH = 16;
 
-const maxPower = 0.075/2;
-const maxReverse = 0.0375/2;
-const powerFactor = 0.001/2;
-const reverseFactor = 0.0005/2;
+const maxPower = 0.075*2;
+const maxReverse = 0.0375*2;
+const powerFactor = 0.001*2;
+const reverseFactor = 0.0005*2;
 
 const drag = 0.95;
 const angularDrag = 0.95;
-const turnSpeed = 0.002/2;
+const turnSpeed = 0.002;
 
 let initPos = null;
 let initLeft = null;
@@ -169,14 +169,15 @@ const keyActive = (key) => {
     return keysDown[arrowKeys[key]] || keysDown[wasdKeys[key]] || false;
 };
 
-let windowWidth = window.innerWidth;
-let windowHeight = window.innerHeight;
-
 
 const keysDown = {};
 
-let needResize;
-let resizing;
+const touching = {
+    up: 0,
+    down: 0,
+    left: 0,
+    right: 0
+};
 
 window.addEventListener('keydown', e => {
     keysDown[e.which] = true;

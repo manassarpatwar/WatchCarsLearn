@@ -24,16 +24,6 @@ body{
     background: #000;
 }
 
-.car, .replay, .best, #localCar {
-    position: absolute;
-    background: white;
-    opacity: 0;
-    will-change: transform;
-}
-
-#localCar{
-    z-index: 1;
-}
 
 
 .button-icons {
@@ -41,6 +31,7 @@ body{
     filter: invert(100%);
     padding: 0;
     margin: 0;
+    transition: filter 0.2s ease-in-out;
 }
 
 button.nightMode .button-icons {
@@ -212,3 +203,9 @@ input[type=range] {
   input[type=range]:focus::-ms-fill-upper {
     background: #e66d64;
   } 
+
+  @media only screen and (max-width: 600px) {
+    html, body {
+      font-size: 14px;
+    }
+  }

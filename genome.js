@@ -114,17 +114,12 @@ class Genome{
             let y = Genome.drawDimensions/(l.length+1);
             for(let n of l){
                 n.vector = createVector(x,y);
-                n.radius = 12 - this.numInputs*this.numInputs/100;
+                n.radius = Genome.drawRadius - this.numInputs*this.numInputs/100;
                 y += Genome.drawDimensions/(l.length+1);
             }
             x += Genome.drawDimensions/(this.drawLayers.length+1);
         }
     }
-
-    // getConnectionsTo(node){
-    //     let conns = Array.from(this.connections.values()).filter(x => x.outNode == node.getNodeNumber() && x.enabled)
-    //     return conns;
-    // }
 
     addNode(node){
         this.nodes.set(node.getNodeNumber(), node);
@@ -234,18 +229,18 @@ class Genome{
             this.mutateConnection(innovationHistory)
         }
 
-        let rand1 = Math.random();
+        let rand1 = random(1);
 
         if(rand1 < 0.8){
             this.mutateWeights();
         }
-        let rand2 = Math.random();
+        let rand2 = random(1);
         if(rand2 < 0.05){
             this.mutateConnection(innovationHistory);
         }
 
        
-        let rand3 = Math.random();
+        let rand3 = random(1);
         if(rand3 < 0.01){
             this.mutateNode(innovationHistory);
         }
@@ -338,4 +333,5 @@ class Genome{
     }
 }
 
-Genome.drawDimensions = 300;
+Genome.drawDimensions = window.innerWidth < 600 ? 200 : 300; 
+Genome.drawRadius = window.innerWidth < 600 ? 6 : 12; 

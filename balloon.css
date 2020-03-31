@@ -199,7 +199,7 @@ button[aria-label][data-balloon-pos] {
     @media screen and (max-width: 768px) {
       [aria-label][data-balloon-pos][data-balloon-length="xlarge"]:after {
         white-space: normal;
-        width: 90vw; } }
+        width: 30vw; } }
   [aria-label][data-balloon-pos][data-balloon-length="fit"]:after {
     white-space: normal;
     width: 100%; }
