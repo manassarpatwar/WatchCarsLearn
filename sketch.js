@@ -515,7 +515,6 @@ function evolve(dt){
         if(population.done()){
             population.naturalSelection();
             showEvolutionPara.html("Current Gen: "+population.gen);
-            showBestPara.html("Best Player Gen: "+population.bestGen);
         }
     }
 
@@ -578,7 +577,7 @@ function draw() {
     clearScreen();
 
     push();
-    fill(255);
+    fill(0+NIGHTMODE*255);
     text(frameRate().toFixed(2), width-30, height-5);
     pop();
 

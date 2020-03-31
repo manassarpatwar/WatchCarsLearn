@@ -24,6 +24,13 @@ class Car {
         this.dead = false;
         this.oldScore = 0;
         this.score = 0;
+        this.bestScore = 0;
+        this.staleness = 0;
+        this.checkpoints = new Set();
+        this.inputs = [];
+        this.laps = 0;
+        this.gen = 0;
+        this.moves = 0;
         this.fitness = 0;
         this.color = [70,70,70];
 
@@ -38,6 +45,25 @@ class Car {
             this.brain = new Genome(this.genomeInputs, this.genomeOutputs);
         }
 
+        this.numRays = this.genomeInputs;
+        this.computeRays();
+
+    }
+
+    isPointInside(x, y){
+        let rectArea = this.width*this.height;
+        let triangleAreas = 0;
+        for(let b of this.borders){
+            triangleAreas += Boundary.getAreaWithPoint(b, x, y);
+        }
+        return rectArea == triangleAreas;
+    }
+
+    crossover(parent2){
+        let child = new Car(this.brain.crossover(parent2.brain));
+        child.bestScore = Math.max(this.bestScore, parent2.bestScore);
+        child.color = this.color;
+        return child;
     }
 
     reset(){
@@ -63,10 +89,8 @@ class Car {
 
     }
 
-    think(inputs) {
-        let predicts = this.brain.query(inputs);
-        let indexOfMaxValue = predicts.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0)
-        return MOVES[indexOfMaxValue];
+    died(){
+        this.dead = true;
     }
 
     look(){
@@ -130,29 +154,24 @@ class Car {
         }
     }
 
-    applyFriction(fr = this.friction) {
-        if (this.direction != 0) {
-            let spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-            let ang = Math.atan2(this.vy, this.vx);
-            if (spd > fr)
-                spd -= fr;
-            else
-                spd = 0;
-            this.vx = Math.cos(ang) * spd;
-            this.vy = Math.sin(ang) * spd;
-            if (spd == 0) {
-                console.log("dir zero")
-                this.direction = 0;
-            }
-        }
+    clone() {
+        var clone = new Car(this.brain);
+        clone.fitness = this.fitness;
+        clone.bestScore = this.score;
+        clone.color = this.color;
+        return clone;
     }
 
+    cloneForReplay(elClass) {
+        var clone = new Car(this.brain, null, elClass);
+        clone.fitness = this.fitness;
+        clone.bestScore = this.score;
+        clone.color = this.color;
+        return clone;
+    }
 
-    goBackward() {
-        let newX = this.x - this.speed * Math.cos(this.alpha);
-        let newY = this.y - this.speed * Math.sin(this.alpha);
-        this.x = newX;
-        this.y = newY;
+    calculateFitness() {
+        this.fitness = this.laps > 0 ? 1 : this.checkpoints.size/checkpoints.length;;
     }
 
     addCheckpoint(c){
@@ -181,12 +200,8 @@ class Car {
             this.rays[i].setTailAndHeading(this.pos.x, this.pos.y, this.angle+offset);
             offset += offsetAdd;
         }
-        this.score = this.laps+(bestP/(path.length-1));
-        if(this.score == this.laps+1)
-            this.laps++;
-
     }
-    
+
     changeNumRays(newNumRays){
         this.rays = [];
         this.numRays = newNumRays;
@@ -219,12 +234,6 @@ class Car {
         }
         this.borders[this.corners.length-1] = new Boundary(this.corners[0].x, this.corners[0].y, this.corners[this.corners.length-1].x, this.corners[this.corners.length-1].y)
 
-    }
-    
-    turnCar() {
-        this.alpha += this.velocity / this.r;
-        this.x = this.turnCenterX + this.r * Math.sin(this.alpha);
-        this.y = this.turnCenterY - this.r * Math.cos(this.alpha);
     }
 
     display(color = [70,70,70], drawRays = false) {
@@ -301,6 +310,18 @@ class Car {
 
         this.recomputeRays();
         this.recomputeCorners();
+    }
+
+    checkStaleness(){
+        if(this.oldScore == this.score){
+            this.staleness++;
+        }else{
+            this.staleness = 0;
+        }
+
+        if(this.staleness > 100){
+            this.died();
+        }
     }
 
 }

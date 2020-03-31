@@ -1,4 +1,5 @@
 class Ray{
+
     constructor(tail, heading, length){
         this.tail = tail;
         this.heading = heading;
@@ -16,10 +17,16 @@ class Ray{
         this.done = false;
     }
 
-    setAngle(a) {
-        this.angle = a;
-        this.vector.x = this.x + Math.cos(this.angle);
-        this.vector.y = this.y + Math.sin(this.angle);
+    setLength(l){
+        this.length = l
+    }
+
+    resetLength(){
+        this.length = this.maxlength;
+    }
+
+    getPoint2(len = this.length){
+        return createVector(this.tail.x+len*Math.cos(this.heading), this.tail.y+len*Math.sin(this.heading));
     }
 
     isHitting(boundary) {
@@ -27,26 +34,25 @@ class Ray{
         const x2 = boundary.x2;
         const y1 = boundary.y1;
         const y2 = boundary.y2;
-
-        const x3 = this.x;
-        const x4 = this.vector.x;
-        const y3 = this.y;
-        const y4 = this.vector.y;
-
+        
+        let point2 = this.getPoint2(this.maxlength)
+        const x3 = this.tail.x;
+        const x4 = point2.x;
+        const y3 = this.tail.y;
+        const y4 = point2.y;
+        
         const den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
         if (den == 0)
-            return;
+        return;
         const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
         const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den;
         //    console.log(t);
         if (t >= 0 && t <= 1 && u > 0) {
             const x = x1 + t * (x2 - x1);
             const y = y1 + t * (y2 - y1);
-            return new Vector(x, y);
+            return createVector(x, y);
         } else {
             return false;
         }
-
     }
-
 }
