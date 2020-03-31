@@ -44,6 +44,22 @@ class Boundary {
         return angle;
     }
 
+    getRightPoint(point){
+        let a = Math.atan2(this.y2-this.y1, this.x2-this.x1)
+        if(point == "END")
+            return createVector(this.x2+TRACKWIDTH*Math.cos(a+Math.PI/2), this.y2+TRACKWIDTH*Math.sin(a+Math.PI/2));
+        else
+            return createVector(this.x1+TRACKWIDTH*Math.cos(a+Math.PI/2), this.y1+TRACKWIDTH*Math.sin(a+Math.PI/2));
+    }
+    
+    display(str = [100, 100, 100]){
+        push();
+        stroke(str[0], str[1], str[2]);
+        strokeWeight(2);
+        line(this.x1, this.y1, this.x2, this.y2); 
+        pop();
+    }
+
     static getIntersection(boundary1, boundary2){
         const x1 = boundary1.x1;
         const x2 = boundary1.x2;
@@ -62,12 +78,6 @@ class Boundary {
         ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3))/denom;
         return new Vector(x1 + ua * (x2 - x1), y1 + ua * (y2 - y1));
 
-        // {
-        //     x: x1 + ua * (x2 - x1),
-        //     y: y1 + ua * (y2 - y1),
-        //     seg1: ua >= 0 && ua <= 1,
-        //     seg2: ub >= 0 && ub <= 1
-        // };
     }
 
     static intersects(boundary1, boundary2) {

@@ -1,15 +1,19 @@
-function Vector(x, y) {
-    this.x = x;
-    this.y = y;
-}
+class Ray{
+    constructor(tail, heading, length){
+        this.tail = tail;
+        this.heading = heading;
+        this.length = length;
+        this.maxlength = length;
+        this.done = false;
+    }
 
-class Ray {
-    distance = 0;
-    constructor(x, y, angle) {
-        this.x = x;
-        this.y = y;
-        this.angle = angle;
-        this.vector = new Vector(this.x + Math.cos(this.angle), this.y + Math.sin(this.angle));
+    setTailAndHeading(tailX, tailY, heading){
+        this.tail.set(tailX, tailY);
+        this.heading = heading;
+    }
+
+    reset(){
+        this.done = false;
     }
 
     setAngle(a) {

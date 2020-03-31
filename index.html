@@ -3,97 +3,145 @@
 
 <head>
     <title></title>
+    <link rel="stylesheet" href="balloon.css">
     <link rel="stylesheet" href="main.css">
+
     <meta name="viewport" content="width=device-width, 
     initial-scale=1, maximum-scale=1" />
-    <!--    <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>-->
 </head>
 
 <body>
 
-    <main id = "main">
-        <canvas id="canvas"></canvas>
-        <canvas id="NNcanvas"></canvas>
-        <section id="help-splash">
-            <button id="close-help" onclick="viewHelp()"><img alt="Close" title="Close" class="button-icons" src="img/cross.png"></button>
-            <div class="title">
-                <h1>Legend</h1>
-            </div>
-            <div class="info">
-                <ul>
-                    <li><img alt="Draw track" title="Draw track" class="button-icons" src="img/draw.png"><p>Draw Track: Click once on screen to start drawing, double click to stop (Erases the current track)</p></li>
-                    <li><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"><p>Erase Track: Erases the track</p></li>
-                    <li><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"><p>Reset: Resets the environment</p></li>
-                    <li><img alt="Start" title="Start" class="button-icons" src="img/start.png"><p>Start: Start evolution</p></li>
-                    <li><img alt="Help" title="Help" class="button-icons" src="img/help.png"><p>Help</p></li>
-                    <li><img alt="Set car position" title="Set car position" class="button-icons" src="img/place.png"><p>Set Car Position: Click anywhere on screen to place cars</p></li>
-                    <li><img alt="Start next generation" title="Start next generation" class="button-icons" src="img/nextGen.png"><p>Start Next Genertion: Kills every car alive and moves on to next generation</p></li>
-                    <li><img alt="Set turn type: Ackerman" title="Set turn type: Ackerman" class="button-icons" src="img/ackerman.png"><p>Set Turn Type-Ackerman: Sets ackerman steering</p></li>
-                    <li><img alt="Set turn type: Tank" title="Set turn type: Tank" class="button-icons" src="img/tank.png"><p>Set Turn Type-Tank: Sets tank steering</p></li>
-                    <li><img alt="Zoom in" title="Zoom in" class="button-icons" src="img/zoomIn.png"><p>Zoom in: Zooms in on the best car</p></li>
-                    <li><img alt="Zoom out" title="Zoom out" class="button-icons" src="img/zoomOut.png"><p>Zoom out</p></li>
-                </ul>
-            </div>
-        </section>
-        <section id="buttons">
-            <div class="buttons buttonsLeft">
-                <div>
-                    <button onclick="initBounds()"><img alt="Draw track" title="Draw track" class="button-icons" src="img/draw.png"></button>
-                    <button onclick="clearBounds()"><img alt="Erase track" title="Erase track" class="button-icons" src="img/erase.png"></button>
-                    <button onclick="viewHelp()"><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
-                </div>
-                <div>
-                    <button onclick="reset(totalCars)"><img alt="Reset" title="Reset" class="button-icons" src="img/reset.png"></button>
-                    <button onclick="start()"><img alt="Start" title="Start" class="button-icons" src="img/start.png"></button>
-                </div>
-            </div>
-            <div class="buttons buttonsRight">
-                <div>
-                    <button onclick="setCarPos()"><img alt="Set car position" title="Set car position" class="button-icons" src="img/place.png"></button>
-                    <button onclick="startNextGen()"><img alt="Start next generation" title="Start next generation" class="button-icons" src="img/nextGen.png"></button>
-                    <button onclick="setTurnType(this)" value="ackerman"><img class="ackerman" alt="Set turn type: Ackerman" title="Set turn type: Ackerman" class="button-icons" src="img/ackerman.png"><img class="tank" alt="Set turn type: Tank" title="Set turn type: Tank" class="button-icons" src="img/tank.png"></button>
-                </div>
-                <div>
-                    <button onclick="zoomInCanvas()"><img alt="Zoom in" title="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
-                    <button onclick="zoomOutCanvas()"><img alt="Zoom out" title="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
-                </div>
-            </div>
-        </section>
+    <div id="NNcanvas"></div>
+    <div id="fitnessCanvas"></div>
 
-        <section id="program">
-            <p>Total Cars:</p>
-            <div class="number-input"><button onclick="changeCars(-10)"></button>
-                <input id="carNumsInput" class="quantity" min="1" name="quantity" value="20" type="number">
-                <button onclick="changeCars(10)" class="plus"></button>
+    <section id="buttons">
+        <div class="buttons buttonsLeft">
+            <div>
+                <button onclick="drawTrack()" aria-label="Click/Touch once on screen to start drawing track, Click/Touch again to stop" data-balloon-pos="down-left" data-balloon-length="xlarge"><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
+                <button onclick="start()" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>
+                <button onclick="reset()" aria-label="Reset the environment" data-balloon-pos="down-left"><img alt="Reset" class="button-icons" src="img/reset.png"></button>                
+                <button onclick="zoomInCanvas()" aria-label="Zoom in" data-balloon-pos="down-left"><img alt="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
+                <button onclick="toggleHumanPlayer()" aria-label="Drive the car yourself" data-balloon-pos="down-left"><img alt="Drive the car yourself" class="button-icons" src="img/steering.png"></button>
+                <button onclick="toggleBestPlayer()" aria-label="Run the best player ever" data-balloon-pos="down-left"><img alt="Run the best player ever" class="button-icons" src="img/crown.png"></button>
             </div>
-            <br>
-            <br>
-            <p>Total sensors: <span id="numRaysText"></span></p>
-            <p><input id="numRaysSlider" type="range" min="1" max="7" step="2" value="3">
-            </p>
-            <br>
-            <p>Speed: <span id="genSpeedText"></span></p>
-            <p><input id="genslider" type="range" min="1" max="50" step="1" value="1">
-            </p>
-            <br>
-            <p>Gen: <span id="genText"></span></p>
-            <br>
-            <p>Score: <span id="score"></span></p>
-        </section>
-    </main>
+            <div>
+                <button onclick="changeTheme()" aria-label="Change theme to light/dark" data-balloon-pos="down-left"><img alt="Change theme" class="button-icons" src="img/moon.png"></button>
+                <button onclick="clearScreen()" aria-label="Clear the drift marks off the screen" data-balloon-pos="down-left"><img alt="Clear drift marks" class="button-icons" src="img/erase.png"></button>
+                <button onclick="population.nextGen()" aria-label="Start next generation" data-balloon-pos="down-left"><img alt="Start next generation" class="button-icons" src="img/nextGen.png"></button>
+                <button onclick="zoomOutCanvas()" aria-label="Zoom out" data-balloon-pos="down-left"><img alt="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
+                <button onclick="toggleShow()" aria-label="Show/Hide evolution. " data-balloon-pos="down-left"><img alt="Drive the car yourself" class="button-icons" src="img/eye.png"></button>
+                <button onclick="toggleReplay()" aria-label="Show/Hide replay of evolution (Press G to toggle best players of species)" data-balloon-pos="down-left"><img alt="Show hide replay of evolution" class="button-icons" src="img/replay.png"></button>
+            </div>
+        </div>
+        <div class="buttons buttonsRight">
+            <div>
+                <button onclick="tutorial(false, 0)" aria-label=''><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
+            </div>
+            
+        </div>
+    </section>
     <script>
-        var help = document.getElementById("help-splash")
+        var tutorialDone = JSON.parse(localStorage.getItem("tutorial"));
 
-        function viewHelp() {
-            help.classList.toggle('display-help');
+        function tutorial(tutorialDone, startTime = 1000){
+            var buttons = document.getElementsByTagName("button");
+            var tutorialElements = document.getElementsByClassName('tutorial');
+            var tutorialImages = document.getElementsByClassName('tutorialImages');
+            if(!tutorialDone){
+                humanPlaying = true;
+                var graphImg = "img/Graph.png";
+                var NNImg;
+                if(!NIGHTMODE)
+                    NNImg = "img/NNLight.png"
+                else
+                    NNImg = "img/NN.png";
+                var images = [];
+                if(population && population.gen == 0){
+                    let img = document.createElement('img'); 
+                    img.src = graphImg;
+                    img.style.position = "absolute";
+                    img.style.left = 0;
+                    img.style.bottom = 0;
+                    img.style.opacity = 0;
+                    img.style.transition = "opacity 1s ease";
+                    if(!NIGHTMODE){
+                        img.style.filter = "invert(100%)";
+                    }
+                    
+                    images.push(img);
+                    document.getElementsByTagName('body')[0].appendChild(img); 
+
+                    img = document.createElement('img');
+                    img.src = NNImg;
+                    img.style.position = "absolute";
+                    img.style.right = 0;
+                    img.style.bottom = 0;
+                    img.style.opacity = 0;
+                    img.style.transition = "opacity 1s ease";
+                    
+                    images.push(img);
+                    document.getElementsByTagName('body')[0].appendChild(img); 
+                }
+                
+                let buffer = 500;
+                for(let b of buttons){
+                    let offset = 200*b.getAttribute('aria-label').length;
+                    setTimeout(() => {
+                        b.setAttribute('data-balloon-visible', '');
+                    },startTime)
+
+                    startTime += offset
+                    setTimeout(() =>{
+                        b.removeAttribute('data-balloon-visible');
+                    }, startTime);
+
+                    startTime += buffer;
+                }
+
+                for(let t of tutorialElements){
+                    let offset = 200*t.getAttribute('aria-label').length;
+                    setTimeout(() => {
+                        t.setAttribute('data-balloon-visible', '');
+                    },startTime)
+
+                    startTime += offset
+                    setTimeout(() =>{
+                        t.removeAttribute('data-balloon-visible');
+                    }, startTime);
+
+                    startTime += buffer;
+                }
+
+                for(let i = 0; i < tutorialImages.length; i++){
+                    let offset = 200*tutorialImages[i].getAttribute('aria-label').length;
+                    let img = images[i];
+                    setTimeout(() => {img.style.opacity = 1}, startTime)
+
+                    setTimeout(() => {
+                        tutorialImages[i].setAttribute('data-balloon-visible', '');
+                    },startTime)
+                    startTime += offset;
+                    setTimeout(() =>{
+                        tutorialImages[i].removeAttribute('data-balloon-visible');
+                    }, startTime);
+                    startTime += buffer;
+                }
+                for(let i = tutorialImages.length-1; i >= 0; i--){
+                    let offset = 1000;
+                    let img = images[i];
+                    setTimeout(() => {img.style.opacity = 0}, startTime)
+                    startTime += offset;
+                }
+
+                setTimeout(() => {
+                    localStorage.setItem('tutorial', true);
+                    for(let i = tutorialImages.length-1; i >= 0; i--){
+                        i.remove();
+                    }
+                }, startTime+buffer);
+            }
         }
+        tutorial(tutorialDone);
     </script>
-    <script src="lib/nn.js"></script>
-    <script src="lib/matrix.js"></script>
-    <script src="car.js"></script>
-    <script src="ga.js"></script>
-    <script src="ray.js"></script>
-    <script src="boundary.js"></script>
-    <script src="setup.js"></script>
-    <script src="visualiseNN.js"></script>
 </body></html>
