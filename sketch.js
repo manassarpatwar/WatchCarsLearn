@@ -288,7 +288,7 @@ function setup() {
     let storedCheckpoints = JSON.parse(localStorage.getItem("checkpoints"));
     checkpoints = storedCheckpoints == null ? [] : storedCheckpoints.map(x => new Boundary(x.x1, x.y1, x.x2, x.y2));
 
-    MAINCANVAS = createCanvas(window.innerWidth, windowHeight);
+    MAINCANVAS = createCanvas(windowWidth, windowHeight);
 
 
     raySlider = createSlider(1, 8, 3);
@@ -400,10 +400,10 @@ window.addEventListener('touchstart', e => {
       prevPos.x = pos.x;
       prevPos.y = pos.y;
   
-      touching.up -= diff.y / (windowHeight / 3);
-      touching.down += diff.y / (windowHeight / 3);
-      touching.left -= diff.x / (windowWidth / 3);
-      touching.right += diff.x / (windowWidth / 3);
+      touching.up -= diff.y / (height / 3);
+      touching.down += diff.y / (height/ 3);
+      touching.left -= diff.x / (width / 3);
+      touching.right += diff.x / (width / 3);
   
       touching.up = Math.max(0, Math.min(1, touching.up));
       touching.down = Math.max(0, Math.min(1, touching.down));
