@@ -458,8 +458,8 @@ function update(){
               localCar.isThrottling = throttle;
               localCar.isReversing = reverse;
             }
-            const turnLeft = canTurn && Math.round(touching.left * 10) / 10;
-            const turnRight = canTurn && Math.round(touching.right * 10) / 10;
+            const turnLeft = Math.round(touching.left * 10) / 10;
+            const turnRight = Math.round(touching.right * 10) / 10;
         
             if (localCar.isTurningLeft !== turnLeft) {
               localCar.isTurningLeft = turnLeft;
