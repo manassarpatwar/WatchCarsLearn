@@ -40,12 +40,12 @@ var NNCanvas = function(can){
         canvasPara.addClass('tutorialImages');
     }
 
-    can.windowResized = function(){
-        Genome.drawDimensions = width < 600 ? 200 : 300; 
-        Genome.drawRadius = width < 600 ? 6 : 12; 
-        can.createCanvas(Genome.drawDimensions+buffer, Genome.drawDimensions);
-        canvas.position(width-Genome.drawDimensions-buffer, height-Genome.drawDimensions)
-    }
+    // can.windowResized = function(){
+    //     Genome.drawDimensions = width < 600 ? 200 : 300; 
+    //     Genome.drawRadius = width < 600 ? 6 : 12; 
+    //     can.createCanvas(Genome.drawDimensions+buffer, Genome.drawDimensions);
+    //     canvas.position(width-Genome.drawDimensions-buffer, height-Genome.drawDimensions)
+    // }
 
     can.draw = function () {
         can.clear();
@@ -121,13 +121,13 @@ var fitnessCanvas = function(can){
         canvasPara.addClass('tutorialImages');
     }
 
-    can.windowResized = function(){
-        Species.drawWidth = width < 600 ? 100 : 150;
-        Species.drawHeight = height < 500 ? 150 : 300;
-        createCanvas(Species.drawWidth, Species.drawHeight);
-        canvas.position(0, windowHeight-Species.drawHeight);
+    // can.windowResized = function(){
+    //     Species.drawWidth = width < 600 ? 100 : 150;
+    //     Species.drawHeight = height < 500 ? 150 : 300;
+    //     createCanvas(Species.drawWidth, Species.drawHeight);
+    //     canvas.position(0, windowHeight-Species.drawHeight);
         
-    }
+    // }
 
     can.draw = function(){
 
@@ -248,10 +248,10 @@ function clearScreen(){
     displayTracks();
 }
 
-function windowResized(){
-    createCanvas(window.innerWidth, window.innerHeight);
-    clearScreen();
-}
+// function windowResized(){
+//     createCanvas(window.innerWidth, window.innerHeight);
+//     clearScreen();
+// }
 
 
 function changeTheme(){
@@ -289,7 +289,10 @@ function setup() {
     checkpoints = storedCheckpoints == null ? [] : storedCheckpoints.map(x => new Boundary(x.x1, x.y1, x.x2, x.y2));
 
     MAINCANVAS = createCanvas(windowWidth, windowHeight);
-
+    select('html').style('width', windowWidth+'px');
+    select('html').style('height', windowHeight+'px');
+    select('body').style('width', windowWidth+'px');
+    select('body').style('height', windowHeight+'px');
 
     raySlider = createSlider(1, 8, 3);
     raySlider.position(10, 230);
