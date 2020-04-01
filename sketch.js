@@ -274,7 +274,7 @@ function toggleNightMode(){
 
 function setup() {
     let storedCarSettings = JSON.parse(localStorage.getItem("carSettings"))
-    carSettings = storedCarSettings == null ? [width/4, height/2, 0] : [storedCarSettings[0], storedCarSettings[1], storedCarSettings[2]];
+    carSettings = storedCarSettings == null ? [width/2, height/2, 0] : [storedCarSettings[0], storedCarSettings[1], storedCarSettings[2]];
 
     let storedPaths = JSON.parse(localStorage.getItem("paths"));
     paths = storedPaths == null ? [] : storedPaths.map(x => new Boundary(x.x1, x.y1, x.x2, x.y2));
@@ -368,7 +368,7 @@ function setup() {
     toggleNightMode();
     clearScreen();
     frameRate(60);
-    setTimeout(update, 1000/frameRate());
+    setInterval(update, 1000/60);
 }
 
 window.addEventListener('touchstart', e => {
@@ -497,8 +497,6 @@ function update(){
             localCar.reset();
 
     }
-    setTimeout(update, 1000/frameRate());
-
 }
 
 function evolve(dt){
