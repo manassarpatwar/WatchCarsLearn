@@ -327,6 +327,7 @@ function setup() {
     showEvolutionPara.addClass('tutorial');
 
     numRaysPara = createP("Inputs: "+raySlider.value());
+    numRaysPara.id('numRaysPara');
     numRaysPara.position(10, 200);
     numRaysPara.attribute('aria-label', "Change number of inputs");
     numRaysPara.attribute('data-balloon-pos', "down-left");
@@ -337,6 +338,7 @@ function setup() {
     speedSlider.style('width', '80px');
 
     speedPara = createP("Speed: "+GLOBALSPEED);
+    speedPara.id('speedPara');
     speedPara.position(10, 270);
     speedPara.attribute('aria-label', "Change speed of evolution");
     speedPara.attribute('data-balloon-pos', "down-left");
