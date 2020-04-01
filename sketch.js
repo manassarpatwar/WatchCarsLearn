@@ -349,6 +349,7 @@ function setup() {
     replayGenTutorialPara.style('margin', '0px');
     replayGenTutorialPara.style('z-index', '1');
     replayGenTutorialPara.style('transform', 'translate(-10px, -10px)');
+    replayGenTutorialPara.position(0,0);
 
     raySlider.changed(function(){
         raySlider.elt.blur();
