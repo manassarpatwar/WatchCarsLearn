@@ -273,6 +273,12 @@ function toggleNightMode(){
 
 
 function setup() {
+    MAINCANVAS = createCanvas(windowWidth, windowHeight);
+    select('html').style('width', windowWidth+'px');
+    select('html').style('height', windowHeight+'px');
+    select('body').style('width', windowWidth+'px');
+    select('body').style('height', windowHeight+'px');
+
     let storedCarSettings = JSON.parse(localStorage.getItem("carSettings"))
     carSettings = storedCarSettings == null ? [width/2, height/2, 0] : [storedCarSettings[0], storedCarSettings[1], storedCarSettings[2]];
 
@@ -287,12 +293,6 @@ function setup() {
 
     let storedCheckpoints = JSON.parse(localStorage.getItem("checkpoints"));
     checkpoints = storedCheckpoints == null ? [] : storedCheckpoints.map(x => new Boundary(x.x1, x.y1, x.x2, x.y2));
-
-    MAINCANVAS = createCanvas(windowWidth, windowHeight);
-    select('html').style('width', windowWidth+'px');
-    select('html').style('height', windowHeight+'px');
-    select('body').style('width', windowWidth+'px');
-    select('body').style('height', windowHeight+'px');
 
     raySlider = createSlider(1, 8, 3);
     raySlider.position(10, 230);
