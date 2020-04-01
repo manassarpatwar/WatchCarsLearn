@@ -30,7 +30,7 @@ class Car {
         this.inputs = [];
         this.laps = 0;
         this.gen = 0;
-        this.moves = 0;
+
         this.fitness = 0;
         this.color = [70,70,70];
 
@@ -79,13 +79,15 @@ class Car {
         this.corners = [];
         this.borders = [];
         this.dead = false;
-        this.oldScore = 0;
+
         this.score = 0;
         this.staleness = 0;
         this.checkpoints = new Set();
         this.inputs = [];
         this.laps = 0;
-        this.moves = 0;
+
+        this.rays = [];
+        this.computeRays();
 
     }
 
@@ -94,11 +96,6 @@ class Car {
     }
 
     look(){
-        if(this.moves > 100){
-            this.oldScore = this.laps*checkpoints.length+this.checkpoints.size;
-            this.moves = 0;
-        }
-
         let boundaries = innerTrack.concat(outerTrack);
         
         let overlap = false;
@@ -156,14 +153,6 @@ class Car {
 
     clone() {
         var clone = new Car(this.brain);
-        clone.fitness = this.fitness;
-        clone.bestScore = this.score;
-        clone.color = this.color;
-        return clone;
-    }
-
-    cloneForReplay(elClass) {
-        var clone = new Car(this.brain, null, elClass);
         clone.fitness = this.fitness;
         clone.bestScore = this.score;
         clone.color = this.color;
@@ -237,12 +226,14 @@ class Car {
     }
 
     display(color = [70,70,70], drawRays = false) {
-        // push()
-        // stroke(255);
-        // for(let r of this.rays){
-        //     line(r.tail.x, r.tail.y, r.getPoint2().x, r.getPoint2().y);
-        // }
-        // pop();
+        if(drawRays){
+            push()
+            stroke(255);
+            for(let r of this.rays){
+                line(r.tail.x, r.tail.y, r.getPoint2().x, r.getPoint2().y);
+            }
+            pop();
+        }
         push();
         noStroke();
         fill(color[0], color[1], color[2]);
@@ -313,15 +304,17 @@ class Car {
     }
 
     checkStaleness(){
-        if(this.oldScore == this.score){
-            this.staleness++;
-        }else{
-            this.staleness = 0;
-        }
+        let prevScore = this.score;
+        let car = this;
+        setTimeout(() => {
+            if(prevScore == car.score)
+                car.staleness++;
+            else
+                car.staleness = 0;
+        }, 1000);
 
-        if(this.staleness > 100){
+        if(this.staleness > 100)
             this.died();
-        }
     }
 
 }

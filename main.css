@@ -87,6 +87,10 @@ button.nightMode .button-icons {
     cursor:pointer;
 }
 
+#buttons .reset .button-icons{
+    content: url(./img/reset.png);
+}
+
 #buttons button:focus {
     outline: 0;
 }

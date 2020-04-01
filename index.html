@@ -33,25 +33,23 @@
     <section id="buttons">
         <div class="buttons buttonsLeft">
             <div>
-                <button onclick="drawTrack()" aria-label="Click/Touch once on screen to start drawing track, Click/Touch again to stop" data-balloon-pos="down-left" data-balloon-length="xlarge"><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
-                <button onclick="start()" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>
-                <button onclick="reset()" aria-label="Reset the environment" data-balloon-pos="down-left"><img alt="Reset" class="button-icons" src="img/reset.png"></button>                
-                <button onclick="zoomInCanvas()" aria-label="Zoom in" data-balloon-pos="down-right"><img alt="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
-                <button onclick="toggleHumanPlayer()" aria-label="Drive the car yourself" data-balloon-pos="down-right"><img alt="Drive the car yourself" class="button-icons" src="img/steering.png"></button>
-                <button onclick="toggleBest()" aria-label="Run the best player ever" data-balloon-pos="down-right"><img alt="Run the best player ever" class="button-icons" src="img/crown.png"></button>
+                <button onclick="drawTrack()" ontouchstart="drawTrack()" aria-label="Click/Touch once on screen to start drawing track, Click/Touch again to stop" data-balloon-pos="down-left" data-balloon-length="xlarge"><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
+                <button onclick="start(this)" ontouchstart="start(this)" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>              
+                <button onclick="zoomInCanvas()" ontouchstart="zoomInCanvas()" aria-label="Zoom in" data-balloon-pos="down"><img alt="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
+                <button onclick="toggleBest()" ontouchstart="toggleBest()" aria-label="Run the best player ever" data-balloon-pos="down-right"><img alt="Run the best player ever" class="button-icons" src="img/crown.png"></button>
+                <button onclick="toggleHumanPlayer()" ontouchstart="toggleHumanPlayer()"  aria-label="Drive the car yourself" data-balloon-pos="down-right"><img id = "steering" alt="Drive the car yourself" class="button-icons" src="img/steering.png"></button>
             </div>
             <div>
-                <button onclick="changeTheme()" aria-label="Change theme to light/dark" data-balloon-pos="down-left"><img alt="Change theme" class="button-icons" src="img/moon.png"></button>
-                <button onclick="clearScreen()" aria-label="Clear the drift marks off the screen" data-balloon-pos="down-left"><img alt="Clear drift marks" class="button-icons" src="img/erase.png"></button>
-                <button onclick="population.nextGen()" aria-label="Start next generation" data-balloon-pos="down-left"><img alt="Start next generation" class="button-icons" src="img/nextGen.png"></button>
-                <button onclick="zoomOutCanvas()" aria-label="Zoom out" data-balloon-pos="down-right"><img alt="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
-                <button onclick="toggleShow()" aria-label="Show/Hide evolution " data-balloon-pos="down-right"><img alt="Drive the car yourself" class="button-icons" src="img/eye.png"></button>
-                <button onclick="toggleReplay()" aria-label="Show/Hide replay of evolution" data-balloon-pos="down-right"><img alt="Show hide replay of evolution" class="button-icons" src="img/replay.png"></button>
+                <button onclick="changeTheme()" ontouchstart="changeTheme()" aria-label="Change theme to light/dark" data-balloon-pos="down-left"><img alt="Change theme" class="button-icons" src="img/moon.png"></button>
+                <button onclick="population.nextGen()" ontouchstart="population.nextGen()" aria-label="Start next generation" data-balloon-pos="down-left"><img alt="Start next generation" class="button-icons" src="img/nextGen.png"></button>
+                <button onclick="zoomOutCanvas()" ontouchstart="zoomOutCanvas()" aria-label="Zoom out" data-balloon-pos="down"><img alt="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
+                <button onclick="toggleShow()" ontouchstart="toggleShow()" aria-label="Show/Hide evolution " data-balloon-pos="down-right"><img alt="Drive the car yourself" class="button-icons" src="img/eye.png"></button>
+                <button onclick="toggleReplay()" ontouchstart="toggleReplay()" aria-label="Show/Hide replay of evolution" data-balloon-pos="down-right"><img alt="Show hide replay of evolution" class="button-icons" src="img/replay.png"></button>
             </div>
         </div>
         <div class="buttons buttonsRight">
             <div>
-                <button onclick="tutorial(false, 0)" aria-label=''><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
+                <button onclick="tutorial(false, 0)" ontouchstart="tutorial(false, 0)" aria-label=''><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
             </div>
             
         </div>

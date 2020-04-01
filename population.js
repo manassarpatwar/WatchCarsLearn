@@ -55,7 +55,7 @@ class Population{
         if (tempBest.score >= this.bestScore) {
           this.bestScore = tempBest.score;
           this.best = tempBest.clone();
-          this.bestGen = this.gen+1;
+
           arrayCopy(this.species[0].color, this.best.color);
         }
         

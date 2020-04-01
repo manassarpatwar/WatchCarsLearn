@@ -11,7 +11,9 @@ var zoom = 1;
 var maxZoom = 7;
 var zoomCar;
 let buffer = 50;
+let drawRays = false;
 
+var steerImg;
 
 var NIGHTMODE;
 var MAINCANVAS;
@@ -180,30 +182,35 @@ var fitnessCanvas = function(can){
     }
 }
 
+
 new p5(NNCanvas, "NNCanvas");
 new p5(fitnessCanvas, "fitnessCanvas")
 
 
 
-function start(){
-    carSettings = [localCar.pos.x, localCar.pos.y, localCar.angle];
-    localStorage.setItem("carSettings", JSON.stringify(carSettings));
-    if(!startEvolution){
+function start(el){
+    startEvolution = !startEvolution;
+    console.log(el.classList);
+    if(startEvolution){
+        el.setAttribute('class','reset');
+        el.setAttribute('aria-label','Reset the environment');
+        carSettings = [localCar.pos.x, localCar.pos.y, localCar.angle];
+        localStorage.setItem("carSettings", JSON.stringify(carSettings));
         for(let p of population.population){
             p.reset();
         }
         toggleNightMode();
+        humanPlaying = false;
+    }else{
+        el.setAttribute('class', '');
+        el.setAttribute('aria-label','Start evolution');
+        population = new Population(populationSize, raySlider.value(), 2);
+        startEvolution = false;
+        humanPlaying = true;
+        brain = null;
     }
-    startEvolution = true;
-    humanPlaying = false;
 }
 
-function reset(){
-    population = new Population(populationSize, raySlider.value(), 2);
-    startEvolution = false;
-    humanPlaying = true;
-    brain = null;
-}
 
 function toggleHumanPlayer(){
     humanPlaying = !humanPlaying;
@@ -316,14 +323,12 @@ function setup() {
     genPara.position(10, 120);
     genPara.attribute('aria-label', "The generation no. being replayed");
     genPara.attribute('data-balloon-pos', "down-left");
-    genPara.attribute('data-balloon-length', "xlarge");
     genPara.addClass('tutorial');
 
     showEvolutionPara = createP("Current Gen: -");
     showEvolutionPara.position(10, 160);
-    showEvolutionPara.attribute('aria-label', "The current generation evolving. Press N to not show evolution & speed computation");
+    showEvolutionPara.attribute('aria-label', "The current generation evolving");
     showEvolutionPara.attribute('data-balloon-pos', "down-left");
-    showEvolutionPara.attribute('data-balloon-length', "xlarge");
     showEvolutionPara.addClass('tutorial');
 
     numRaysPara = createP("Inputs: "+raySlider.value());
@@ -357,6 +362,7 @@ function setup() {
     replayGenTutorialPara.position(0,0);
 
     raySlider.changed(function(){
+        drawRays = false;
         raySlider.elt.blur();
         reset();
     });
@@ -369,67 +375,67 @@ function setup() {
     localCar = new Car(raySlider.value(), 2);
     zoomCar = localCar;
 
+    steerImg = select('#steering');
 
     NIGHTMODE = JSON.parse(localStorage.getItem("nightMode"));
     toggleNightMode();
     clearScreen();
     frameRate(60);
-    setInterval(update, 1000/60);
+
 }
 
 window.addEventListener('touchstart', e => {
-    e.preventDefault();
-  
-    if (touching.active) {
-      return;
+    if(humanPlaying && !drawTrack){
+        if (touching.active) {
+            return;
+        }
+        touching.active = true;
+    
+        const prevPos = {
+            x: e.touches[0].pageX,
+            y: e.touches[0].pageY
+        };
+    
+        const touchmove = e => {
+        
+            const pos = {
+                x: e.touches[0].pageX,
+                y: e.touches[0].pageY
+            };
+        
+            const diff = {
+                x: pos.x - prevPos.x,
+                y: pos.y - prevPos.y
+            };
+        
+            prevPos.x = pos.x;
+            prevPos.y = pos.y;
+        
+            touching.up -= diff.y / (height / 3);
+            touching.down += diff.y / (height/ 3);
+            touching.left -= diff.x / (width / 3);
+            touching.right += diff.x / (width / 3);
+        
+            touching.up = Math.max(0, Math.min(1, touching.up));
+            touching.down = Math.max(0, Math.min(1, touching.down));
+            touching.left = Math.max(0, Math.min(1, touching.left));
+            touching.right = Math.max(0, Math.min(1, touching.right));
+        };
+    
+        const touchend = e => {
+            touching.active = false;
+            touching.up = 0;
+            touching.down = 0;
+            touching.left = 0;
+            touching.right = 0;
+        
+            window.removeEventListener('touchmove', touchmove);
+            window.removeEventListener('touchend', touchend);
+        };
+    
+        window.addEventListener('touchmove', touchmove);
+        window.addEventListener('touchend', touchend);
     }
-    touching.active = true;
-  
-    const prevPos = {
-      x: e.touches[0].pageX,
-      y: e.touches[0].pageY
-    };
-  
-    const touchmove = e => {
-      e.preventDefault();
-  
-      const pos = {
-        x: e.touches[0].pageX,
-        y: e.touches[0].pageY
-      };
-  
-      const diff = {
-        x: pos.x - prevPos.x,
-        y: pos.y - prevPos.y
-      };
-  
-      prevPos.x = pos.x;
-      prevPos.y = pos.y;
-  
-      touching.up -= diff.y / (height / 3);
-      touching.down += diff.y / (height/ 3);
-      touching.left -= diff.x / (width / 3);
-      touching.right += diff.x / (width / 3);
-  
-      touching.up = Math.max(0, Math.min(1, touching.up));
-      touching.down = Math.max(0, Math.min(1, touching.down));
-      touching.left = Math.max(0, Math.min(1, touching.left));
-      touching.right = Math.max(0, Math.min(1, touching.right));
-    };
-  
-    const touchend = e => {
-      touching.active = false;
-      touching.up = 0;
-      touching.down = 0;
-      touching.left = 0;
-      touching.right = 0;
-  
-      window.removeEventListener('touchmove', touchmove);
-      window.removeEventListener('touchend', touchend);
-    };
-  
-    window.addEventListener('touchmove', touchmove);
-    window.addEventListener('touchend', touchend);
 });
 
 let lastTime = Date.now();
@@ -446,12 +452,11 @@ function update(){
             dt = step;
         }
 
-        if(humanPlaying)
+        if(humanPlaying){
             localCar.update(dt/1000);
-        for(let i = 0; i < GLOBALSPEED; i++){
-            evolve(dt/1000);
-
+            steerImg.style('transform', 'rotate('+degrees(localCar.steerAngle)*10+'deg)')
         }
+        evolve(dt/1000);
             
         lastTime = ms;
     }
@@ -503,6 +508,7 @@ function update(){
             localCar.reset();
 
     }
+
 }
 
 function evolve(dt){
@@ -515,6 +521,8 @@ function evolve(dt){
                 car.update(dt);
                 car.checkStaleness();
             }
+            if(population.gen == 0 || !showNothing)
+                car.display(car.color);
         }
         if(population.done()){
             population.naturalSelection();
@@ -530,6 +538,9 @@ function evolve(dt){
             population.best.update(dt);
             population.best.checkStaleness();
         }
+        population.best.display(population.best.color, true);
+        zoomCar = population.best;
+        brain = population.best.brain;
     }
 
     if(startEvolution && replayGen && population.replayGenerations.length > 0){
@@ -579,7 +590,7 @@ function draw() {
     }
     
     clearScreen();
-
+    update();
     push();
     fill(0+NIGHTMODE*255);
     text(frameRate().toFixed(2), width-30, height-5);
@@ -587,12 +598,14 @@ function draw() {
 
     if(keyIsDown(187) && GLOBALSPEED < 25){
         GLOBALSPEED += 1;
+        frameRate(60+GLOBALSPEED);
         speedPara.html("Speed: "+GLOBALSPEED);
         speedSlider.value(GLOBALSPEED);
     }
 
     if(keyIsDown(189) && GLOBALSPEED > 1){
         GLOBALSPEED -= 1;
+        frameRate(60+GLOBALSPEED);
         speedPara.html("Speed: "+GLOBALSPEED);
         speedSlider.value(GLOBALSPEED);
     }
@@ -600,6 +613,7 @@ function draw() {
 
     raySlider.input(() => {
         humanPlaying = true;
+        drawRays = true;
         numRaysPara.html("Inputs: "+raySlider.value());
         localCar.changeNumRays(raySlider.value());
 
@@ -609,19 +623,6 @@ function draw() {
         GLOBALSPEED = speedSlider.value();
         speedPara.html("Speed: "+speedSlider.value());
     })
-
-    if(startEvolution && (!showNothing || population.gen == 0)){
-        for(let p of population.population){
-            p.display(p.color);
-        }
-    }
-
-    if(population.best && runBest){
-        population.best.display(population.best.color, true);
-        zoomCar = population.best;
-        brain = population.best.brain;
-    
-    }
     
     if(population.replayGenerations.length > 0 && startEvolution && replayGen){
         let tutorial = population.replayGenerations.length == 1;
@@ -631,7 +632,7 @@ function draw() {
                 brain = replaySpecies.mascot.brain;
             else if(replaySpecies.mascot.isPointInside(mouseX, mouseY))
                 brain = replaySpecies.mascot.brain;
-            replaySpecies.mascot.display(replaySpecies.color, true);
+            replaySpecies.mascot.display(replaySpecies.color);
         }
         let genMascot = population.replayGenerations[population.replayGenerationNo].species[0].mascot;
         let x = genMascot.pos.y < height/2 ? "down" : "up";
@@ -650,7 +651,7 @@ function draw() {
         let y = localCar.pos.x < width/2 ? "left" : "right";
         humanPlayingPara.attribute('data-balloon-pos', x+"-"+y);
         humanPlayingPara.position(localCar.pos.x, localCar.pos.y);
-        localCar.display([230, 109, 100], true);
+        localCar.display([230, 109, 100], drawRays);
     }
 }
 

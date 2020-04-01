@@ -144,7 +144,7 @@ button[aria-label][data-balloon-pos] {
     height: 0;
     border: 5px solid transparent;
     border-bottom-color: var(--balloon-color);
-    right: 5px;
+    right: 20px;
     top: 100%;
     transform: translate(0, calc(var(--balloon-move) * -1)); }
   [aria-label][data-balloon-pos][data-balloon-pos="down-right"]:hover:after, [aria-label][data-balloon-pos][data-balloon-pos="down-right"][data-balloon-visible]:after {
