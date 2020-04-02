@@ -2,13 +2,13 @@
 
 Cars learn to drive around user drawn track by [Neuroevolution of Augmenting Topologies](https://en.wikipedia.org/wiki/Neuroevolution_of_augmenting_topologies) (NEAT)
 
-I tried to implement NEAT from the [original paper](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf) but then I had to debug using a really great NEAT implementation by [Code Bullet](https://github.com/Code-Bullet/NEAT-Template-JavaScript)
+I tried to implement NEAT from the [original paper](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf) but then I had to debug using a really great NEAT implementation by [Code Bullet](https://github.com/Code-Bullet/NEAT-Template-JavaScript) especially speciation and the overall natural selection process.
 
-The user input mechanic for the cars directly taken from a fun and great implementation of a 2d car https://github.com/pakastin/car. 
+The user input mechanic for the cars directly taken from a fun and great implementation of a 2d car by [Juha Lindstedt](https://github.com/pakastin/car). 
 
 The physics are loosely based on the excellent [car physics explanation](https://asawicki.info/Mirror/Car%20Physics%20for%20Games/Car%20Physics%20for%20Games.html) by Marco Monster.
 
-The steering and return to steering are directly taken from the javascript implentation of the above car physics paper by [spacejack](https://github.com/spacejack/carphysics2d)
+The steering and return to steering are directly taken from the javascript implementation of the above car physics paper by [spacejack](https://github.com/spacejack/carphysics2d)
 
 
 [Check It Out!](https://manassarpatwar.github.io/Self-driving-AI/)
