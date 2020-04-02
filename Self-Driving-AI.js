@@ -172,13 +172,6 @@ const keyActive = (key) => {
 
 const keysDown = {};
 
-const touching = {
-    up: 0,
-    down: 0,
-    left: 0,
-    right: 0
-};
-
 window.addEventListener('keydown', e => {
     keysDown[e.which] = true;
 });

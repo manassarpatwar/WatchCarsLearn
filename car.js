@@ -22,7 +22,7 @@ class Car {
 
         this.borders = [];
         this.dead = false;
-        this.oldScore = 0;
+        this.prevScore = 0;
         this.score = 0;
         this.bestScore = 0;
         this.staleness = 0;
@@ -30,10 +30,9 @@ class Car {
         this.inputs = [];
         this.laps = 0;
         this.gen = 0;
-
+        this.moves = 0;
         this.fitness = 0;
         this.color = [70,70,70];
-
 
         if(inputs instanceof Genome){
             this.genomeInputs = inputs.numInputs;
@@ -47,6 +46,38 @@ class Car {
 
         this.numRays = this.genomeInputs;
         this.computeRays();
+
+    }
+
+    reset(){
+        this.pos = createVector(carSettings[0], carSettings[1]);
+
+        this.angle = carSettings[2];
+
+        this.velocity = 0;
+        this.acceleration = 0;
+        this.steer = 0;
+        this.steerAngle = 0;
+
+        this.isThrottling = false,
+        this.isReversing = false;
+        this.isBraking = false;
+
+        this.dead = false;
+        this.prevScore = 0;
+        this.score = 0;
+
+        this.staleness = 0;
+        this.checkpoints = new Set();
+        this.inputs = [];
+        this.laps = 0;
+        this.moves = 0;
+
+        this.rays = [];
+        this.computeRays();
+        this.corners = [];
+        this.borders = [];
+        this.recomputeCorners();
 
     }
 
@@ -66,36 +97,15 @@ class Car {
         return child;
     }
 
-    reset(){
-        this.pos = createVector(carSettings[0], carSettings[1]);
-        this.angle = carSettings[2],
-        this.velocity = 0;
-        this.acceleration = 0;
-        this.steer = 0;
-        this.steerAngle = 0;
-        this.isThrottling = false,
-        this.isReversing = false;
-        this.isBraking = false;
-        this.corners = [];
-        this.borders = [];
-        this.dead = false;
-
-        this.score = 0;
-        this.staleness = 0;
-        this.checkpoints = new Set();
-        this.inputs = [];
-        this.laps = 0;
-
-        this.rays = [];
-        this.computeRays();
-
-    }
-
     died(){
         this.dead = true;
     }
 
     look(){
+        if(this.moves > 50){
+            this.prevScore = this.score;
+            this.moves = 0;
+        }
         let boundaries = innerTrack.concat(outerTrack);
         
         let overlap = false;
@@ -228,7 +238,7 @@ class Car {
     display(color = [70,70,70], drawRays = false) {
         if(drawRays){
             push()
-            stroke(255);
+            stroke(0+NIGHTMODE*255);
             for(let r of this.rays){
                 line(r.tail.x, r.tail.y, r.getPoint2().x, r.getPoint2().y);
             }
@@ -304,16 +314,12 @@ class Car {
     }
 
     checkStaleness(){
-        let prevScore = this.score;
-        let car = this;
-        setTimeout(() => {
-            if(prevScore == car.score)
-                car.staleness++;
-            else
-                car.staleness = 0;
-        }, 1000);
+        if(this.prevScore == this.score)
+            this.staleness++;
+        else
+            this.staleness = 0;
 
-        if(this.staleness > 100)
+        if(this.staleness > 200)
             this.died();
     }
 

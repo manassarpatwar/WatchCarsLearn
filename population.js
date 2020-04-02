@@ -8,7 +8,6 @@ class Population{
         this.innovationHistory = [];
         this.species = [];
         this.gen = 0;
-        this.bestGen = 0;
         this.best = null;
 
         this.replayGenerations = [];

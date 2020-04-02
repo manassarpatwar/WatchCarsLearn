@@ -33,7 +33,7 @@
     <section id="buttons">
         <div class="buttons buttonsLeft">
             <div>
-                <button onclick="drawTrack()" ontouchstart="drawTrack()" aria-label="Click/Touch once on screen to start drawing track, Click/Touch again to stop" data-balloon-pos="down-left" data-balloon-length="xlarge"><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
+                <button onclick="drawTrack()" ontouchstart="drawTrack()" aria-label="Click once on screen to start drawing track, click again to stop" data-balloon-pos="down-left" data-balloon-length="xlarge"><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
                 <button onclick="start(this)" ontouchstart="start(this)" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>              
                 <button onclick="zoomInCanvas()" ontouchstart="zoomInCanvas()" aria-label="Zoom in" data-balloon-pos="down"><img alt="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
                 <button onclick="toggleBest()" ontouchstart="toggleBest()" aria-label="Run the best player ever" data-balloon-pos="down-right"><img alt="Run the best player ever" class="button-icons" src="img/crown.png"></button>
@@ -56,17 +56,19 @@
     </section>
     <script>
         var tutorialDone = JSON.parse(localStorage.getItem("tutorial"));
-
+        var tutorialInProgress = false;
         function tutorial(tutorialDone, startTime = 1000){
             var buttons = document.getElementsByTagName("button");
             var tutorialElements = document.getElementsByClassName('tutorial');
+
             var tutorialImages = document.getElementsByClassName('tutorialImages');
-            if(!tutorialDone){
+            if(!tutorialDone && !tutorialInProgress){
+                tutorialInProgress = true;
                 humanPlaying = true;
                 var graphImg = "img/Graph.png";
                 var NNImg;
                 if(!NIGHTMODE)
-                    NNImg = "img/NNLight.png"
+                    NNImg = "img/NN_Light.png"
                 else
                     NNImg = "img/NN.png";
                 var images = [];
@@ -78,7 +80,8 @@
                     img.style.bottom = 0;
                     img.style.opacity = 0;
                     img.style.transition = "opacity 1s ease";
-                    if(!NIGHTMODE){
+
+                    if(NIGHTMODE){
                         img.style.filter = "invert(100%)";
                     }
                     
@@ -92,6 +95,8 @@
                     img.style.bottom = 0;
                     img.style.opacity = 0;
                     img.style.transition = "opacity 1s ease";
+                    img.style.width = Genome.drawDimensions+'px';
+                    img.style.height = Genome.drawDimensions+'px';
                     
                     images.push(img);
                     document.getElementsByTagName('body')[0].appendChild(img); 
@@ -150,9 +155,10 @@
                 setTimeout(() => {
                     localStorage.setItem('tutorial', true);
                     for(let i = tutorialImages.length-1; i >= 0; i--){
-                        i.remove();
+                        images[i].remove();
                     }
-                }, startTime+buffer);
+                    tutorialInProgress = false;
+                }, startTime);
             }
         }
         tutorial(tutorialDone);

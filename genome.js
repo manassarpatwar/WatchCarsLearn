@@ -45,7 +45,8 @@ class Genome{
 
     clone(){
         let g = new Genome(this.numInputs, this.numOutputs, true);
-
+        g.nodes = new Map();
+        g.connections = new Map();
         for(let n of this.nodes.values()){
             g.addNode(n.copy());
         }

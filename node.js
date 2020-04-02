@@ -19,10 +19,12 @@ class Node{
 
     reset(){
         this.inputSum = 0;
+        this.outputValue = 0;
     }
 
     activate(){
         this.outputValue = this.activationFunction(this.inputSum);
+        this.drawOutput = this.outputValue;
     }
 
     activationFunction(x){

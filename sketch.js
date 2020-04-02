@@ -12,6 +12,7 @@ var maxZoom = 7;
 var zoomCar;
 let buffer = 50;
 let drawRays = false;
+let screenshot = false;
 
 var steerImg;
 
@@ -36,7 +37,7 @@ var NNCanvas = function(can){
         canvas = can.createCanvas(Genome.drawDimensions+buffer, Genome.drawDimensions);
         canvas.position(width-Genome.drawDimensions-buffer, height-Genome.drawDimensions)
         let canvasPara = createP('');
-        canvasPara.position(width-Genome.drawDimensions-buffer, height-Genome.drawDimensions/2)
+        canvasPara.position(width-Genome.drawDimensions/2-buffer/2, height-Genome.drawDimensions/2)
         canvasPara.attribute('aria-label', "Visualisation of the Neural Network of the best player");
         canvasPara.attribute('data-balloon-pos', "left");
         canvasPara.addClass('tutorialImages');
@@ -99,11 +100,14 @@ var NNCanvas = function(can){
                 can.translate(n.vector.x + xOffset, n.vector.y+yOffset)
                 can.fill(0)
                 can.ellipse(0,0, n.radius,  n.radius);
-                can.fill(255, 255, 255, Math.abs(1-n.outputValue - NIGHTMODE)*255);
+                can.fill(255, 255, 255, Math.abs(1-n.drawOutput - NIGHTMODE)*255);
                 can.ellipse(0,0, n.radius,  n.radius);
                 can.pop();
             }
             can.pop();
+            if(screenshot){
+                can.saveCanvas(canvas, 'NN', 'png');
+            }
         }
     };
 }
@@ -164,11 +168,13 @@ var fitnessCanvas = function(can){
             can.pop();
             let genX = offset;
             let genOffset = 10;
+            let start = 0;
             if(genOffset*population.replayGenerations.length > (Species.drawWidth-offset)){
-                genOffset = (Species.drawWidth-offset)/population.replayGenerations.length;
-            }
+                start = population.replayGenerations.length - ((Species.drawWidth-offset)/genOffset);
+            }   
 
-            for(let rg of population.replayGenerations){
+            for(let i = start; i <  population.replayGenerations.length; i++){
+                let rg = population.replayGenerations[i];
                 for(let s of rg.species){
                     push();
                     can.noStroke();
@@ -178,13 +184,18 @@ var fitnessCanvas = function(can){
                 }
                 genX += genOffset;
             }
+
+            if(screenshot){
+                can.saveCanvas(canvas, 'Graph', 'png');
+                screenshot = false;
+            }
         }
     }
 }
 
 
-new p5(NNCanvas, "NNCanvas");
 new p5(fitnessCanvas, "fitnessCanvas")
+new p5(NNCanvas, "NNCanvas");
 
 
 
@@ -196,9 +207,7 @@ function start(el){
         el.setAttribute('aria-label','Reset the environment');
         carSettings = [localCar.pos.x, localCar.pos.y, localCar.angle];
         localStorage.setItem("carSettings", JSON.stringify(carSettings));
-        for(let p of population.population){
-            p.reset();
-        }
+       
         toggleNightMode();
         humanPlaying = false;
     }else{
@@ -338,7 +347,7 @@ function setup() {
     numRaysPara.attribute('data-balloon-pos', "down-left");
     numRaysPara.addClass('tutorial');
 
-    speedSlider = createSlider(1, 25, 1);
+    speedSlider = createSlider(1, 10, 1);
     speedSlider.position(10, 300)
     speedSlider.style('width', '80px');
 
@@ -350,7 +359,7 @@ function setup() {
     speedPara.addClass('tutorial');
 
     replayGenTutorialPara = createP('');
-    replayGenTutorialPara.attribute('aria-label', "These are the champions of the species of the prevous generation. Hover/Touch the species champions to reveal their brains");
+    replayGenTutorialPara.attribute('aria-label', "These are the champions of the species of the prevous generation. Hover over the species champions to reveal their brains");
     replayGenTutorialPara.attribute('data-balloon-length', "xlarge");
     replayGenTutorialPara.addClass('tutorial');
     replayGenTutorialPara.style('width', '20px');
@@ -380,63 +389,8 @@ function setup() {
     NIGHTMODE = JSON.parse(localStorage.getItem("nightMode"));
     toggleNightMode();
     clearScreen();
-    frameRate(60);
-
+    setTimeout(update, 1000/frameRate());
 }
-
-window.addEventListener('touchstart', e => {
-    if(humanPlaying && !drawTrack){
-        if (touching.active) {
-            return;
-        }
-        touching.active = true;
-    
-        const prevPos = {
-            x: e.touches[0].pageX,
-            y: e.touches[0].pageY
-        };
-    
-        const touchmove = e => {
-        
-            const pos = {
-                x: e.touches[0].pageX,
-                y: e.touches[0].pageY
-            };
-        
-            const diff = {
-                x: pos.x - prevPos.x,
-                y: pos.y - prevPos.y
-            };
-        
-            prevPos.x = pos.x;
-            prevPos.y = pos.y;
-        
-            touching.up -= diff.y / (height / 3);
-            touching.down += diff.y / (height/ 3);
-            touching.left -= diff.x / (width / 3);
-            touching.right += diff.x / (width / 3);
-        
-            touching.up = Math.max(0, Math.min(1, touching.up));
-            touching.down = Math.max(0, Math.min(1, touching.down));
-            touching.left = Math.max(0, Math.min(1, touching.left));
-            touching.right = Math.max(0, Math.min(1, touching.right));
-        };
-    
-        const touchend = e => {
-            touching.active = false;
-            touching.up = 0;
-            touching.down = 0;
-            touching.left = 0;
-            touching.right = 0;
-        
-            window.removeEventListener('touchmove', touchmove);
-            window.removeEventListener('touchend', touchend);
-        };
-    
-        window.addEventListener('touchmove', touchmove);
-        window.addEventListener('touchend', touchend);
-    }
-});
 
 let lastTime = Date.now();
 
@@ -456,36 +410,18 @@ function update(){
             localCar.update(dt/1000);
             steerImg.style('transform', 'rotate('+degrees(localCar.steerAngle)*10+'deg)')
         }
-        evolve(dt/1000);
+        for(let i = 0; i < GLOBALSPEED; i++)
+            evolve(dt/1000);
             
         lastTime = ms;
     }
     if(humanPlaying && localCar){
-        if (touching.active) {
-            const throttle = Math.round(touching.up * 10) / 10;
-            const reverse = Math.round(touching.down * 10) / 10;
+        localCar.isThrottling = keyActive('up');
+        localCar.isReversing = keyActive('down');
         
-            if (localCar.isThrottling !== throttle || localCar.isReversing !== reverse) {
-              localCar.isThrottling = throttle;
-              localCar.isReversing = reverse;
-            }
-            const turnLeft = Math.round(touching.left * 10) / 10;
-            const turnRight = Math.round(touching.right * 10) / 10;
-        
-            if (localCar.isTurningLeft !== turnLeft) {
-              localCar.isTurningLeft = turnLeft;
-            }
-            if (localCar.isTurningRight !== turnRight) {
-              localCar.isTurningRight = turnRight;
-            }
-        }else{
-            localCar.isThrottling = keyActive('up');
-            localCar.isReversing = keyActive('down');
-            
-            localCar.isTurningLeft = keyActive('left');
-            localCar.isTurningRight = keyActive('right');
+        localCar.isTurningLeft = keyActive('left');
+        localCar.isTurningRight = keyActive('right');
 
-        }
 
         if (localCar.pos.x > width) {
             localCar.pos.x -= width;
@@ -508,6 +444,7 @@ function update(){
             localCar.reset();
 
     }
+    setTimeout(update, 1000/frameRate());
 
 }
 
@@ -521,8 +458,6 @@ function evolve(dt){
                 car.update(dt);
                 car.checkStaleness();
             }
-            if(population.gen == 0 || !showNothing)
-                car.display(car.color);
         }
         if(population.done()){
             population.naturalSelection();
@@ -538,13 +473,9 @@ function evolve(dt){
             population.best.update(dt);
             population.best.checkStaleness();
         }
-        population.best.display(population.best.color, true);
-        zoomCar = population.best;
-        brain = population.best.brain;
     }
 
     if(startEvolution && replayGen && population.replayGenerations.length > 0){
-        genPara.html("Replaying Gen: "+(population.replayGenerationNo+1));
         let replayGeneration = population.replayGenerations[population.replayGenerationNo];
 
         if(!humanPlaying){
@@ -573,9 +504,11 @@ function evolve(dt){
             for(let replaySpecies of replayGeneration.species){
                 replaySpecies.mascot.reset();
             }
-            if(population.replayGenerations.length > population.replayGenerationNo+1)
+            if(population.replayGenerations.length > population.replayGenerationNo+1){
                 population.replayGenerationNo++;
+            }
         }
+        genPara.html("Replaying Gen: "+(population.replayGenerationNo+1));
         brain = replayGeneration.species[0].mascot.brain;
     }else{
         genPara.html("Replaying Gen: -");
@@ -590,22 +523,20 @@ function draw() {
     }
     
     clearScreen();
-    update();
+
     push();
     fill(0+NIGHTMODE*255);
     text(frameRate().toFixed(2), width-30, height-5);
     pop();
 
-    if(keyIsDown(187) && GLOBALSPEED < 25){
+    if(keyIsDown(187) && GLOBALSPEED < 10){
         GLOBALSPEED += 1;
-        frameRate(60+GLOBALSPEED);
         speedPara.html("Speed: "+GLOBALSPEED);
         speedSlider.value(GLOBALSPEED);
     }
 
     if(keyIsDown(189) && GLOBALSPEED > 1){
         GLOBALSPEED -= 1;
-        frameRate(60+GLOBALSPEED);
         speedPara.html("Speed: "+GLOBALSPEED);
         speedSlider.value(GLOBALSPEED);
     }
@@ -623,6 +554,17 @@ function draw() {
         GLOBALSPEED = speedSlider.value();
         speedPara.html("Speed: "+speedSlider.value());
     })
+
+    if(startEvolution && (population.gen == 0 || !showNothing)){
+        for(let p of population.population)
+            p.display(p.color);
+    }
+
+    if(runBest && population.best){
+        population.best.display(population.best.color, true);
+        zoomCar = population.best;
+        brain = population.best.brain;
+    }
     
     if(population.replayGenerations.length > 0 && startEvolution && replayGen){
         let tutorial = population.replayGenerations.length == 1;
@@ -677,6 +619,9 @@ function keyPressed(e) {
             break;
         case 80:
             humanPlaying = !humanPlaying;
+            break;
+        case 83:
+            screenshot = true;
             break;
     }
 }
