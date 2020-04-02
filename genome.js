@@ -236,13 +236,13 @@ class Genome{
             this.mutateWeights();
         }
         let rand2 = random(1);
-        if(rand2 < 0.05){
+        if(rand2 < 0.15){
             this.mutateConnection(innovationHistory);
         }
 
        
         let rand3 = random(1);
-        if(rand3 < 0.01){
+        if(rand3 < 0.05){
             this.mutateNode(innovationHistory);
         }
 

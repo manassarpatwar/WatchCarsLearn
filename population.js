@@ -163,6 +163,8 @@ class Population{
     speciate(){
         for(let s of this.species){
             s.members = [];
+            s.bestFitness = 0;
+            s.averageFitness = 0;
         }
         for(let i = 0; i < this.populationSize; i++){
             let p = this.population[i];

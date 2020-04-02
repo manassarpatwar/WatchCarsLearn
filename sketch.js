@@ -20,14 +20,14 @@ var NIGHTMODE;
 var MAINCANVAS;
 
 var numRaysPara;
-var speedPara;
+
 var genPara;
 var replayGenTutorialPara;
 var showEvolutionPara;
 var humanPlayingPara;
 
 var raySlider;
-var speedSlider;
+
 
 
 var NNCanvas = function(can){
@@ -347,17 +347,6 @@ function setup() {
     numRaysPara.attribute('data-balloon-pos', "down-left");
     numRaysPara.addClass('tutorial');
 
-    speedSlider = createSlider(1, 10, 1);
-    speedSlider.position(10, 300)
-    speedSlider.style('width', '80px');
-
-    speedPara = createP("Speed: "+GLOBALSPEED);
-    speedPara.id('speedPara');
-    speedPara.position(10, 270);
-    speedPara.attribute('aria-label', "Change speed of evolution");
-    speedPara.attribute('data-balloon-pos', "down-left");
-    speedPara.addClass('tutorial');
-
     replayGenTutorialPara = createP('');
     replayGenTutorialPara.attribute('aria-label', "These are the champions of the species of the prevous generation. Hover over the species champions to reveal their brains");
     replayGenTutorialPara.attribute('data-balloon-length', "xlarge");
@@ -376,9 +365,6 @@ function setup() {
         reset();
     });
 
-    speedSlider.changed(function(){
-        speedSlider.elt.blur();
-    });
 
     population = new Population(populationSize, raySlider.value(), 2);
     localCar = new Car(raySlider.value(), 2);
@@ -410,8 +396,8 @@ function update(){
             localCar.update(dt/1000);
             steerImg.style('transform', 'rotate('+degrees(localCar.steerAngle)*10+'deg)')
         }
-        for(let i = 0; i < GLOBALSPEED; i++)
-            evolve(dt/1000);
+
+        evolve(dt/1000);
             
         lastTime = ms;
     }
@@ -475,7 +461,7 @@ function evolve(dt){
         }
     }
 
-    if(startEvolution && replayGen && population.replayGenerations.length > 0){
+    if(startEvolution && population.replayGenerations.length > 0){
         let replayGeneration = population.replayGenerations[population.replayGenerationNo];
 
         if(!humanPlaying){
@@ -531,14 +517,12 @@ function draw() {
 
     if(keyIsDown(187) && GLOBALSPEED < 10){
         GLOBALSPEED += 1;
-        speedPara.html("Speed: "+GLOBALSPEED);
-        speedSlider.value(GLOBALSPEED);
+        frameRate(60+GLOBALSPEED)
     }
 
     if(keyIsDown(189) && GLOBALSPEED > 1){
         GLOBALSPEED -= 1;
-        speedPara.html("Speed: "+GLOBALSPEED);
-        speedSlider.value(GLOBALSPEED);
+        frameRate(60+GLOBALSPEED)
     }
 
 
@@ -549,11 +533,6 @@ function draw() {
         localCar.changeNumRays(raySlider.value());
 
     });
-
-    speedSlider.input(() => {
-        GLOBALSPEED = speedSlider.value();
-        speedPara.html("Speed: "+speedSlider.value());
-    })
 
     if(startEvolution && (population.gen == 0 || !showNothing)){
         for(let p of population.population)
