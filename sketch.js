@@ -13,6 +13,7 @@ var zoomCar;
 let buffer = 50;
 let drawRays = false;
 let screenshot = false;
+let genTutorialDone = false;
 
 var steerImg;
 
@@ -323,7 +324,7 @@ function setup() {
     humanPlayingPara.style('z-index', '2');
     humanPlayingPara.style('transform', 'translate(-10px, -10px)');
 
-    humanPlayingPara.attribute('aria-label', "This is YOU. Toggle control by pressing P. Control your car with WASD or arrow keys. Control the start position of evolution by driving around.");
+    humanPlayingPara.attribute('aria-label', "This is YOU. Control your car with WASD or arrow keys. Control the start position of evolution by driving around.");
     humanPlayingPara.attribute('data-balloon-length', "xlarge");
     humanPlayingPara.attribute('data-balloon-pos', "down-left");
     humanPlayingPara.addClass('tutorial');
@@ -546,7 +547,7 @@ function draw() {
     }
     
     if(population.replayGenerations.length > 0 && startEvolution && replayGen){
-        let tutorial = population.replayGenerations.length == 1;
+        let tutorial = population.replayGenerations.length == 1 && !genTutorialDone;
 
         for(let replaySpecies of population.replayGenerations[population.replayGenerationNo].species){
             if(zoom > 1 && replaySpecies.mascot.isPointInside(Math.floor((mouseX-width/2+zoomCar.pos.x*zoom)/zoom), Math.floor((mouseY-height/2+zoomCar.pos.y*zoom)/zoom)))
@@ -560,7 +561,10 @@ function draw() {
         let y = genMascot.pos.x < width/2 ? "left" : "right";
         if(tutorial){
             replayGenTutorialPara.attribute('data-balloon-visible', '');
-            setTimeout(() => {replayGenTutorialPara.removeAttribute('data-balloon-visible')}, 200*replayGenTutorialPara.elt.getAttribute('aria-label').length)
+            setTimeout(() => {
+                replayGenTutorialPara.removeAttribute('data-balloon-visible');
+                genTutorialDone = true;
+            }, 200*replayGenTutorialPara.elt.getAttribute('aria-label').length)
         }
 
         replayGenTutorialPara.attribute('data-balloon-pos', x+"-"+y);
