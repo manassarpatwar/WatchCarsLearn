@@ -2,33 +2,30 @@
 
 Cars learn to drive around user drawn track by [Neuroevolution of Augmenting Topologies](https://en.wikipedia.org/wiki/Neuroevolution_of_augmenting_topologies) (NEAT)
 
+I tried to implement NEAT from the [original paper](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf) but then I had to debug using a really great NEAT implementation by [Code Bullet](https://github.com/Code-Bullet/NEAT-Template-JavaScript)
+
 [Check It Out!](https://manassarpatwar.github.io/Self-driving-AI/)
 
 Used HTML5 Canvas and Javascript
 
 Instructions:
-* Press (?) for the description of icons
+* Press (?) for tutorial.
 * Draw a track of any shape using the drawTrack button (pencil icon), example track below.
 
-![Sample track](https://user-images.githubusercontent.com/44678221/71773884-117ba000-2f5d-11ea-929d-5d46a0dcd7be.png)
-
-* The track is self enclosing, i.e. the track closes itself when you double click to stop drawing.
-* Run the cars by pressing the play button
-* Tweak parameters, such as number of cars, number of sensors, turn type and Enjoy!
-* If the cars fail to learn a track try tweaking the parameters, or it may simply be the case that the track has very sharp turns.
+![Sample track](https://user-images.githubusercontent.com/44678221/78273971-26041000-752d-11ea-9071-d794c5fa8df5.png)
 
 ## Neural network visualisation
 The changes in the "brain" of the best car, or its Neural Network are shown in the bottom right corner of the screen.
-The green color and red color represents positive and negative change in weight over the previous best car respectively.
+The green color and red color represents enabled and disabled connections.
 
 ### The inputs:
-The distance measured by the sensors
+The distance measured by the sensors + bias
 
 ### The outputs:
-Turn Left, turn Right or (nothing/return to center steering)
-
-## Learning
-Cars learn using mutations of best car's neural network
+Power: If output < 0.33 -> reverse, output > 0.66 -> accelerate else do nothing  
+Steer: If output < 0.33 -> turn left, output > 0.66 -> turn right else do nothing
 
 ## NEAT
-All cars use a fixed topology neural network. The cars cannot mutate new nodes and connections. The genetic algorithm implements crossover of two parents, which produce all the new offsprings for the next generation.
+Cars initially are thrown into the track and see how they perform. Each car thinks differently due to random initialization and mutations. Each mutation, especially mutating a hidden node or a connection will decrease the fitness of the car. But over generations it will have enough time to optimize its weights.
+
+After each generation, cars are divided into species. The champions of the species are the best performing players within the species. The speciation criteria is how similar the topology of the networks are, and how similarly did they mutate over genearations. Then 50% of the population within each species, and those species who have not improved within 15 generations are culled. The champions of each species are chosen without mutation for the next generation. Then each species is assigned a specific number of offsprings calculated from how well the species overall performed.
