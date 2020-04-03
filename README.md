@@ -23,7 +23,7 @@ Instructions:
 
 ## Neural network visualisation
 The changes in the "brain" of the best car, or its Neural Network are shown in the bottom right corner of the screen.
-The green color and red color represents enabled and disabled connections.
+The green color and red color represents enabled and disabled connections. The connections are disabled when a new node is randomly chosen to split a connection into 2 new connections.
 
 ### The inputs:
 The distance measured by the sensors + bias
@@ -36,3 +36,6 @@ Steer: If output < 0.33 -> turn left, output > 0.66 -> turn right else do nothin
 Cars initially are thrown into the track and see how they perform. Each car thinks differently due to random initialization and mutations. Each mutation, especially mutating a hidden node or a connection will decrease the fitness of the car. But over generations it will have enough time to optimize its weights.
 
 After each generation, cars are divided into species. The champions of the species are the best performing players within the species. The speciation criteria is how similar the topology of the networks are, and how similarly did they mutate over generations. Then 50% of the population within each species, and those species who have not improved within 15 generations are culled. The champions of each species are chosen without mutation for the next generation. Then each species is assigned a specific number of offsprings calculated from how well the species overall performed. The mutated offsprings are then chosen for the next generation.
+
+## Fitness calculation
+There are checkpoints placed around the track at regular intervals. The fitness of each car is how many checkpoints it passes through divided by the total number of checkpoints.
