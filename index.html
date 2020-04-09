@@ -34,7 +34,7 @@
         <div class="buttons buttonsLeft">
             <div>
                 <button onclick="drawTrack()" ontouchstart="drawTrack()" aria-label="Click once on screen to start drawing track, click again to stop" data-balloon-pos="down-left" data-balloon-length="xlarge"><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
-                <button onclick="start(this)" ontouchstart="start(this)" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>              
+                <button class = '' onclick="start(this)" ontouchstart="start(this)" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>              
                 <button onclick="zoomInCanvas()" ontouchstart="zoomInCanvas()" aria-label="Zoom in" data-balloon-pos="down"><img alt="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
                 <button onclick="toggleBest()" ontouchstart="toggleBest()" aria-label="Run the best player ever" data-balloon-pos="down-right"><img alt="Run the best player ever" class="button-icons" src="img/crown.png"></button>
                 <button onclick="toggleHumanPlayer()" ontouchstart="toggleHumanPlayer()"  aria-label="Drive the car yourself" data-balloon-pos="down-right"><img id = "steering" alt="Drive the car yourself" class="button-icons" src="img/steering.png"></button>
@@ -137,7 +137,9 @@
                 for(let i = 0; i < tutorialImages.length; i++){
                     let offset = 200*tutorialImages[i].getAttribute('aria-label').length;
                     let img = images[i];
-                    setTimeout(() => {img.style.opacity = 1}, startTime)
+                    setTimeout(() => {
+                        if(population && population.gen == 0){img.style.opacity = 1}
+                    }, startTime)
 
                     setTimeout(() => {
                         tutorialImages[i].setAttribute('data-balloon-visible', '');

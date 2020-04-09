@@ -204,9 +204,9 @@ new p5(NNCanvas, "NNCanvas");
 
 function start(el){
     startEvolution = !startEvolution;
-    console.log(el.classList);
+
     if(startEvolution){
-        el.setAttribute('class','reset');
+        el.classList.add("reset");
         el.setAttribute('aria-label','Reset the environment');
         carSettings = [localCar.pos.x, localCar.pos.y, localCar.angle];
         localStorage.setItem("carSettings", JSON.stringify(carSettings));
@@ -214,9 +214,12 @@ function start(el){
             p.reset();
         }
         toggleNightMode();
-        humanPlaying = false;
+        if(!tutorialInProgress){
+            humanPlaying = false;
+            humanPlayingPara.style('z-index', -1);
+        }
     }else{
-        el.setAttribute('class', '');
+        el.classList.remove("reset");
         el.setAttribute('aria-label','Start evolution');
         population = new Population(populationSize, raySlider.value(), 2);
         startEvolution = false;
@@ -355,7 +358,6 @@ function setup() {
     replayGenTutorialPara = createP('');
     replayGenTutorialPara.attribute('aria-label', "These are the champions of the species of the prevous generation. Hover over the species champions to reveal their brains");
     replayGenTutorialPara.attribute('data-balloon-length', "xlarge");
-    replayGenTutorialPara.addClass('tutorial');
     replayGenTutorialPara.style('width', '20px');
     replayGenTutorialPara.style('height', '20px');
     replayGenTutorialPara.style('padding', '0px');
