@@ -58,6 +58,7 @@
         var tutorialDone = JSON.parse(localStorage.getItem("tutorial"));
         var tutorialInProgress = false;
         function tutorial(tutorialDone, startTime = 1000){
+            humanPlaying = true;
             var buttons = document.getElementsByTagName("button");
             var tutorialElements = document.getElementsByClassName('tutorial');
 

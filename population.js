@@ -48,7 +48,6 @@ class Population{
     }
 
     setBestPlayer(){
-
         var tempBest = this.species[0].members[0];
     
         if (tempBest.score >= this.bestScore) {
@@ -80,7 +79,7 @@ class Population{
 
         for(let s of this.species){
 
-            children.push(s.mascot.clone());
+            children.push(s.champ.clone());
             let noOfChildren = Math.floor(s.averageFitness/averageSum*this.population.length)-1;
 
             for(let i = 0; i < noOfChildren; i++){
@@ -163,8 +162,6 @@ class Population{
     speciate(){
         for(let s of this.species){
             s.members = [];
-            s.bestFitness = 0;
-            s.averageFitness = 0;
         }
         for(let i = 0; i < this.populationSize; i++){
             let p = this.population[i];

@@ -15,7 +15,7 @@ let humanPlaying = true;
 
 let localCar = null;
 let carSettings;
-let populationSize = 500;
+let populationSize = 250;
 
 const TRACKWIDTH = 16;
 

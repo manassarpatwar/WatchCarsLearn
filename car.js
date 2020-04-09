@@ -256,7 +256,7 @@ class Car {
     }
 
 
-    update(dt) {
+    update(dt = Car.dt) {
         if(this.dead){
             return;
         }
@@ -331,6 +331,6 @@ Car.reverseForce = 12000*Car.scale;
 Car.brakingForce = Car.reverseForce+Car.reverseForce/2.5;
 Car.Cdrag = 0.7;
 Car.Crr = 0;
-
+Car.dt = 1/60;
 Car.mass = 1200;
 Car.maxSteer = 0.6;

@@ -1,19 +1,21 @@
 class Species{
-    constructor(mascot){
+    constructor(p){
         this.members = [];
-        this.members.push(mascot);
-        this.mascot = mascot;
+        this.members.push(p);
 
-        this.bestFitness = mascot.fitness;
+        this.color = [50+Math.random()*150, 50+Math.random()*150,50+Math.random()*150]
+        this.champ = p.clone();
+        this.champ.color = this.color;
+
+        this.rep = p.brain.clone();
+
+        this.bestFitness = p.fitness;
         this.averageFitness = 0;
         this.staleness = 0;
 
         this.c1 = 1;
         this.c2 = 0.5;
         this.D = 3;
-
-        this.color = [50+Math.random()*150, 50+Math.random()*150,50+Math.random()*150]
-        this.mascot.color = this.color;
     }
 
     addMember(member){
@@ -21,15 +23,11 @@ class Species{
         this.members.push(member);
     }
 
-    getMascot(){
-        return this.mascot;
-    }
-
     sameSpecies(g){
         var compatibility;
 
-        var excessAndDisjoint = Genome.getExcessDisjoint(g, this.mascot.brain); //get the number of excess and disjoint genes between this player and the current species this.rep
-        var averageWeightDiff = Genome.averageWeightDiff(g, this.mascot.brain); //get the average weight difference between matching genes
+        var excessAndDisjoint = Genome.getExcessDisjoint(g, this.rep); //get the number of excess and disjoint genes between this player and the current species this.rep
+        var averageWeightDiff = Genome.averageWeightDiff(g, this.rep); //get the average weight difference between matching genes
     
         var largeGenomeNormaliser = g.connections.size - 20;
         if (largeGenomeNormaliser < 1) {
@@ -80,7 +78,8 @@ class Species{
         if (this.members[0].fitness > this.bestFitness) {
             this.staleness = 0;
             this.bestFitness = this.members[0].fitness;
-            this.mascot = this.members[0].clone();
+            this.rep = this.members[0].brain.clone();
+            this.champ = this.members[0].clone();
         } else { //if no new best player
             this.staleness++;
         }
@@ -125,7 +124,7 @@ class Species{
     }
 
     clone(){
-        let s = new Species(this.mascot.clone());
+        let s = new Species(this.champ);
         s.bestFitness = this.bestFitness;
         s.averageFitness = this.averageFitness;
         s.color = this.color;

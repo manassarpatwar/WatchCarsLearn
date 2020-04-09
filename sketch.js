@@ -1,6 +1,7 @@
 p5.disableFriendlyErrors = true;
 var brain = null;
 let runBest = false;
+var bestCar;
 
 let showNothing = true;
 let replayGen = true;
@@ -340,7 +341,7 @@ function setup() {
 
     showEvolutionPara = createP("Current Gen: -");
     showEvolutionPara.position(10, 160);
-    showEvolutionPara.attribute('aria-label', "The current generation evolving");
+    showEvolutionPara.attribute('aria-label', "The current generation evolving. Control speed by pressing +/-");
     showEvolutionPara.attribute('data-balloon-pos', "down-left");
     showEvolutionPara.addClass('tutorial');
 
@@ -379,32 +380,15 @@ function setup() {
     NIGHTMODE = JSON.parse(localStorage.getItem("nightMode"));
     toggleNightMode();
     clearScreen();
-    setInterval(update, 1000/60);
+
 }
 
-let lastTime = Date.now();
-
-const step = 100;
-
 function update(){
-    const ms = Date.now();
-    let dt = ms - lastTime;
-    if (dt > 0) {
-        
-        if(dt > step){
-            lastTime += dt-step;
-            dt = step;
-        }
-
-        if(humanPlaying){
-            localCar.update(dt/1000);
-            steerImg.style('transform', 'rotate('+degrees(localCar.steerAngle)*10+'deg)')
-        }
-
-        evolve(dt/1000);
-            
-        lastTime = ms;
+    if(humanPlaying){
+        localCar.update();
+        steerImg.style('transform', 'rotate('+degrees(localCar.steerAngle)*10+'deg)')
     }
+    
     if(humanPlaying && localCar){
         localCar.isThrottling = keyActive('up');
         localCar.isReversing = keyActive('down');
@@ -432,79 +416,80 @@ function update(){
 
         if(localCar.dead)
             localCar.reset();
-
     }
-}
 
-function evolve(dt){
-    if(startEvolution && population.gen < 1000){
-        for(let car of population.population){
-            if(!car.dead){
-                calculateCheckpoints(car);
-                car.look();
-                car.think();
-                car.update(dt);
-                car.checkStaleness();
+    for(let i = 0; i < GLOBALSPEED; i++){
+        if(startEvolution && population.gen < 1000){
+            for(let car of population.population){
+                if(!car.dead){
+                    calculateCheckpoints(car);
+                    car.look();
+                    car.think();
+                    car.update();
+                    car.checkStaleness();
+                }
             }
-        }
-        if(population.done()){
-            population.naturalSelection();
-            showEvolutionPara.html("Current Gen: "+population.gen);
-        }
-    }
-
-    if(runBest && population.best){
-        if(!population.best.dead){
-            calculateCheckpoints(population.best);
-            population.best.look();
-            population.best.think();
-            population.best.update(dt);
-            population.best.checkStaleness();
-        }
-    }
-
-    if(startEvolution && population.replayGenerations.length > 0){
-        let replayGeneration = population.replayGenerations[population.replayGenerationNo];
-
-        if(!humanPlaying){
-            zoomCar = replayGeneration.species[0].mascot;
-        }
-        for(let replaySpecies of replayGeneration.species){
-            if(!replaySpecies.mascot.dead){
-                calculateCheckpoints(replaySpecies.mascot);
-                replaySpecies.mascot.look();
-                replaySpecies.mascot.think();
-                replaySpecies.mascot.update(dt);
-                replaySpecies.mascot.checkStaleness();
-
+            if(population.done()){
+                population.naturalSelection();
+                bestCar = population.best.clone();
+                showEvolutionPara.html("Current Gen: "+population.gen);
             }
         }
 
-        let replayDone = true;
-        for(let replaySpecies of replayGeneration.species){
-            if(!replaySpecies.mascot.dead){
-                replayDone = false;
-                break;
+        if(runBest && bestCar){
+            if(!bestCar.dead){
+                calculateCheckpoints(bestCar);
+                bestCar.look();
+                bestCar.think();
+                bestCar.update();
+                bestCar.checkStaleness();
             }
         }
-        if(replayDone){
-            clearScreen();
+
+        if(startEvolution && population.replayGenerations.length > 0){
+            let replayGeneration = population.replayGenerations[population.replayGenerationNo];
+
+            if(!humanPlaying){
+                zoomCar = replayGeneration.species[0].champ;
+            }
             for(let replaySpecies of replayGeneration.species){
-                replaySpecies.mascot.reset();
+                if(!replaySpecies.champ.dead){
+                    calculateCheckpoints(replaySpecies.champ);
+                    replaySpecies.champ.look();
+                    replaySpecies.champ.think();
+                    replaySpecies.champ.update();
+                    replaySpecies.champ.checkStaleness();
+
+                }
             }
-            if(population.replayGenerations.length > population.replayGenerationNo+1){
-                population.replayGenerationNo++;
+
+            let replayDone = true;
+            for(let replaySpecies of replayGeneration.species){
+                if(!replaySpecies.champ.dead){
+                    replayDone = false;
+                    break;
+                }
             }
+            if(replayDone){
+                clearScreen();
+                for(let replaySpecies of replayGeneration.species){
+                    replaySpecies.champ.reset();
+                }
+                if(population.replayGenerations.length > population.replayGenerationNo+1){
+                    population.replayGenerationNo++;
+                }
+            }
+            genPara.html("Replaying Gen: "+(population.replayGenerationNo+1));
+            brain = replayGeneration.species[0].champ.brain;
+        }else{
+            genPara.html("Replaying Gen: -");
         }
-        genPara.html("Replaying Gen: "+(population.replayGenerationNo+1));
-        brain = replayGeneration.species[0].mascot.brain;
-    }else{
-        genPara.html("Replaying Gen: -");
     }
 }
-
 
 function draw() {
+    update();
+    
     if(zoom > 1 && zoomCar){
         translate(-zoom * zoomCar.pos.x+width/2, -zoom * zoomCar.pos.y+height/2);
         scale(zoom);
@@ -519,12 +504,10 @@ function draw() {
 
     if(keyIsDown(187) && GLOBALSPEED < 10){
         GLOBALSPEED += 1;
-        frameRate(60+GLOBALSPEED)
     }
 
     if(keyIsDown(189) && GLOBALSPEED > 1){
         GLOBALSPEED -= 1;
-        frameRate(60+GLOBALSPEED)
     }
 
 
@@ -541,25 +524,25 @@ function draw() {
             p.display(p.color);
     }
 
-    if(runBest && population.best){
-        population.best.display(population.best.color, true);
-        zoomCar = population.best;
-        brain = population.best.brain;
+    if(runBest && bestCar){
+        bestCar.display(bestCar.color, true);
+        zoomCar = bestCar;
+        brain = bestCar.brain;
     }
     
     if(population.replayGenerations.length > 0 && startEvolution && replayGen){
         let tutorial = population.replayGenerations.length == 1 && !genTutorialDone;
 
         for(let replaySpecies of population.replayGenerations[population.replayGenerationNo].species){
-            if(zoom > 1 && replaySpecies.mascot.isPointInside(Math.floor((mouseX-width/2+zoomCar.pos.x*zoom)/zoom), Math.floor((mouseY-height/2+zoomCar.pos.y*zoom)/zoom)))
-                brain = replaySpecies.mascot.brain;
-            else if(replaySpecies.mascot.isPointInside(mouseX, mouseY))
-                brain = replaySpecies.mascot.brain;
-            replaySpecies.mascot.display(replaySpecies.color);
+            if(zoom > 1 && replaySpecies.champ.isPointInside(Math.floor((mouseX-width/2+zoomCar.pos.x*zoom)/zoom), Math.floor((mouseY-height/2+zoomCar.pos.y*zoom)/zoom)))
+                brain = replaySpecies.champ.brain;
+            else if(replaySpecies.champ.isPointInside(mouseX, mouseY))
+                brain = replaySpecies.champ.brain;
+            replaySpecies.champ.display(replaySpecies.color);
         }
-        let genMascot = population.replayGenerations[population.replayGenerationNo].species[0].mascot;
-        let x = genMascot.pos.y < height/2 ? "down" : "up";
-        let y = genMascot.pos.x < width/2 ? "left" : "right";
+        let genchamp = population.replayGenerations[population.replayGenerationNo].species[0].champ;
+        let x = genchamp.pos.y < height/2 ? "down" : "up";
+        let y = genchamp.pos.x < width/2 ? "left" : "right";
         if(tutorial){
             replayGenTutorialPara.attribute('data-balloon-visible', '');
             setTimeout(() => {
@@ -569,7 +552,7 @@ function draw() {
         }
 
         replayGenTutorialPara.attribute('data-balloon-pos', x+"-"+y);
-        replayGenTutorialPara.position(genMascot.pos.x, genMascot.pos.y);
+        replayGenTutorialPara.position(genchamp.pos.x, genchamp.pos.y);
     }
 
     if(humanPlaying && localCar){
@@ -593,8 +576,8 @@ function keyPressed(e) {
             if(population.best){
                 startEvolution = !startEvolution;
                 runBest = !runBest;
-                if(runBest){
-                    population.best.reset();
+                if(runBest && bestCar){
+                    bestCar.reset();
                 }
             }
             break;

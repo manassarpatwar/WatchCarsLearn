@@ -44,7 +44,7 @@ class Genome{
     }
 
     clone(){
-        let g = new Genome(this.numInputs, this.numOutputs, true);
+        let g = new Genome(this.numInputs, this.numOutputs);
         g.nodes = new Map();
         g.connections = new Map();
         for(let n of this.nodes.values()){
@@ -236,13 +236,13 @@ class Genome{
             this.mutateWeights();
         }
         let rand2 = random(1);
-        if(rand2 < 0.15){
+        if(rand2 < 0.10){
             this.mutateConnection(innovationHistory);
         }
 
        
         let rand3 = random(1);
-        if(rand3 < 0.05){
+        if(rand3 < 0.03){
             this.mutateNode(innovationHistory);
         }
 
@@ -250,7 +250,9 @@ class Genome{
 
     crossover(parent2){
         //Assume parent1 is more fit than parent2
-        let child = new Genome();
+        let child = new Genome(this.numInputs, this.numOutputs);
+        child.nodes = new Map();
+        child.connections = new Map();
       
         for(let n of this.nodes.values()){
             child.addNode(n.copy());
