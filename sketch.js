@@ -586,6 +586,11 @@ function keyPressed(e) {
             break;
         case 80:
             humanPlaying = !humanPlaying;
+            if(!humanPlaying){
+                humanPlayingPara.style('z-index', '-1');
+            }else{
+                humanPlayingPara.style('z-index', '1');
+            }
             break;
         case 83:
             screenshot = true;
