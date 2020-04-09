@@ -1,3 +1,4 @@
+p5.disableFriendlyErrors = true;
 var brain = null;
 let runBest = false;
 
@@ -208,7 +209,9 @@ function start(el){
         el.setAttribute('aria-label','Reset the environment');
         carSettings = [localCar.pos.x, localCar.pos.y, localCar.angle];
         localStorage.setItem("carSettings", JSON.stringify(carSettings));
-       
+        for(let p of population.population){
+            p.reset();
+        }
         toggleNightMode();
         humanPlaying = false;
     }else{
@@ -376,7 +379,7 @@ function setup() {
     NIGHTMODE = JSON.parse(localStorage.getItem("nightMode"));
     toggleNightMode();
     clearScreen();
-    setTimeout(update, 1000/frameRate());
+    setInterval(update, 1000/60);
 }
 
 let lastTime = Date.now();
@@ -431,8 +434,6 @@ function update(){
             localCar.reset();
 
     }
-    setTimeout(update, 1000/frameRate());
-
 }
 
 function evolve(dt){
