@@ -1,173 +1,30 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="main.css" />
+        <meta
+            name="viewport"
+            content="width=device-width, 
+    initial-scale=1, maximum-scale=1"
+        />
+        <script src="./src/lib/neataptic.js"></script>
+        <script src="./src/index.js" type="module"></script>
+    </head>
 
-<head>
-    <title></title>
-    <link rel="stylesheet" href="balloon.css">
-    <link rel="stylesheet" href="main.css">
-
-    <meta name="viewport" content="width=device-width, 
-    initial-scale=1, maximum-scale=1" />
-    <script language="javascript" type="text/javascript" src="lib/p5.js"></script>
-    <script language="javascript" type="text/javascript" src="lib/p5.dom.js"></script>
-    <script language="javascript" type="text/javascript" src="car.js"></script>
-    <script language="javascript" type="text/javascript" src="ray.js"></script>
-    <script language="javascript" type="text/javascript" src="boundary.js"></script>
-    <script language="javascript" type="text/javascript" src="./connection.js"></script>
-    <script language="javascript" type="text/javascript" src="./genome.js"></script>
-    <script language="javascript" type="text/javascript" src="./node.js"></script>
-    <script language="javascript" type="text/javascript" src="./connectionHistory.js"></script>
-    <script language="javascript" type="text/javascript" src="./innovationCounter.js"></script>
-    <script language="javascript" type="text/javascript" src="./species.js"></script>
-    <script language="javascript" type="text/javascript" src="./population.js"></script>
-    <script language="javascript" type="text/javascript" src="./replayGeneration.js"></script>
-    <script language="javascript" type="text/javascript" src="Self-Driving-AI.js"></script>
-    <script language="javascript" type="text/javascript" src="sketch.js"></script>
-</head>
-
-<body>
-
-    <div id="NNcanvas"></div>
-    <div id="fitnessCanvas"></div>
-
-    <section id="buttons">
-        <div class="buttons buttonsLeft">
-            <div>
-                <button onclick="drawTrack()" ontouchstart="drawTrack()" aria-label="Click once on screen to start drawing track, click again to stop" data-balloon-pos="down-left" data-balloon-length="xlarge"><img alt="Draw Boundary" class="button-icons" src="img/draw.png"></button>
-                <button class = '' onclick="start(this)" ontouchstart="start(this)" aria-label="Start evolution" data-balloon-pos="down-left"><img alt="Start" class="button-icons" src="img/start.png"></button>              
-                <button onclick="zoomInCanvas()" ontouchstart="zoomInCanvas()" aria-label="Zoom in" data-balloon-pos="down"><img alt="Zoom in" class="button-icons" src="img/zoomIn.png"></button>
-                <button onclick="toggleBest()" ontouchstart="toggleBest()" aria-label="Run the best player ever" data-balloon-pos="down-right"><img alt="Run the best player ever" class="button-icons" src="img/crown.png"></button>
-                <button onclick="toggleHumanPlayer()" ontouchstart="toggleHumanPlayer()"  aria-label="Drive the car yourself" data-balloon-pos="down-right"><img id = "steering" alt="Drive the car yourself" class="button-icons" src="img/steering.png"></button>
-            </div>
-            <div>
-                <button onclick="changeTheme()" ontouchstart="changeTheme()" aria-label="Change theme to light/dark" data-balloon-pos="down-left"><img alt="Change theme" class="button-icons" src="img/moon.png"></button>
-                <button onclick="population.nextGen()" ontouchstart="population.nextGen()" aria-label="Start next generation" data-balloon-pos="down-left"><img alt="Start next generation" class="button-icons" src="img/nextGen.png"></button>
-                <button onclick="zoomOutCanvas()" ontouchstart="zoomOutCanvas()" aria-label="Zoom out" data-balloon-pos="down"><img alt="Zoom out" class="button-icons" src="img/zoomOut.png"></button>
-                <button onclick="toggleShow()" ontouchstart="toggleShow()" aria-label="Show/Hide evolution " data-balloon-pos="down-right"><img alt="Drive the car yourself" class="button-icons" src="img/eye.png"></button>
-                <button onclick="toggleReplay()" ontouchstart="toggleReplay()" aria-label="Show/Hide replay of evolution" data-balloon-pos="down-right"><img alt="Show hide replay of evolution" class="button-icons" src="img/replay.png"></button>
-            </div>
-        </div>
-        <div class="buttons buttonsRight">
-            <div>
-                <button onclick="tutorial(false, 0)" ontouchstart="tutorial(false, 0)" aria-label=''><img alt="Help" title="Help" class="button-icons" src="img/help.png"></button>
-            </div>
-            
-        </div>
-    </section>
-    <script>
-        var tutorialDone = JSON.parse(localStorage.getItem("tutorial"));
-        var tutorialInProgress = false;
-        function tutorial(tutorialDone, startTime = 1000){
-            humanPlaying = true;
-            var buttons = document.getElementsByTagName("button");
-            var tutorialElements = document.getElementsByClassName('tutorial');
-
-            var tutorialImages = document.getElementsByClassName('tutorialImages');
-            if(!tutorialDone && !tutorialInProgress){
-                tutorialInProgress = true;
-                humanPlaying = true;
-                if(humanPlayingPara)
-                    humanPlayingPara.style('z-index', '1');
-                var graphImg = "img/Graph.png";
-                var NNImg;
-                if(!NIGHTMODE)
-                    NNImg = "img/NN_light.png"
-                else
-                    NNImg = "img/NN.png";
-                var images = [];
-                if(population && population.gen == 0){
-                    let img = document.createElement('img'); 
-                    img.src = graphImg;
-                    img.style.position = "absolute";
-                    img.style.left = 0;
-                    img.style.bottom = 0;
-                    img.style.opacity = 0;
-                    img.style.transition = "opacity 1s ease";
-
-                    if(NIGHTMODE){
-                        img.style.filter = "invert(100%)";
-                    }
-                    
-                    images.push(img);
-                    document.getElementsByTagName('body')[0].appendChild(img); 
-
-                    img = document.createElement('img');
-                    img.src = NNImg;
-                    img.style.position = "absolute";
-                    img.style.right = 0;
-                    img.style.bottom = 0;
-                    img.style.opacity = 0;
-                    img.style.transition = "opacity 1s ease";
-                    img.style.width = Genome.drawDimensions+'px';
-                    img.style.height = Genome.drawDimensions+'px';
-                    
-                    images.push(img);
-                    document.getElementsByTagName('body')[0].appendChild(img); 
-                }
-                
-                let buffer = 500;
-                for(let b of buttons){
-                    let offset = 200*b.getAttribute('aria-label').length;
-                    setTimeout(() => {
-                        b.setAttribute('data-balloon-visible', '');
-                    },startTime)
-
-                    startTime += offset
-                    setTimeout(() =>{
-                        b.removeAttribute('data-balloon-visible');
-                    }, startTime);
-
-                    startTime += buffer;
-                }
-
-                for(let t of tutorialElements){
-                    let offset = 200*t.getAttribute('aria-label').length;
-                    setTimeout(() => {
-                        t.setAttribute('data-balloon-visible', '');
-                    },startTime)
-
-                    startTime += offset
-                    setTimeout(() =>{
-                        t.removeAttribute('data-balloon-visible');
-                    }, startTime);
-
-                    startTime += buffer;
-                }
-
-                for(let i = 0; i < tutorialImages.length; i++){
-                    let offset = 200*tutorialImages[i].getAttribute('aria-label').length;
-                    let img = images[i];
-                    setTimeout(() => {
-                        if(population && population.gen == 0){img.style.opacity = 1}
-                    }, startTime)
-
-                    setTimeout(() => {
-                        tutorialImages[i].setAttribute('data-balloon-visible', '');
-                    },startTime)
-                    startTime += offset;
-                    setTimeout(() =>{
-                        tutorialImages[i].removeAttribute('data-balloon-visible');
-                    }, startTime);
-                    startTime += buffer;
-                }
-                for(let i = tutorialImages.length-1; i >= 0; i--){
-                    let offset = 1000;
-                    let img = images[i];
-                    setTimeout(() => {img.style.opacity = 0}, startTime)
-                    startTime += offset;
-                }
-
-                setTimeout(() => {
-                    localStorage.setItem('tutorial', true);
-                    if(population && population.gen == 0){
-                        for(let i = tutorialImages.length-1; i >= 0; i--){
-                            images[i].remove();
-                        }
-                    }
-                    tutorialInProgress = false;
-                }, startTime);
-            }
-        }
-        tutorial(tutorialDone);
-    </script>
-</body></html>
+    <body>
+        <main id="main">
+            <canvas id="canvas"></canvas>
+            <section class="info">
+                <pre id="json"></pre>
+                <img
+                    id="steer"
+                    alt="steer"
+                    title="steer"
+                    class="icon"
+                    src="img/ackerman.png"
+                />
+            </section>
+        </main>
+    </body>
+</html>
