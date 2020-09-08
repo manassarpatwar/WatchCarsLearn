@@ -2,29 +2,30 @@
 <html>
     <head>
         <title></title>
-        <link rel="stylesheet" href="main.css" />
         <meta
             name="viewport"
             content="width=device-width, 
     initial-scale=1, maximum-scale=1"
         />
-        <script src="./src/lib/neataptic.js"></script>
-        <script src="./src/index.js" type="module"></script>
     </head>
 
     <body>
         <main id="main">
+            <nav id="nav">
+                <ul>
+                    <li><button id = "menu-btn" class = "button menu-btn" onclick="openMenu()"><span></span><span></span></button></li>
+                </ul>
+            </nav>
+            <pre id ="json"></pre>
+            <p id="fps"></p>
             <canvas id="canvas"></canvas>
-            <section class="info">
-                <pre id="json"></pre>
-                <img
-                    id="steer"
-                    alt="steer"
-                    title="steer"
-                    class="icon"
-                    src="img/ackerman.png"
-                />
-            </section>
         </main>
     </body>
+    <script>
+        const ul = document.querySelector('#nav ul');
+        const openMenu = e => {
+            ul.classList.toggle('open');
+        }
+
+    </script>
 </html>

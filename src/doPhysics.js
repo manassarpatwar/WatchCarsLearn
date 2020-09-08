@@ -1,3 +1,5 @@
+import User from "./User";
+
 const arrowKeys = {
     up: 38,
     down: 40,
@@ -19,55 +21,64 @@ const keyActive = key => {
     return keysDown[arrowKeys[key]] || keysDown[wasdKeys[key]] || false;
 };
 
-const keyChanged = cars => {
-    cars.forEach(car => {
-        const pressingUp = keyActive("up");
-        const pressingDown = keyActive("down");
+const keyChanged = car => {
+    const pressingUp = keyActive("up");
+    const pressingDown = keyActive("down");
 
-        car.isThrottling = pressingUp;
-        car.isReversing = pressingDown;
+    car.isThrottling = pressingUp;
+    car.isReversing = pressingDown;
 
-        const braking = keyActive("brake");
+    const braking = keyActive("brake");
 
-        const turnLeft = keyActive("left");
-        const turnRight = keyActive("right");
+    const turnLeft = keyActive("left");
+    const turnRight = keyActive("right");
 
-        car.isTurningLeft = turnLeft;
-        car.isTurningRight = turnRight;
-        car.isBraking = braking;
-    });
+    car.isTurningLeft = turnLeft;
+    car.isTurningRight = turnRight;
+    car.isBraking = braking;
 };
 
-export default (runner, curves, paths) => {
+export default (runner, paths, curves) => {
     let lastTime;
     let acc = 0;
-    const step = 1 / 60;
+
     setInterval(() => {
         const ms = Date.now();
         if (lastTime) {
             acc += (ms - lastTime) / 1000;
-            while (acc > step) {
-                runner.cars.forEach(car => {
-                    if (car.alive) {
-                        car.update();
-                        car.checkRays(curves);
-                        car.isOnTrack(paths);
+            while (acc > runner.getstep()) {
+                if (!User.isDragging && !User.pause) {
+                    if (runner.playerCar.alive) {
+                        runner.playerCar.update();
+                        runner.playerCar.isOnTrack(paths);
+                    } else {
+                        runner.playerCar.reset();
                     }
-                });
-                // runner.checkAlive();
-                acc -= step;
+                    for (let i = 0; i < runner.cars.length; i++) {
+                        const car = runner.cars[i];
+                        car.update();
+                        car.isOnTrack(paths, curves);
+                        if (!car.alive) {
+                            runner.carFinished(i);
+                            i--;
+                        }
+                    }
+                    runner.checkEnd();
+                }
+                acc -= runner.getstep();
             }
         }
+
         lastTime = ms;
     }, 1000 / 60);
 
     window.addEventListener("keydown", e => {
         keysDown[e.which] = true;
-        keyChanged(runner.cars);
+        keyChanged(runner.playerCar);
     });
 
     window.addEventListener("keyup", e => {
         keysDown[e.which] = false;
-        keyChanged(runner.cars);
+        keyChanged(runner.playerCar);
     });
 };

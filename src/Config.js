@@ -1,32 +1,39 @@
-class Config {
-    constructor() {
-        this.windowWidth = window.innerWidth;
-        this.windowHeight = window.innerHeight;
-        this.scale = 5;
-        this.Cdrag = 0.99;
-        this.Crr = 0;
-        this.mass = 1200;
-        this.inertiaScale = 1;
-        this.maxSteer = 0.6;
-        this.angularDrag = 0.95;
-        this.width = 4 * this.scale;
-        this.height = 2 * this.scale;
-        this.engineForce = 8000 * this.scale;
-        this.reverseForce = 12000 * this.scale;
-        this.brakingForce = (this.reverseForce * 3.5) / 2.5;
-        this.inertia = this.mass * this.inertiaScale;
+const scale = 5;
+const carLength = 4 * scale;
+const carBreadth = 2 * scale;
+const populationSize = 250;
 
-        this.borderRadius = this.width / 8;
-        this.L = this.width / 2;
-        this.TRACKWIDTH = 40;
+const Config = {
+    scale,
+    carLength,
+    carBreadth,
+    windowWidth: window.innerWidth,
+    windowHeight: window.innerHeight,
+    Cdrag: 0.99,
+    Crr: 0,
+    mass: 1200,
+    inertiaScale: 1,
+    maxSteer: 0.6,
+    engineForce: 8000 * scale,
+    reverseForce: 12000 * scale,
+    brakingForce: 16800,
+    maxRayLength: 80,
+    backgroundColor: "#000",
+    trackColor: "#515F6F",
+    trackBorder: 3,
+    flagSquares: 5,
 
-        this.POP_SIZE = 100;
-        // neural network settings
+    borderRadius: carLength / 8,
+    L: carLength / 2,
+    trackWidth: 40,
 
-        this.MUTATION_RATE = 0.5;
-        this.MUTATION_AMOUNT = 3;
-        this.ELITISM = Math.round(0.2 * this.POP_SIZE);
-    }
-}
+    controlPointSize: 15,
+    step: 240,
 
-export default new Config();
+    populationSize,
+    mutationRate: 0.5,
+    mutationAmount: 3,
+    elitism: populationSize * 0.2,
+};
+
+export default Config;
