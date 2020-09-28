@@ -4,6 +4,7 @@
     height: 100%;
     position: relative;
     text-align: left;
+    z-index: 3;
 }
 
 .menu-btn:after {

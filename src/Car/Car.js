@@ -1,5 +1,5 @@
 import Ray from "./Ray.js";
-import { create, select, Vector } from "../utils.js";
+import { create, select, Vector, dist } from "../utils.js";
 import Config from "../Config.js";
 
 export default class Car {
@@ -14,6 +14,8 @@ export default class Car {
         this.el.classList.add("car");
         this.start = start;
 
+        const [r, g, b] = Config.randomColor;
+        this.el.style.background = `rgba(${r}, ${g}, ${b}, 1)`;
         select("main").appendChild(this.el);
 
         this.velocity = 0;
@@ -62,9 +64,8 @@ export default class Car {
     }
 
     createRays() {
-        const offsets = [-Math.PI/3, -Math.PI/6, Math.PI/6, Math.PI/3];
+        const offsets = [-Math.PI / 3, -Math.PI / 6, 0, Math.PI / 6, Math.PI / 3];
         return offsets.map(o => new Ray(this.p, o, Config.maxRayLength));
-
     }
 
     json() {
@@ -75,7 +76,7 @@ export default class Car {
 
             steer: 0,
             steerAngle: 0,
-
+            score: this.checkpoints.size,
             angularVelocity: 0,
             isThrottling: false,
             isReversing: false,
@@ -85,16 +86,16 @@ export default class Car {
             ray1: this.rays[0].length,
             ray2: this.rays[1].length,
             ray3: this.rays[2].length,
-            ray4: this.rays[3].length,
+            alive: this.alive,
         };
     }
 
     display() {
-        const [r, g, b] = this.brain ? this.brain.color : [100, 150, 50];
         const translate = `translate(${this.p.x}px, ${this.p.y}px)`;
         const rotate = `rotate(${this.p.angle}rad)`;
         this.el.style.transform = translate + " " + rotate;
-        this.el.style.background = `rgba(${r}, ${g}, ${b}, ${this.alive ? 1 : 0.4}`;
+
+        this.el.style.opacity = this.alive ? 1 : 0.4;
     }
 
     update(dt = 0.01) {
@@ -163,17 +164,15 @@ export default class Car {
                 }
             }
         });
-        if (this.brain) {
-            const inputs = this.rays.map(
-                r => 1 - (r.length - Config.carLength / 2) / (r.maxlength - Config.carLength / 2)
-            );
-
-            const [throttle, turn] = this.brain.feedForward(inputs);
+        if (this.brain) {           
+            const inputs = this.rays.map(r => 1 - r.length / r.maxlength);
+            const [throttle, turn] = this.brain.activate(inputs);
 
             this.isThrottling = throttle > 0.66;
-            this.isReversing = throttle < 0.33;
-            this.isTurningRight = turn > 0.66;
-            this.isTurningLeft = turn < 0.33;
+            this.isReversing = throttle > 0.33 && throttle < 0.66;
+            this.isBraking = throttle < 0.33;
+            this.isTurningRight = turn > 0.5;
+            this.isTurningLeft = turn < 0.5;
         }
     }
 
@@ -197,43 +196,33 @@ export default class Car {
             const [t] = path.intersects(line);
             if (t) {
                 this.alive = true;
-                if(curves){
-                    this.updateRays(curves[i].concat(curves[(i+1)%paths.length]));
+                if (curves) {
+                    this.updateRays(curves[i].concat(curves[(i + 1) % paths.length]));
                 }
-                const checkpoint = Math.floor((i + t) * 10);
+
+                const checkpoint = Math.floor((i + t) * 100);
+
                 this.checkpoints.add(checkpoint);
-                if (this.checkpoints.size === paths.length * 10 && checkpoint === 5) {
+                if (this.checkpoints.has(100) && checkpoint > 45 && checkpoint < 55) {
                     this.alive = false;
                 }
                 break;
             }
         }
 
-       
-
         if (this.brain) {
+            const previousScore = this.brain.score;
             this.brain.score = this.checkpoints.size;
 
-            this.scores.push(this.brain.score);
-            if (this.scores.length > 100) {
-                this.scores.shift();
+            if (this.brain.score > previousScore) {
+                this.staleness = 1;
+            }else{
+                this.staleness++;
             }
+        }
 
-            if (this.scores.length === 100) {
-                if (
-                    Math.abs(
-                        Math.max.apply(null, this.scores) - Math.min.apply(null, this.scores)
-                    ) < 1
-                ) {
-                    this.staleness++;
-                } else {
-                    this.staleness = Math.min(0, this.staleness - 1);
-                }
-            }
-
-            if (this.staleness > 50) {
-                this.alive = false;
-            }
+        if(this.staleness > 50){
+            this.alive = false;
         }
 
         if (!this.alive) {

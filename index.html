@@ -7,25 +7,29 @@
             content="width=device-width, 
     initial-scale=1, maximum-scale=1"
         />
+        <!-- <script src="https://d3js.org/d3.v6.js"></script> -->
     </head>
 
     <body>
         <main id="main">
             <nav id="nav">
                 <ul>
-                    <li><button id = "menu-btn" class = "button menu-btn" onclick="openMenu()"><span></span><span></span></button></li>
+                    <li>
+                        <button id="menu-btn" class="button menu-btn" onclick="openMenu()">
+                            <span></span><span></span>
+                        </button>
+                    </li>
                 </ul>
             </nav>
-            <pre id ="json"></pre>
+            <pre id="json"></pre>
             <p id="fps"></p>
             <canvas id="canvas"></canvas>
         </main>
     </body>
     <script>
-        const ul = document.querySelector('#nav ul');
+        const ul = document.querySelector("#nav ul");
         const openMenu = e => {
-            ul.classList.toggle('open');
-        }
-
+            ul.classList.toggle("open");
+        };
     </script>
 </html>

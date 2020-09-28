@@ -1,7 +1,7 @@
 const scale = 5;
 const carLength = 4 * scale;
 const carBreadth = 2 * scale;
-const populationSize = 250;
+const popsize = 50;
 
 const Config = {
     scale,
@@ -17,23 +17,26 @@ const Config = {
     engineForce: 8000 * scale,
     reverseForce: 12000 * scale,
     brakingForce: 16800,
-    maxRayLength: 80,
+    maxRayLength: 50,
     backgroundColor: "#000",
     trackColor: "#515F6F",
     trackBorder: 3,
     flagSquares: 5,
+    checkpointInterval: 5,
+
+    randomColor: [50 + Math.random() * 150, 50 + Math.random() * 150, 50 + Math.random() * 150],
 
     borderRadius: carLength / 8,
     L: carLength / 2,
     trackWidth: 40,
 
     controlPointSize: 15,
-    step: 240,
+    step: 360,
 
-    populationSize,
+    popsize,
     mutationRate: 0.5,
     mutationAmount: 3,
-    elitism: populationSize * 0.2,
+    elitism: Math.round(0.2 * popsize),
 };
 
 export default Config;

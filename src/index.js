@@ -7,15 +7,90 @@ import SteeringWheel from "Images/SteeringWheel.png";
 import RandomTrack from "Images/RandomTrack.png";
 import EditTrack from "Images/EditTrack.png";
 import Runner from "./Runner";
-import Neat from "./neat/Neat";
 import User from "./User";
-import GraphNN from "./neat/GraphNN";
+import Chart from "chart.js";
+
+import { Neat } from "neataptic";
 
 const track = new Track();
-const { beziers: paths, curves} = track;
-const trackLength = paths.length;
-const neat = new Neat(Config.populationSize, 4, 2, p => p.score / (trackLength * 10));
-const runner = new Runner(neat, track.start);
+const { beziers: paths, curves } = track;
+
+console.log(paths.length*100);
+
+const neat = new Neat(5, 2, null, {
+    popsize: Config.popsize,
+    elitism: Config.elitism,
+    mutationRate: Config.mutationRate,
+    mutationAmount: Config.mutationAmount,
+});
+
+const [r, g, b] = Config.randomColor;
+const chart = new Chart(
+    (() => {
+        const el = document.createElement("canvas");
+        el.width = Config.windowWidth;
+        el.height = Config.windowHeight * 0.98;
+        el.id = "chart";
+        el.style.zIndex = 2;
+        select("main").appendChild(el);
+        return el;
+    })(),
+    {
+        type: "line",
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: "Min",
+                    backgroundColor: `rgb(${r * 0.5}, ${g * 0.5}, ${b * 0.5})`,
+                    borderColor: `rgb(${r * 0.5}, ${g * 0.5}, ${b * 0.5})`,
+                    data: [],
+                    fill: false,
+                },
+                {
+                    label: "Average",
+                    backgroundColor: `rgb(${r}, ${g}, ${b})`,
+                    borderColor: `rgb(${r}, ${g}, ${b})`,
+                    data: [],
+                    fill: false,
+                },
+                {
+                    label: "Max",
+                    backgroundColor: `rgb(${r * 1.5}, ${g * 1.5}, ${b * 1.5})`,
+                    borderColor: `rgb(${r * 1.5}, ${g * 1.5}, ${b * 1.5})`,
+                    data: [],
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            title: {
+                display: true,
+                text: "Score Vs Generation Plot",
+            },
+            scales: {
+                yAxes: [
+                    {
+                        display: true,
+                        ticks: {
+                            beginAtZero: true, // minimum value will be 0.
+                        },
+                    },
+                ],
+            },
+        },
+    }
+);
+
+const runner = new Runner(neat, track.start, ({ gen, max, min, avg }) => {
+    chart.data.labels.push(gen);
+    chart.data.datasets[0].data.push(min);
+    chart.data.datasets[1].data.push(avg);
+    chart.data.datasets[2].data.push(max);
+
+    chart.update();
+});
+// const runner = new Runner(population, track.start, () => {});
 
 doPhysics(runner, paths, curves);
 
@@ -44,10 +119,6 @@ root.style.setProperty("--car-height", Config.carBreadth + "px");
 root.style.setProperty("--car-border-radius", Config.borderRadius + "px");
 root.style.setProperty("--control-point-size", Config.controlPointSize + "px");
 
-// const NNCanvas = document.getElementById("NN");
-// NNCanvas.width = 200;
-// NNCanvas.height = 200;
-// const NNctx = NNCanvas.getContext("2d");
 const json = select("#json");
 const fps = select("#fps");
 function draw() {
@@ -56,16 +127,11 @@ function draw() {
         prev.brain.score > current.brain.score ? prev : current
     );
 
-    // GraphNN(NNctx, { size: 200, backgroundColor: Config.backgroundColor }, best.brain);
-    // json.textContent = JSON.stringify(
-    //     runner.playerCar.json(),
-    //     undefined,
-    //     2
-    // );
+    // json.textContent = JSON.stringify(runner.playerCar.json(), undefined, 2);
     steerButton.style.transform = "rotate(" + degrees(best.steer) * 6 + "deg)";
     runner.cars.forEach(c => c.display());
 
     runner.playerCar.display();
-    fps.innerText = `Speed: ${(runner.getFps()/60).toFixed(2)}X`;
+    fps.innerText = `Speed: ${(runner.getFps() / 60).toFixed(2)}X`;
 }
 requestAnimationFrame(draw);

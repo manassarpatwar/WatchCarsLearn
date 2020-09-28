@@ -221,6 +221,7 @@ export default class TrackHandler {
     }
 
     updateCurve(bezier) {
+        bezier.update();
         const outlines = bezier.outline(Config.trackWidth / 2).curves;
         outlines.shift();
         outlines.splice(Math.floor(outlines.length / 2), 1);

@@ -1,5 +1,6 @@
 @import './track.css';
 @import './menu.css';
+@import './graph.css';
 
 :root {
     --car-width: 0px;
@@ -69,7 +70,9 @@ canvas {
 }
 
 main nav {
+    position: relative;
     display: inline-block;
+    z-index: 3;
 }
 
 main nav ul {
