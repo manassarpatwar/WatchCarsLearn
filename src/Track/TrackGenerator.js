@@ -5,8 +5,8 @@ import ControlPoint from "./ControlPoint";
 
 export default class TrackGenerator {
     constructor(options) {
-        this.width = options?.width || Config.windowWidth;
-        this.height = options?.height || Config.windowHeight;
+        this.width = options?.width || Config.canvasWidth;
+        this.height = options?.height || Config.canvasHeight;
         this.numPoints = options?.numPoints || 500;
         this.maxCells = options?.maxCells || 5;
         this.minimumDistance = options?.minimumDistance || 0.01;

@@ -36,6 +36,10 @@ const keyChanged = car => {
     car.isTurningLeft = turnLeft;
     car.isTurningRight = turnRight;
     car.isBraking = braking;
+    User.isPlaying = User.isPlaying || pressingUp || pressingDown || turnLeft || turnRight;
+    if (User.isPlaying) {
+        User.car.el.style.zIndex = 10;
+    }
 };
 
 export default (runner, paths, curves) => {
@@ -48,11 +52,13 @@ export default (runner, paths, curves) => {
             acc += (ms - lastTime) / 1000;
             while (acc > runner.getstep()) {
                 if (!User.isDragging && !User.pause) {
-                    if (runner.playerCar.alive) {
-                        runner.playerCar.update();
-                        runner.playerCar.isOnTrack(paths);
+                    if (User.car.alive && User.isPlaying) {
+                        User.car.update();
+                        User.car.isOnTrack(paths);
                     } else {
-                        runner.playerCar.reset();
+                        User.car.reset();
+                        User.car.el.style.zIndex = -1;
+                        User.isPlaying = false;
                     }
                     for (let i = 0; i < runner.cars.length; i++) {
                         const car = runner.cars[i];
@@ -74,11 +80,11 @@ export default (runner, paths, curves) => {
 
     window.addEventListener("keydown", e => {
         keysDown[e.which] = true;
-        keyChanged(runner.playerCar);
+        keyChanged(User.car);
     });
 
     window.addEventListener("keyup", e => {
         keysDown[e.which] = false;
-        keyChanged(runner.playerCar);
+        keyChanged(User.car);
     });
 };

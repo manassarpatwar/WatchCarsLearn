@@ -14,9 +14,7 @@ export default class Car {
         this.el.classList.add("car");
         this.start = start;
 
-        const [r, g, b] = Config.randomColor;
-        this.el.style.background = `rgba(${r}, ${g}, ${b}, 1)`;
-        select("main").appendChild(this.el);
+        select("#simulation").appendChild(this.el);
 
         this.velocity = 0;
         this.acceleration = 0;
@@ -91,10 +89,12 @@ export default class Car {
     }
 
     display() {
+        const [r, g, b] = this.brain ? this.brain.species.color : Config.randomColor;
         const translate = `translate(${this.p.x}px, ${this.p.y}px)`;
         const rotate = `rotate(${this.p.angle}rad)`;
         this.el.style.transform = translate + " " + rotate;
-
+        this.el.style.background = `rgba(${r}, ${g}, ${b}, 1)`;
+        this.el.style.border = `1px solid rgb(${r*0.5}, ${g*0.5}, ${b*0.5})`;
         this.el.style.opacity = this.alive ? 1 : 0.4;
     }
 
@@ -145,12 +145,12 @@ export default class Car {
         this.p.angle = this.p.angle % (Math.PI * 2);
 
         this.p.x +=
-            Config.windowWidth * (this.p.x < 0) -
-            Config.windowWidth * (this.p.x > Config.windowWidth);
+            Config.canvasWidth * (this.p.x < 0) -
+            Config.canvasWidth * (this.p.x > Config.canvasWidth);
 
         this.p.y +=
-            Config.windowHeight * (this.p.y < 0) -
-            Config.windowHeight * (this.p.y > Config.windowHeight);
+            Config.canvasHeight * (this.p.y < 0) -
+            Config.canvasHeight * (this.p.y > Config.canvasHeight);
     }
 
     updateRays(curves) {
@@ -164,15 +164,14 @@ export default class Car {
                 }
             }
         });
-        if (this.brain) {           
+        if (this.brain) {
             const inputs = this.rays.map(r => 1 - r.length / r.maxlength);
             const [throttle, turn] = this.brain.activate(inputs);
 
             this.isThrottling = throttle > 0.66;
-            this.isReversing = throttle > 0.33 && throttle < 0.66;
             this.isBraking = throttle < 0.33;
-            this.isTurningRight = turn > 0.5;
-            this.isTurningLeft = turn < 0.5;
+            this.isTurningRight = turn > 0.66;
+            this.isTurningLeft = turn < 0.33;
         }
     }
 
@@ -191,19 +190,24 @@ export default class Car {
         };
 
         this.alive = false;
+        let length = 50;
         for (let i = 0; i < paths.length; i++) {
             const path = paths[i];
             const [t] = path.intersects(line);
             if (t) {
                 this.alive = true;
+                length = Math.max(length, path.length() / 100);
                 if (curves) {
                     this.updateRays(curves[i].concat(curves[(i + 1) % paths.length]));
                 }
 
                 const checkpoint = Math.floor((i + t) * 100);
-
+                const max = Math.max(...this.checkpoints, 50);
+                for (i = max + 1; i < checkpoint; i++) {
+                    this.checkpoints.add(i);
+                }
                 this.checkpoints.add(checkpoint);
-                if (this.checkpoints.has(100) && checkpoint > 45 && checkpoint < 55) {
+                if (this.checkpoints.size === paths.length * 100) {
                     this.alive = false;
                 }
                 break;
@@ -216,12 +220,12 @@ export default class Car {
 
             if (this.brain.score > previousScore) {
                 this.staleness = 1;
-            }else{
+            } else {
                 this.staleness++;
             }
         }
 
-        if(this.staleness > 50){
+        if (this.staleness > length) {
             this.alive = false;
         }
 

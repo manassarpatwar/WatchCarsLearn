@@ -41,8 +41,18 @@ export const createButton = (src, options) => {
     }
     const li = create("li");
     li.appendChild(button);
-    document.querySelector("#nav ul").appendChild(li);
+    select("#nav ul").appendChild(li);
     return button;
+};
+
+export const text = (content, pos, el) => {
+    const p = create("p");
+    p.innerText = content;
+    p.classList.add("text");
+    p.style.left = pos.x + "px";
+    p.style.top = pos.y + "px";
+    el.appendChild(p);
+    return p;
 };
 
 export class Vector {

@@ -9,8 +9,6 @@
     "dependencies": {
         "bezier-js": "^2.6.1",
         "chart.js": "^2.9.3",
-        "d3": "^6.1.1",
-        "neataptic": "^1.4.7",
         "voronoi": "^1.0.0"
     },
     "devDependencies": {
@@ -20,8 +18,9 @@
         "@babel/preset-env": "^7.11.0",
         "babel-loader": "^8.1.0",
         "css-loader": "^4.2.2",
-        "style-loader": "^1.2.1",
         "html-webpack-plugin": "^4.3.0",
+        "style-loader": "^1.2.1",
+        "svg-inline-loader": "^0.8.2",
         "url-loader": "^4.1.0",
         "webpack": "^4.44.1",
         "webpack-cli": "^3.3.12",

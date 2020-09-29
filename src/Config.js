@@ -1,14 +1,15 @@
-const scale = 5;
+export const mobile = window.innerWidth < 600;
+
+const scale = mobile ? 2.5 : 5;
 const carLength = 4 * scale;
 const carBreadth = 2 * scale;
-const popsize = 50;
-
+const popsize = 150;
 const Config = {
     scale,
     carLength,
     carBreadth,
-    windowWidth: window.innerWidth,
-    windowHeight: window.innerHeight,
+    canvasWidth: mobile ? window.innerWidth : window.innerWidth * 0.75,
+    canvasHeight: mobile ? window.innerHeight * 0.33 : window.innerHeight,
     Cdrag: 0.99,
     Crr: 0,
     mass: 1200,
@@ -20,7 +21,7 @@ const Config = {
     maxRayLength: 50,
     backgroundColor: "#000",
     trackColor: "#515F6F",
-    trackBorder: 3,
+    trackBorder: mobile ? 2 : 3,
     flagSquares: 5,
     checkpointInterval: 5,
 
@@ -28,10 +29,10 @@ const Config = {
 
     borderRadius: carLength / 8,
     L: carLength / 2,
-    trackWidth: 40,
+    trackWidth: mobile ? 20 : 40,
 
     controlPointSize: 15,
-    step: 360,
+    step: 240,
 
     popsize,
     mutationRate: 0.5,

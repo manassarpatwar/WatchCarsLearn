@@ -6,8 +6,8 @@ import User from "../User";
 
 export default class TrackHandler {
     constructor(options) {
-        this.width = options?.width || Config.windowWidth;
-        this.height = options?.height || Config.windowHeight;
+        this.width = options?.width || Config.canvasWidth;
+        this.height = options?.height || Config.canvasHeight;
 
         this.canvas = document.getElementById("canvas");
         this.canvas.width = this.width;
@@ -229,12 +229,7 @@ export default class TrackHandler {
     }
 
     drawBackground() {
-        this.ctx.clearRect(0, 0, Config.windowWidth, Config.windowHeight);
-        this.ctx.beginPath();
-        this.ctx.rect(0, 0, Config.windowWidth, Config.windowHeight);
-        this.ctx.fillStyle = Config.backgroundColor;
-        this.ctx.fill();
-        this.ctx.closePath();
+        this.ctx.clearRect(0, 0, Config.canvasWidth, Config.canvasHeight);
     }
 
     drawTrack() {

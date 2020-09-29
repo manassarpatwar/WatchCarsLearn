@@ -1,5 +1,4 @@
 @import './track.css';
-@import './menu.css';
 @import './graph.css';
 
 :root {
@@ -18,6 +17,7 @@ body {
     margin: 0;
     height: 100vh;
     width: 100vw;
+    background: #000;
     overflow: hidden;
 }
 
@@ -30,10 +30,10 @@ pre {
     margin: 0;
 }
 
-#fps{
+#fps {
     position: absolute;
     right: 0;
-    top: 0;
+    bottom: 0;
     padding: 0;
     margin: 0;
 }
@@ -44,14 +44,56 @@ main {
     height: 100%;
 }
 
-canvas {
+.wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+#visualization {
+    position: relative;
+}
+
+.text {
     position: absolute;
-    left: 0;
-    top: 0;
     padding: 0;
     margin: 0;
-    z-index: -1;
+    text-align: left;
+    align-items: center;
+    transform: translateY(-50%);
 }
+
+#simulation {
+    position: relative;
+}
+
+#stats {
+    display: flex;
+    flex-direction: column;
+}
+
+canvas {
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+#chart {
+    width: 25vw;
+    height: 50vh;
+    margin: 0;
+    padding: 0;
+}
+
+#network {
+    width: 25vw;
+    height: 50vh;
+    margin: 0;
+    padding: 0;
+}
+
+
 
 .car {
     position: absolute;
@@ -70,9 +112,10 @@ canvas {
 }
 
 main nav {
-    position: relative;
+    position: absolute;
+    right: 80px;
     display: inline-block;
-    z-index: 3;
+    z-index: 2;
 }
 
 main nav ul {
@@ -80,11 +123,7 @@ main nav ul {
     display: block;
     margin: 0;
     padding: 0;
-    width: 40px;
-    width: var(--icon-size);
-    white-space: nowrap;
-    overflow: hidden;
-    transition: width 0.5s ease;
+    width: 100%;
 }
 
 main nav ul.open {
@@ -119,4 +158,30 @@ main nav ul li img {
 
 .button:hover {
     cursor: pointer
+}
+
+@media only screen and (max-width: 600px) {
+    main nav {
+        left: 0px;
+    }
+
+    .wrapper {
+        flex-direction: column;
+    }
+
+    #visualization {
+        display: flex;
+        justify-content: center;
+    }
+
+    #chart {
+        margin: auto;
+        width: 100vw;
+        height: 33vh;
+    }
+
+    #network {
+        width: 50vw;
+        height: 33vh;
+    }
 }

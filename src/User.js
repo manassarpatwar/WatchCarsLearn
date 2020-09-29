@@ -3,12 +3,13 @@ const newUser = () => {
         isEditing: false,
         isDragging: false,
         pause: false,
+        isPlaying: false,
     };
-    localStorage.setItem("User", JSON.stringify(user));
+    localStorage.setItem("user", JSON.stringify(user));
     return user;
-}
+};
 
-const storedUser = localStorage.getItem("User");
+const storedUser = localStorage.getItem("user");
 const User = storedUser ? JSON.parse(storedUser) : newUser();
-   
+
 export default User;

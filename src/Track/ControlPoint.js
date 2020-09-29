@@ -34,8 +34,8 @@ export default class ControlPoint {
 
     normalize({x, y}) {
         return {
-            x: ((x * 8) / Config.windowWidth - 1) / 6,
-            y: ((y * 8) / Config.windowHeight - 1) / 6,
+            x: ((x * 8) / Config.canvasWidth - 1) / 6,
+            y: ((y * 8) / Config.canvasHeight - 1) / 6,
         };
     }
 

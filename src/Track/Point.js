@@ -10,7 +10,7 @@ export default class Point {
         this.el.classList.add("control-point");
         transform(this.el, this.x, this.y);
 
-        select("main").appendChild(this.el);
+        select("#simulation").appendChild(this.el);
         
         this.dragged = false;
         this.isDragging = false;
@@ -32,7 +32,7 @@ export default class Point {
     }
 
     delete(){
-        select('main').removeChild(this.el);
+        select('#simulation').removeChild(this.el);
     }
 
     startDrag(e) {
