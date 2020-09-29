@@ -33,19 +33,22 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/manassarpatwar/Car.git"
+        "url": "git+https://github.com/manassarpatwar/WatchCarsLearn.git"
     },
     "keywords": [
         "Car",
         "physics",
         "Race",
         "track",
-        "Javascript"
+        "Javascript",
+        "NeuroEvolution",
+        "Genetic Algorithm",
+        "Neuro Evolution of Augmenting topologies"
     ],
     "author": "manassarpatwar",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/manassarpatwar/Car/issues"
+        "url": "https://github.com/manassarpatwar/WatchCarsLearn/issues"
     },
-    "homepage": "https://github.com/manassarpatwar/Car#readme"
+    "homepage": "https://github.com/manassarpatwar/WatchCarsLearn#readme"
 }
