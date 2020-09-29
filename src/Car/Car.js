@@ -94,7 +94,7 @@ export default class Car {
         const rotate = `rotate(${this.p.angle}rad)`;
         this.el.style.transform = translate + " " + rotate;
         this.el.style.background = `rgba(${r}, ${g}, ${b}, 1)`;
-        this.el.style.border = `1px solid rgb(${r*0.5}, ${g*0.5}, ${b*0.5})`;
+        this.el.style.border = `1px solid rgb(${r * 0.5}, ${g * 0.5}, ${b * 0.5})`;
         this.el.style.opacity = this.alive ? 1 : 0.4;
     }
 

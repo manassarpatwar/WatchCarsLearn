@@ -33,7 +33,7 @@ module.exports = {
     },
     plugins: [
         new htmlWebpackPlugin({
-            template: path.resolve(__dirname, "index.html"),
+            template: path.resolve(__dirname, "public/index.html"),
             hash: true,
         }),
     ],

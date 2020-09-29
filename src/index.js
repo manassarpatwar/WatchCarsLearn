@@ -1,4 +1,4 @@
-import { select, createButton, degrees } from "./utils";
+import { select, createButton, degrees, text } from "./utils";
 import doPhysics from "./doPhysics";
 import Track from "./Track";
 import Config, { mobile } from "./Config";
@@ -24,12 +24,17 @@ const population = new Population(5, 2, Config.popsize, p => p.score, {
 const runner = new Runner(population, track.start, updateChart);
 
 doPhysics(runner, paths, curves);
+
 const steerButton = createButton(SteeringWheel, {
     callback: mobile
         ? false
         : () => {
               User.isPlaying = !User.isPlaying;
+              //   if (User.isPlaying) {
+              //       User.car.el.style.zIndex = 10;
+              //   }
           },
+    title: mobile ? false : "Play",
 });
 
 createButton(RandomTrack, {
@@ -55,7 +60,7 @@ root.style.setProperty("--car-height", Config.carBreadth + "px");
 root.style.setProperty("--car-border-radius", Config.borderRadius + "px");
 root.style.setProperty("--control-point-size", Config.controlPointSize + "px");
 
-const fps = select("#fps");
+const fps = select("#fps span");
 
 graphLabels(population.champ, {
     inputs: ["Ray 1", "Ray 2", "Ray 3", "Ray 4", "Ray 5"],
@@ -79,9 +84,11 @@ function draw() {
 
     User.car.display();
 
-    steerButton.style.transform = `rotate(${degrees(population.activeChamp.car.steer) * 6}deg)`;
+    steerButton.style.transform = `rotate(${
+        degrees(User.isPlaying ? User.car.steer : population.activeChamp.car.steer) * 6
+    }deg)`;
 
-    fps.innerText = `Time: ${(runner.getFps() / 60).toFixed(2)}X`;
+    fps.innerHTML = `${(runner.getFps() / 60).toFixed(2)}`;
     if (!User.hovering) {
         graph(population.activeChamp);
     }

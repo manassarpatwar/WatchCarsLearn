@@ -6,7 +6,7 @@ canvas.width = mobile ? window.innerWidth * 0.5 : window.innerWidth * 0.25;
 canvas.height = mobile ? window.innerHeight * 0.33 : window.innerHeight * 0.5;
 
 const pad = {
-    x: 0.2,
+    x: mobile ? 0.05 : 0.2,
     y: 0,
 };
 const ctx = canvas.getContext("2d");
@@ -21,23 +21,22 @@ export const graphLabels = (genome, { inputs, outputs }) => {
     const network = genome.graph(canvas.width, canvas.height, pad);
     const visualization = select("#visualization");
 
-    const div = create("div");
-    div.classList.add("network-labels");
-    visualization.appendChild(div);
 
     for (const node of network.shift()) {
         const { x, y } = node.vector;
-        const el = text(
-            inputs.shift().toUpperCase(),
-            { x: x + canvas.offsetLeft - nodeRadius * 2, y },
-            div
-        );
+        const el = text(inputs.shift().toUpperCase(), visualization, {
+            x: x + canvas.offsetLeft - nodeRadius * 2,
+            y: y + canvas.offsetTop,
+        });
         el.style.transform = `translate(-100%, -50%)`;
     }
 
     for (const node of network.pop()) {
         const { x, y } = node.vector;
-        const el = text(outputs.shift().toUpperCase(), { x: x + canvas.offsetLeft, y }, div);
+        const el = text(outputs.shift().toUpperCase(), visualization, {
+            x: x + canvas.offsetLeft,
+            y: y + canvas.offsetTop,
+        });
         outputLabels.push(el);
         el.style.transform = `translate(${nodeRadius * 2}px, -50%)`;
     }
@@ -79,8 +78,8 @@ export const graph = genome => {
         }
     }
     const outputs = network.pop();
-    outputLabels[0].innerText = outputs[0].output > 0.66 ? "THROTTLING" : outputs[0].output < 0.33 ? "BRAKING" : "-" ;
-    outputLabels[1].innerText = outputs[1].output > 0.66 ? "RIGHT" : outputs[1].output < 0.33 ? "LEFT" : "-" ;
-
-   
+    outputLabels[0].innerText =
+        outputs[0].output > 0.66 ? "THROTTLING" : outputs[0].output < 0.33 ? "BRAKING" : "-";
+    outputLabels[1].innerText =
+        outputs[1].output > 0.66 ? "RIGHT" : outputs[1].output < 0.33 ? "LEFT" : "-";
 };

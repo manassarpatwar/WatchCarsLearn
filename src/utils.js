@@ -8,6 +8,10 @@ export const isFloat = n => Number(n) === n && n % 1 !== 0;
 
 export const dist = (x1, y1, x2, y2) => Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
 
+export const map = (n, start1, stop1, start2, stop2) => {
+    return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
+};
+
 export const transform = (el, x, y, r) => {
     const d = getComputedStyle(el)
         .transform.split(",")
@@ -34,7 +38,7 @@ export const createButton = (src, options) => {
     button.appendChild(img);
     if (options?.callback) {
         button.classList.add("button");
-        button.onclick = options.callback;
+        button.addEventListener("click", options.callback);
     }
     if (options?.title) {
         button.title = options.title;
@@ -45,12 +49,14 @@ export const createButton = (src, options) => {
     return button;
 };
 
-export const text = (content, pos, el) => {
+export const text = (content, el, pos) => {
     const p = create("p");
     p.innerText = content;
     p.classList.add("text");
-    p.style.left = pos.x + "px";
-    p.style.top = pos.y + "px";
+    if (pos) {
+        p.style.left = pos.x + "px";
+        p.style.top = pos.y + "px";
+    }
     el.appendChild(p);
     return p;
 };

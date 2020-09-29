@@ -1,9 +1,14 @@
-import { select } from "./utils";
+import { select, create } from "./utils";
 import Chart from "chart.js";
+Chart.defaults.global.defaultFontColor = "white";
+Chart.defaults.global.defaultFontFamily =
+    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+Chart.defaults.global.defaultFontStyle = 300;
+Chart.defaults.global.elements.point.radius = 2;
 
 const chart = new Chart(
     (() => {
-        const el = document.createElement("canvas");
+        const el = create("canvas");
         select("#chart").appendChild(el);
         return el;
     })(),
@@ -18,22 +23,28 @@ const chart = new Chart(
             title: {
                 display: true,
                 text: "Best Fitness of each Species",
+                fontStyle: 300,
+                fontSize: 16,
             },
             legend: {
                 display: true,
                 position: "right",
                 labels: {
-                    boxWidth: 10,
+                    boxWidth: 13,
                 },
             },
             tooltips: {
+                titleFontSize: 16,
+                titleFontStyle: 300,
+                bodyFontSize: 14,
                 callbacks: {
                     title: ([tooltipItem]) => {
                         return `Gen ${tooltipItem.xLabel}`;
                     },
                     label: (tooltipItem, { datasets }) => {
-                        return `Species ${datasets[tooltipItem.datasetIndex].id + 1}: Score ${
-                            tooltipItem.yLabel
+                        const dataset = datasets[tooltipItem.datasetIndex];
+                        return `Species ${dataset.id + 1}: Score ${tooltipItem.yLabel} Size ${
+                            dataset.data[tooltipItem.index].size
                         }`;
                     },
                 },
@@ -45,6 +56,12 @@ const chart = new Chart(
                         scaleLabel: {
                             display: true,
                             labelString: "Generation",
+                            fontSize: 16,
+                        },
+                        gridLines: {
+                            display: true,
+                            color: "#eee",
+                            drawOnChartArea: false,
                         },
                     },
                 ],
@@ -57,6 +74,12 @@ const chart = new Chart(
                         scaleLabel: {
                             display: true,
                             labelString: "Score",
+                            fontSize: 16,
+                        },
+                        gridLines: {
+                            display: true,
+                            color: "#eee",
+                            drawOnChartArea: false,
                         },
                     },
                 ],
@@ -94,6 +117,7 @@ export default function updateChart(pop) {
         dataset.data.push({
             x: pop.generation,
             y: species.bestFitness,
+            size: species.members.length,
         });
     }
 

@@ -189,7 +189,6 @@ export default class TrackHandler {
         const selectedControlPoint = this.controlPoints.find(c => c.points.some(p => p.selected));
         if (selectedControlPoint) {
             this.selectedControlPoint = selectedControlPoint;
-            console.log(this.selectedControlPoint.beziers);
             this.selectedPoint = this.selectedControlPoint.points.find(p => p.selected);
 
             if (this.selectedPoint === this.selectedControlPoint.p) {

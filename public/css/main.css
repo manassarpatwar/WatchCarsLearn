@@ -8,6 +8,7 @@
     --car-border-radius: 0px;
     --icon-size: 40px;
     --control-point-color: #eee;
+    --font-size: 14px;
 }
 
 body {
@@ -16,9 +17,7 @@ body {
     padding: 0;
     margin: 0;
     height: 100vh;
-    width: 100vw;
     background: #000;
-    overflow: hidden;
 }
 
 body.pointer {
@@ -34,8 +33,9 @@ pre {
     position: absolute;
     right: 0;
     bottom: 0;
-    padding: 0;
     margin: 0;
+    transform: none;
+    z-index: 2;
 }
 
 main {
@@ -51,10 +51,6 @@ main {
     flex-direction: row-reverse;
 }
 
-#visualization {
-    position: relative;
-}
-
 .text {
     position: absolute;
     padding: 0;
@@ -62,6 +58,14 @@ main {
     text-align: left;
     align-items: center;
     transform: translateY(-50%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    display: inline-block;
+    font-size: var(--font-size);
+    font-weight: 300;
+    margin: 0;
+    padding: calc(var(--font-size)/2);
+    border: none;
+    outline: none;
 }
 
 #simulation {
@@ -86,9 +90,12 @@ canvas {
     padding: 0;
 }
 
-#network {
+#visualization {
     width: 25vw;
     height: 50vh;
+}
+
+#network {
     margin: 0;
     padding: 0;
 }
@@ -169,18 +176,15 @@ main nav ul li img {
         flex-direction: column;
     }
 
-    #visualization {
-        display: flex;
-        justify-content: center;
-    }
-
     #chart {
         margin: auto;
         width: 100vw;
         height: 33vh;
     }
 
-    #network {
+    #visualization {
+        display: flex;
+        justify-content: center;
         width: 50vw;
         height: 33vh;
     }
