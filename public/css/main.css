@@ -1,0 +1,187 @@
+@import './track.css';
+@import './graph.css';
+
+:root {
+    --car-width: 0px;
+    --car-height: 0px;
+    --control-point-size: 0px;
+    --car-border-radius: 0px;
+    --icon-size: 40px;
+    --control-point-color: #eee;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: white;
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+    width: 100vw;
+    background: #000;
+    overflow: hidden;
+}
+
+body.pointer {
+    cursor: pointer !important;
+}
+
+pre {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+}
+
+#fps {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    margin: 0;
+}
+
+main {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+#visualization {
+    position: relative;
+}
+
+.text {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    align-items: center;
+    transform: translateY(-50%);
+}
+
+#simulation {
+    position: relative;
+}
+
+#stats {
+    display: flex;
+    flex-direction: column;
+}
+
+canvas {
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+#chart {
+    width: 25vw;
+    height: 50vh;
+    margin: 0;
+    padding: 0;
+}
+
+#network {
+    width: 25vw;
+    height: 50vh;
+    margin: 0;
+    padding: 0;
+}
+
+
+
+.car {
+    position: absolute;
+    left: -10px;
+    top: -5px;
+    left: calc(var(--car-width) * -0.5);
+    top: calc(var(--car-height) * -0.5);
+    background: #000;
+    width: 20px;
+    height: 10px;
+    width: var(--car-width);
+    height: var(--car-height);
+    border-radius: 2.5px;
+    border-radius: var(--car-border-radius);
+    transform: translate(0, 0) rotate(0);
+}
+
+main nav {
+    position: absolute;
+    right: 80px;
+    display: inline-block;
+    z-index: 2;
+}
+
+main nav ul {
+    list-style: none;
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+main nav ul.open {
+    width: 100%;
+}
+
+main nav ul li {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+}
+
+main nav ul li button {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    position: relative;
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+
+main nav ul li img {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.button:hover {
+    cursor: pointer
+}
+
+@media only screen and (max-width: 600px) {
+    main nav {
+        left: 0px;
+    }
+
+    .wrapper {
+        flex-direction: column;
+    }
+
+    #visualization {
+        display: flex;
+        justify-content: center;
+    }
+
+    #chart {
+        margin: auto;
+        width: 100vw;
+        height: 33vh;
+    }
+
+    #network {
+        width: 50vw;
+        height: 33vh;
+    }
+}

@@ -1,0 +1,51 @@
+{
+    "name": "car",
+    "version": "1.0.0",
+    "description": "Car physics simulation",
+    "main": "src/index.js",
+    "directories": {
+        "lib": "lib"
+    },
+    "dependencies": {
+        "bezier-js": "^2.6.1",
+        "chart.js": "^2.9.3",
+        "voronoi": "^1.0.0"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.10.5",
+        "@babel/core": "^7.11.4",
+        "@babel/node": "^7.10.5",
+        "@babel/preset-env": "^7.11.0",
+        "babel-loader": "^8.1.0",
+        "css-loader": "^4.2.2",
+        "html-webpack-plugin": "^4.3.0",
+        "style-loader": "^1.2.1",
+        "svg-inline-loader": "^0.8.2",
+        "url-loader": "^4.1.0",
+        "webpack": "^4.44.1",
+        "webpack-cli": "^3.3.12",
+        "webpack-dev-server": "^3.11.0"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "webpack --watch",
+        "build": "webpack"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/manassarpatwar/Car.git"
+    },
+    "keywords": [
+        "Car",
+        "physics",
+        "Race",
+        "track",
+        "Javascript"
+    ],
+    "author": "manassarpatwar",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/manassarpatwar/Car/issues"
+    },
+    "homepage": "https://github.com/manassarpatwar/Car#readme"
+}
