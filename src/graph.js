@@ -73,7 +73,7 @@ export const graph = genome => {
             ctx.closePath();
 
             ctx.beginPath();
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 4;
             ctx.strokeStyle = `rgb(${r},${g},${b})`;
             ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
             ctx.stroke();

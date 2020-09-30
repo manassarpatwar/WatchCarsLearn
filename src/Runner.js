@@ -7,6 +7,7 @@ export default class Runner {
         this.population = population;
         this.cars = [];
         this.finished = [];
+        this.champ = new Car(start);
 
         User.car = new Car(start);
 
@@ -50,10 +51,13 @@ export default class Runner {
             const genome = this.population.genomes[i];
             car.brain = genome;
             car.brain.score = 0;
-            genome.car = car;
 
             car.reset();
         }
+        this.champ.brain = this.population.champ;
+        this.population.champ.car = this.champ;
+        this.champ.brain.score = 0;
+        this.champ.reset();
     }
 
     endGeneration() {

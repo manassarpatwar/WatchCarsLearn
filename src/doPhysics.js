@@ -46,8 +46,6 @@ export default async (runner, paths, curves) => {
     let lastTime;
     let acc = 0;
 
-    let paused = true;
-
     const step = async () => {
         return new Promise(async resolve => {
             const ms = Date.now();
@@ -62,6 +60,10 @@ export default async (runner, paths, curves) => {
                             User.car.reset();
                             User.car.el.style.zIndex = -1;
                             User.isPlaying = false;
+                        }
+                        if (runner.champ.alive) {
+                            runner.champ.update();
+                            runner.champ.isOnTrack(paths, curves);
                         }
                         for (let i = 0; i < runner.cars.length; i++) {
                             const car = runner.cars[i];

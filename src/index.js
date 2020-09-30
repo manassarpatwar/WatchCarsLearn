@@ -89,14 +89,15 @@ function draw() {
     runner.cars.forEach(c => c.display());
 
     User.car.display();
+    runner.champ.display();
 
     steerButton.style.transform = `rotate(${
-        degrees(User.isPlaying ? User.car.steer : population.activeChamp.car.steer) * 6
+        degrees(User.isPlaying ? User.car.steer : population.champ.car.steer) * 6
     }deg)`;
 
     fps.innerHTML = `${(runner.getFps() / 60).toFixed(2)}`;
     if (!User.hovering) {
-        graph(population.activeChamp);
+        graph(population.champ);
     }
 }
 requestAnimationFrame(draw);

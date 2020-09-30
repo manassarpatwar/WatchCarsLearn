@@ -45,7 +45,6 @@ export default class Car {
         this.steer = 0;
         this.steerAngle = 0;
         this.staleness = 0;
-        this.scores = [];
         this.checkpoints.clear();
 
         this.angularVelocity = 0;
@@ -88,8 +87,8 @@ export default class Car {
         };
     }
 
-    display() {
-        const [r, g, b] = this.brain ? this.brain.species.color : Config.randomColor;
+    display(color) {
+        const [r, g, b] = color ? color : this.brain ? this.brain.species.color : Config.randomColor;
         const translate = `translate(${this.p.x}px, ${this.p.y}px)`;
         const rotate = `rotate(${this.p.angle}rad)`;
         this.el.style.transform = translate + " " + rotate;

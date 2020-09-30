@@ -22,7 +22,7 @@ const chart = new Chart(
             maintainAspectRatio: false,
             title: {
                 display: true,
-                text: "Best scores of each pecies",
+                text: "Best scores of each Species",
                 fontStyle: 300,
                 fontSize: 16,
             },
