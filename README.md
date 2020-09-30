@@ -65,6 +65,6 @@ Watch cars learn right in your browser! https://manassarpatwar.github.io/WatchCa
 ![steering_black](https://user-images.githubusercontent.com/44678221/94646872-ddc38000-030c-11eb-9aed-d32beff7ee66.png)  
 [p5.js editor sketch for steering wheel](https://editor.p5js.org/Ringsofthekings/sketches/yXrZ3m0ng) 
 
-## Lisence
+## License
 [MIT](https://opensource.org/licenses/MIT)  
 Copyright (c) 2020-present [Manas Sarpatwar](https://github.com/manassarpatwar)
