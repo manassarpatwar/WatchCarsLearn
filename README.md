@@ -20,7 +20,7 @@ Watch cars learn right in your browser! https://manassarpatwar.github.io/WatchCa
 - I followed the steps outlined in a [Procedural Race Track Generation algorithm](https://i-hudson.github.io/projects/2019-02-02-Race-track-Generator/) implemented as a tool in Unity by [Ian Hudson](https://i-hudson.github.io/)
 - I used [voronoi.js](https://github.com/gorhill/Javascript-Voronoi) for creating the voronoi diagram
 
-### Bezies, Beziers, Beziers!
+### Beziers, Beziers, Beziers!
 - I used [bezier.js](https://github.com/Pomax/bezierjs) for working with beziers
 - The track is made up of a lot of bezier curves
 - There exists a hidden path of bezier curves that runs through the middle of the track. I use this path to calculate score of each car, and check whether the car is on the track or it has crashed
