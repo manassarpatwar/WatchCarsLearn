@@ -37,5 +37,10 @@ module.exports = {
             hash: true,
         }),
     ],
+    optimization: {
+        splitChunks: {
+            chunks: "all",
+        },
+    },
     node: { child_process: "empty" },
 };

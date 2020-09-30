@@ -1,6 +1,6 @@
 import Config from "../Config";
 import Bezier from "bezier-js";
-import { Vector } from "../utils";
+import { Vector, create } from "../utils";
 import TrackGenerator from "./TrackGenerator";
 import User from "../User";
 
@@ -35,6 +35,15 @@ export default class TrackHandler {
         document.addEventListener("mouseup", this.mouseUp.bind(this));
         document.addEventListener("mousemove", this.mouseDragged.bind(this));
         document.addEventListener("touchmove", this.mouseDragged.bind(this));
+    }
+
+    download(filename) {
+        const link = create("a");
+        link.setAttribute("download", filename || "track.png");
+        const dataURL = canvas.toDataURL("image/png");
+        const url = dataURL.replace(/^data:image\/png/, "data:application/octet-stream");
+        link.setAttribute("href", url);
+        link.click();
     }
 
     editTrack() {

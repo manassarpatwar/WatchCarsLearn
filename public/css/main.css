@@ -6,7 +6,7 @@
     --car-height: 0px;
     --control-point-size: 0px;
     --car-border-radius: 0px;
-    --icon-size: 40px;
+    --icon-size: 30px;
     --control-point-color: #eee;
     --font-size: 14px;
 }
@@ -18,6 +18,8 @@ body {
     margin: 0;
     height: 100vh;
     background: #000;
+    overflow: -moz-hidden-unscrollable;
+    overflow: hidden;
 }
 
 body.pointer {
@@ -83,16 +85,16 @@ canvas {
     margin: 0;
 }
 
-#chart {
-    width: 25vw;
-    height: 50vh;
-    margin: 0;
-    padding: 0;
+#visualization {
+    width: 100%;
+    height: 50%;
 }
 
-#visualization {
-    width: 25vw;
-    height: 50vh;
+#chart {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 50%;
 }
 
 #network {
@@ -120,7 +122,7 @@ canvas {
 
 main nav {
     position: absolute;
-    right: 80px;
+    right: 40px;
     display: inline-block;
     z-index: 2;
 }
@@ -139,8 +141,8 @@ main nav ul.open {
 
 main nav ul li {
     display: inline-block;
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     width: var(--icon-size);
     height: var(--icon-size);
 }
@@ -178,14 +180,10 @@ main nav ul li img {
 
     #chart {
         margin: auto;
-        width: 100vw;
-        height: 33vh;
     }
 
     #visualization {
         display: flex;
         justify-content: center;
-        width: 50vw;
-        height: 33vh;
     }
 }

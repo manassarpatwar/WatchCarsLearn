@@ -25,14 +25,18 @@ const runner = new Runner(population, track.start, updateChart);
 
 doPhysics(runner, paths, curves);
 
+const stats = select("#stats");
+stats.style.width = mobile ? window.innerWidth + "px" : window.innerWidth * 0.25 + "px";
+stats.style.height = mobile ? window.innerHeight * 0.66 + "px" : window.innerHeight + "px";
+
 const steerButton = createButton(SteeringWheel, {
     callback: mobile
         ? false
         : () => {
               User.isPlaying = !User.isPlaying;
-              //   if (User.isPlaying) {
-              //       User.car.el.style.zIndex = 10;
-              //   }
+                if (User.isPlaying) {
+                    User.car.el.style.zIndex = 10;
+                }
           },
     title: mobile ? false : "Play",
 });

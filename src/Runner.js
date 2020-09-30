@@ -24,10 +24,10 @@ export default class Runner {
     }
 
     getFps() {
-        return User.isPlaying ? 30 : Math.max(30, Config.step - this.cars.length * 2);
+        return User.isPlaying ? 60 : Math.max(30, Config.step - this.cars.length * 2);
     }
 
-    getstep() {
+    getStep() {
         return 1 / this.getFps();
     }
 

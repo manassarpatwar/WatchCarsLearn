@@ -3,9 +3,7 @@
     "version": "1.0.0",
     "description": "Car physics simulation",
     "main": "src/index.js",
-    "directories": {
-        "lib": "lib"
-    },
+    "directories": {},
     "dependencies": {
         "bezier-js": "^2.6.1",
         "chart.js": "^2.9.3",

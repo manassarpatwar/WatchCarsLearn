@@ -42,41 +42,48 @@ const keyChanged = car => {
     }
 };
 
-export default (runner, paths, curves) => {
+export default async (runner, paths, curves) => {
     let lastTime;
     let acc = 0;
 
-    setInterval(() => {
-        const ms = Date.now();
-        if (lastTime) {
-            acc += (ms - lastTime) / 1000;
-            while (acc > runner.getstep()) {
-                if (!User.isDragging && !User.pause) {
-                    if (User.car.alive && User.isPlaying) {
-                        User.car.update();
-                        User.car.isOnTrack(paths);
-                    } else {
-                        User.car.reset();
-                        User.car.el.style.zIndex = -1;
-                        User.isPlaying = false;
-                    }
-                    for (let i = 0; i < runner.cars.length; i++) {
-                        const car = runner.cars[i];
-                        car.update();
-                        car.isOnTrack(paths, curves);
-                        if (!car.alive) {
-                            runner.carFinished(i);
-                            i--;
-                        }
-                    }
-                    runner.checkEnd();
-                }
-                acc -= runner.getstep();
-            }
-        }
+    let paused = true;
 
-        lastTime = ms;
-    }, 1000 / 60);
+    const step = async () => {
+        return new Promise(async resolve => {
+            const ms = Date.now();
+            if (lastTime) {
+                acc += (ms - lastTime) / 1000;
+                while (acc > runner.getStep()) {
+                    if (!User.isDragging && !User.pause) {
+                        if (User.car.alive && User.isPlaying) {
+                            User.car.update();
+                            User.car.isOnTrack(paths);
+                        } else {
+                            User.car.reset();
+                            User.car.el.style.zIndex = -1;
+                            User.isPlaying = false;
+                        }
+                        for (let i = 0; i < runner.cars.length; i++) {
+                            const car = runner.cars[i];
+                            car.update();
+                            car.isOnTrack(paths, curves);
+                            if (!car.alive) {
+                                runner.carFinished(i);
+                                i--;
+                            }
+                        }
+                        runner.checkEnd();
+                    }
+                    acc -= runner.getStep();
+                }
+            }
+
+            lastTime = ms;
+            return resolve();
+        });
+    };
+
+    setInterval(step, 1000 / 60);
 
     window.addEventListener("keydown", e => {
         keysDown[e.which] = true;
