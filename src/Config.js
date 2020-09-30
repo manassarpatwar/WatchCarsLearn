@@ -18,7 +18,7 @@ const Config = {
     engineForce: 8000 * scale,
     reverseForce: 12000 * scale,
     brakingForce: 16800,
-    maxRayLength: 50,
+    maxRayLength: mobile ? 25 : 50,
     backgroundColor: "#000",
     trackColor: "#515F6F",
     trackBorder: mobile ? 2 : 3,
