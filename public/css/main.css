@@ -16,7 +16,6 @@ body {
     color: white;
     padding: 0;
     margin: 0;
-    height: 100vh;
     background: #000;
     overflow: -moz-hidden-unscrollable;
     overflow: hidden;
@@ -186,4 +185,5 @@ main nav ul li img {
         display: flex;
         justify-content: center;
     }
+
 }

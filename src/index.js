@@ -8,10 +8,12 @@ import EditTrack from "Images/EditTrack.png";
 import SteeringWheel from "Images/SteeringWheel.png";
 
 import Runner from "./Runner";
-import { Population, Config as NeatConfig } from "./neat/neat-lib.min";
+import { Population } from "./neat/neat-lib.min";
 import User from "./User";
 import updateChart from "./chart";
 import { graph, graphLabels } from "./graph";
+
+select("body").style.height = window.innerHeight;
 
 const track = new Track();
 const { beziers: paths, curves } = track;
@@ -34,9 +36,9 @@ const steerButton = createButton(SteeringWheel, {
         ? false
         : () => {
               User.isPlaying = !User.isPlaying;
-                if (User.isPlaying) {
-                    User.car.el.style.zIndex = 10;
-                }
+              if (User.isPlaying) {
+                  User.car.el.style.zIndex = 10;
+              }
           },
     title: mobile ? false : "Play",
 });

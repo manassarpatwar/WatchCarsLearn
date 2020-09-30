@@ -1,9 +1,13 @@
 import { mobile } from "./Config";
-import { text, select, create } from "./utils";
+import { text, select } from "./utils";
 
+const scale = 2;
 const canvas = document.getElementById("network");
-canvas.width = mobile ? window.innerWidth * 0.5 : window.innerWidth * 0.25;
-canvas.height = mobile ? window.innerHeight * 0.33 : window.innerHeight * 0.5;
+canvas.width = mobile ? window.innerWidth * 0.5 * scale : window.innerWidth * 0.25 * scale;
+canvas.height = mobile ? window.innerHeight * 0.33 * scale : window.innerHeight * 0.5 * scale;
+
+canvas.style.width = canvas.width / scale + "px";
+canvas.style.height = canvas.height / scale + "px";
 
 const pad = {
     x: mobile ? 0.05 : 0.2,
@@ -11,7 +15,7 @@ const pad = {
 };
 const ctx = canvas.getContext("2d");
 
-const nodeRadius = 7.5;
+const nodeRadius = 15;
 
 const outputLabels = [];
 
@@ -21,12 +25,11 @@ export const graphLabels = (genome, { inputs, outputs }) => {
     const network = genome.graph(canvas.width, canvas.height, pad);
     const visualization = select("#visualization");
 
-
     for (const node of network.shift()) {
         const { x, y } = node.vector;
         const el = text(inputs.shift().toUpperCase(), visualization, {
-            x: x + canvas.offsetLeft - nodeRadius * 2,
-            y: y + canvas.offsetTop,
+            x: x / scale + canvas.offsetLeft - (nodeRadius / scale) * 2,
+            y: y / scale + canvas.offsetTop,
         });
         el.style.transform = `translate(-100%, -50%)`;
     }
@@ -34,11 +37,11 @@ export const graphLabels = (genome, { inputs, outputs }) => {
     for (const node of network.pop()) {
         const { x, y } = node.vector;
         const el = text(outputs.shift().toUpperCase(), visualization, {
-            x: x + canvas.offsetLeft,
-            y: y + canvas.offsetTop,
+            x: x / scale + canvas.offsetLeft,
+            y: y / scale + canvas.offsetTop,
         });
         outputLabels.push(el);
-        el.style.transform = `translate(${nodeRadius * 2}px, -50%)`;
+        el.style.transform = `translate(${(nodeRadius / scale) * 2}px, -50%)`;
     }
 };
 
