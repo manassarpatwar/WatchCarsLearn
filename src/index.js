@@ -49,6 +49,7 @@ createButton(RandomTrack, {
         track.randomTrack();
         runner.reset();
         User.car.reset();
+        runner.champ.reset();
         runner.finished.forEach(c => c.display());
         User.pause = false;
     },

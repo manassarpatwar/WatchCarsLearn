@@ -46,9 +46,8 @@ export default async (runner, paths, curves) => {
     let lastTime;
     let acc = 0;
 
-    const step = async () => {
+    const step = async ms => {
         return new Promise(async resolve => {
-            const ms = Date.now();
             if (lastTime) {
                 acc += (ms - lastTime) / 1000;
                 while (acc > runner.getStep()) {
@@ -80,12 +79,17 @@ export default async (runner, paths, curves) => {
                 }
             }
 
-            lastTime = ms;
             return resolve();
         });
     };
 
-    setInterval(step, 1000 / 60);
+    setInterval(async () => {
+        const ms = performance.now();
+        if (!document.hidden) {
+            await step(ms);
+        }
+        lastTime = ms;
+    }, 1000 / 60);
 
     window.addEventListener("keydown", e => {
         keysDown[e.which] = true;

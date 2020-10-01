@@ -1584,17 +1584,6 @@ eval("\nvar $ = __webpack_require__(/*! ../internals/export */ \"./node_modules/
 
 /***/ }),
 
-/***/ "./node_modules/core-js/modules/es.date.now.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/core-js/modules/es.date.now.js ***!
-  \*****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-eval("var $ = __webpack_require__(/*! ../internals/export */ \"./node_modules/core-js/internals/export.js\");\n\n// `Date.now` method\n// https://tc39.github.io/ecma262/#sec-date.now\n$({ target: 'Date', stat: true }, {\n  now: function now() {\n    return new Date().getTime();\n  }\n});\n\n\n//# sourceURL=webpack:///./node_modules/core-js/modules/es.date.now.js?");
-
-/***/ }),
-
 /***/ "./node_modules/core-js/modules/es.date.to-string.js":
 /*!***********************************************************!*\
   !*** ./node_modules/core-js/modules/es.date.to-string.js ***!
