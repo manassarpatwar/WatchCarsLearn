@@ -82,7 +82,7 @@ export const graph = genome => {
     }
     const outputs = network.pop();
     outputLabels[0].innerText =
-        outputs[0].output > 0.66 ? "THROTTLING" : outputs[0].output < 0.33 ? "BRAKING" : "-";
+        outputs[0].output > 0.66 ? "THROTTLE" : outputs[0].output < 0.33 ? "BRAKE" : "-";
     outputLabels[1].innerText =
         outputs[1].output > 0.66 ? "RIGHT" : outputs[1].output < 0.33 ? "LEFT" : "-";
 };

@@ -14,16 +14,16 @@ const Config = {
     Crr: 0,
     mass: 1200,
     inertiaScale: 1,
-    maxSteer: 0.6,
+    maxSteer: mobile ? 1.2 : 0.6,
     engineForce: 8000 * scale,
     reverseForce: 12000 * scale,
     brakingForce: 16800,
-    maxRayLength: mobile ? 25 : 50,
+    maxRayLength: 10 * scale,
     backgroundColor: "#000",
     trackColor: "#515F6F",
     trackBorder: mobile ? 2 : 3,
     flagSquares: 5,
-    checkpointInterval: 5,
+    checkpointInterval: scale,
 
     randomColor: [50 + Math.random() * 150, 50 + Math.random() * 150, 50 + Math.random() * 150],
 
@@ -32,12 +32,9 @@ const Config = {
     trackWidth: mobile ? 20 : 40,
 
     controlPointSize: 15,
-    step: 240,
+    step: mobile ? 150 : 240,
 
     popsize,
-    mutationRate: 0.5,
-    mutationAmount: 3,
-    elitism: Math.round(0.2 * popsize),
 };
 
 export default Config;
