@@ -55,7 +55,7 @@ export const graph = genome => {
                 const { x: x1, y: y1 } = con.from.vector;
                 const { x: x2, y: y2 } = con.to.vector;
                 ctx.beginPath();
-                ctx.lineWidth = Math.abs(con.weight);
+                ctx.lineWidth = Math.abs(con.weight)*scale;
                 ctx.strokeStyle = con.enabled ? (con.weight > 0 ? "green" : "blue") : "red";
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2, y2);

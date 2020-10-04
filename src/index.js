@@ -8,7 +8,7 @@ import EditTrack from "Images/EditTrack.png";
 import SteeringWheel from "Images/SteeringWheel.png";
 
 import Runner from "./Runner";
-import { Population } from "./neat/neat-lib.min";
+import { Population, Config as NeatConfig } from "./neat/neat-lib.min";
 import User from "./User";
 import updateChart from "./chart";
 import { graph, graphLabels } from "./graph";
@@ -18,9 +18,14 @@ select("body").style.height = window.innerHeight;
 const track = new Track();
 const { beziers: paths, curves } = track;
 const population = new Population(5, 2, Config.popsize, p => p.score, {
-    excessCoefficient: 2,
+    excessCoefficient: 2.0,
     disjointCoefficient: 0.5,
-    weightDifferenceCoefficient: 1,
+    weightDifferenceCoefficient: 1.0,
+    mutation: {
+        ...NeatConfig.mutation,
+        toggle: 0.01,
+        reEnable: 0.01,
+    },
 });
 
 const runner = new Runner(population, track.start, updateChart);
