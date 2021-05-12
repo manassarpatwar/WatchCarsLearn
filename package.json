@@ -6,7 +6,7 @@
     "directories": {},
     "dependencies": {
         "bezier-js": "^2.6.1",
-        "chart.js": "^2.9.3",
+        "chart.js": "^2.9.4",
         "voronoi": "^1.0.0"
     },
     "devDependencies": {
